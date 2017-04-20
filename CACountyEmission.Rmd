@@ -22,7 +22,8 @@ The purpose of this document is to extract emissions data from all the counties 
 The original data source is:
 https://www.arb.ca.gov/ei/maps/statemap/cntymap.htm.
 
-
+Extracts the links to each county from the main link:
+https://www.arb.ca.gov/ei/maps/statemap/cntymap.htm
 ```{r}
 library(XML)
 library(RCurl)
@@ -31,30 +32,38 @@ txt <- getURLContent(URL)
 doc <- htmlParse(txt)
 #link <- doc %>% getNodeSet('//td/ul/li/a/@href')
 
-countyLink <- doc %>% xpathSApply('//td/ul/li/a/@href')
+#Scrape the county name
+countyName <- xpathSApply(doc, "//td/ul/li/a", xmlValue)
 
-df <- as.data.frame(countyLink)
-
-links <- as.character(df$countyLink)
-
-#Fixing illegal characters (\n)
-
-for(i in 19:20){
-  links[i] <- gsub("\\n", "", links[i])
+#Clean up stray \n and \t in names
+for(i in 1:length(countyName)){
+  countyName[i] <- gsub("\\n", "", countyName[i])
+  countyName[i] <- gsub("\\t", " ", countyName[i])
 }
 
-links
+#Scrape the county link
+countyLink <- doc %>% xpathSApply('//td/ul/li/a/@href')
+countyLink <- as.character(countyLink)
 
+#Clean up stray \n in links
+for(i in 1:length(countyLink)){
+  countyLink[i] <- gsub("\\n", "", countyLink[i])
+}
+
+#dataframe of countyName and countyLink
+df <- as.data.frame(countyName, countyLink)
+
+head(df)
 ```
 
 
-
+Scrape the csv download handle links from each county's data page. 
 ```{r}
 
-downloadLinks <- vector(mode="character", length=length(links))
+downloadLinks <- vector(mode="character", length=length(df$countyLink))
 
-for(i in 1:length(links)){
-  URL <- links[i]
+for(i in 1:length(countyLink)){
+  URL <- countyLink[i]
 
   txt <- getURLContent(URL)
   doc <- htmlParse(txt)
@@ -71,4 +80,17 @@ downloadLinks
 
 ```
 
+
+Load each dataset into R for further processing. Csv files are read-in and assigned to the respective county name.
+
+```{r}
+
+for(i in 1:length(countyLink)){
+  myURL <- paste("https://www.arb.ca.gov/app/emsinv/2013/", downloadLinks[i], sep = "")
+
+  assign(countyName[i], read.csv(myURL))
+}
+
+head(Yuba)
+```
 
