@@ -1,0 +1,38 @@
+---
+title: "USACountyEduAttainment"
+author: "Team Senioritis"
+date: "4/19/2017"
+output: 
+  html_document:
+    fig_height: 3
+    fig_width: 5
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
+
+
+Reading-in data on educational attainment from 1974-2015. Original source: https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762
+
+Note file had to be downloaded first and then read-in as there appears to be no easy way to directly read-in a xlsx file from a URL.
+
+Ultimately had to download excel file, delete excess info at the top, save as csv, then read.csv()
+```{r}
+library(xlsx)
+library(RCurl)
+
+#URL <- getURLContent("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762")
+
+#data <- read.xlsx("C:\\Users\\Katrlyn\\Downloads\\Education.xls", sheetIndex = 1)
+
+data <- read.csv("C:\\Users\\Katrlyn\\Downloads\\Education.csv")
+head(data)
+```
+
