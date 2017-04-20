@@ -1,0 +1,74 @@
+---
+title: "Scraping Emissions in California Counties"
+author: "Team Senioritis"
+date: "4/19/17"
+output: 
+  html_document:
+    fig_height: 3
+    fig_width: 5
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
+
+The purpose of this document is to eextract emissions data from all the counties in California. 
+The original data source is:
+https://www.arb.ca.gov/ei/maps/statemap/cntymap.htm.
+
+
+```{r}
+library(XML)
+library(RCurl)
+URL <- "https://www.arb.ca.gov/ei/maps/statemap/cntymap.htm"
+txt <- getURLContent(URL)
+doc <- htmlParse(txt)
+#link <- doc %>% getNodeSet('//td/ul/li/a/@href')
+
+countyLink <- doc %>% xpathSApply('//td/ul/li/a/@href')
+
+df <- as.data.frame(countyLink)
+
+links <- as.character(df$countyLink)
+
+#Fixing illegal characters (\n)
+
+for(i in 19:20){
+  links[i] <- gsub("\\n", "", links[i])
+}
+
+links
+
+```
+
+
+
+```{r}
+
+downloadLinks <- vector(mode="character", length=length(links))
+
+for(i in 1:length(links)){
+  URL <- links[i]
+
+  txt <- getURLContent(URL)
+  doc <- htmlParse(txt)
+    
+  downloadLink <- doc %>% xpathSApply('//div[@id="content_area"]/a/@href')
+  
+  df <- as.data.frame(downloadLink)
+  
+  downloadLinks[i] <- as.character(df$downloadLink[1])
+  
+}
+
+downloadLinks
+
+```
+
+
