@@ -18,7 +18,7 @@ includeSourceDocuments()
 ```
 <!-- Don't edit the material above this line -->
 
-The purpose of this document is to eextract emissions data from all the counties in California. 
+The purpose of this document is to extract emissions data from all the counties in California. 
 The original data source is:
 https://www.arb.ca.gov/ei/maps/statemap/cntymap.htm.
 
