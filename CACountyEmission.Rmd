@@ -92,5 +92,10 @@ for(i in 1:length(countyLink)){
 }
 
 head(Yuba)
+
+#Accessing names:
+#as.name(countyName[1])
+
+
 ```
 
