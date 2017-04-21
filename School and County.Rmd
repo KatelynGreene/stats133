@@ -1,0 +1,40 @@
+---
+title: "School and County"
+author: "Anisha Kumar"
+output: html_document
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+```
+Compiled on `r date()`.
+
+from http://www.cde.ca.gov/ds/si/ds/pubschls.asp 
+Vanessa was able to download the .xls file and I then converted it to .csv
+ 
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+
+```{r}
+df <- read.csv("/Users/anishakumar/Documents/pubschls.csv")
+```
+
+
+```{r}
+
+
+names(df)
+head(df)
+#View(df)
+
+df <- df %>% 
+  filter(StatusType == "Active") %>%
+  select(County, District, School)
+head(df)
+
+
+```
+
