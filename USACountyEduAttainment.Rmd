@@ -25,14 +25,37 @@ Note file had to be downloaded first and then read-in as there appears to be no 
 
 Ultimately had to download excel file, delete excess info at the top, save as csv, then read.csv()
 ```{r}
-library(xlsx)
 library(RCurl)
+library(readxl)
+library(mosaic)
+library(readr)
 
+#No Luck using getURLContent but would like to pursue
 #URL <- getURLContent("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762")
 
-#data <- read.xlsx("C:\\Users\\Katrlyn\\Downloads\\Education.xls", sheetIndex = 1)
 
-data <- read.csv("C:\\Users\\Katrlyn\\Downloads\\Education.csv")
+#Works but the issue is that file must be handled locally during preprocessing.
+download.file("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762", destfile = "C:\\Users\\Katrlyn\\Downloads\\edu.xls", mode = "wb" )
+
+data <- read_excel("C:\\Users\\Katrlyn\\Downloads\\edu.xls", sheet = 1, skip = 4)
+
+#read_file() can't find xls finle extension
+#data <- read_excel(read_file("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762"), sheet = 1, skip = 4)
+ 
+```
+
+```{r}
+
+#Note that there is data for: US,  states, AND counties.
+#Should be able to filter by FIPS code to help isolate what we want (those that end in 0 are not counties)
 head(data)
+```
+
+
+
+#data <- read_excel("edu.xls", sheet = 1, skip = 4)
+
+#head(data)
+#head(data)
 ```
 
