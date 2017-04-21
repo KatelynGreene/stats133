@@ -41,6 +41,13 @@ data <- read_excel("C:\\Users\\Katrlyn\\Downloads\\edu.xls", sheet = 1, skip = 4
 
 #read_file() can't find xls finle extension
 #data <- read_excel(read_file("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762"), sheet = 1, skip = 4)
+
+
+#Try tempfile
+#excelData <- tempfile(fileext = ".xls")
+#download.file(url = "https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls", destfile = excelData)
+
+#df <- read_excel(excelData, sheet = 1, skip = 4)
  
 ```
 
@@ -51,11 +58,9 @@ data <- read_excel("C:\\Users\\Katrlyn\\Downloads\\edu.xls", sheet = 1, skip = 4
 head(data)
 ```
 
-
-
-#data <- read_excel("edu.xls", sheet = 1, skip = 4)
-
-#head(data)
-#head(data)
+```{r}
+dog <- read.csv("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762")
+head(dog)
 ```
+
 
