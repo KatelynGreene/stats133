@@ -1,0 +1,33 @@
+---
+title: "PollutionPerCounty"
+author: ""
+date: ""
+output: 
+  html_document:
+    fig_height: 3
+    fig_width: 5
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing) 
+library(tidyr) 
+library(dplyr)
+library(rvest) 
+library(lubridate)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+#source: https://data.cdc.gov/dataset/Air-Quality-Measures-on-the-National-Environmental/cjae-szjv
+
+poll_county<-read.csv("https://data.cdc.gov/api/views/cjae-szjv/rows.csv?accessType=DOWNLOAD")
+head(poll_county)
+poll_county<-poll_county %>%
+  filter(MeasureType=='Average')%>%
+  group_by(ReportYear)%>%
+  arrange(CountyName)%>%
+  arrange(StateName)
+  
+ 
+```
+
