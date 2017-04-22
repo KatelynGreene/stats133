@@ -1,0 +1,56 @@
+---
+title: "USCountyUrbanForestData"
+author: "Team Senioritis"
+date: "4/21/17"
+output: 
+  html_document:
+    fig_height: 3
+    fig_width: 5
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+library(XML)
+library(RCurl)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
+
+The purpose of this document is to extract urban forest from all the counties in the U.S.
+The original data source is:
+https://www.nrs.fs.fed.us/data/urban/ 
+
+Extracts the links to each county from the main link:
+https://www.nrs.fs.fed.us/data/urban/
+```{r}
+
+URL <- "https://www.nrs.fs.fed.us/data/urban/"
+txt <- getURLContent(URL)
+doc <- htmlParse(txt)
+#link <- doc %>% getNodeSet('//td/ul/li/a/@href')
+
+#Scrape the county name
+stateNames <- xpathSApply(doc, '//ul/li/a/strong', xmlValue)
+#stateNames
+
+stateLinks <- xpathSApply(doc, '//ul[@class="state_list"]/li/a/@href')
+baseURL <- "https://www.nrs.fs.fed.us"
+stateLinks <- paste(baseURL,as.character(stateLinks),sep="")
+stateLinks
+
+#class="state_list" id="state_list"
+#'//div[@id = "map area"]/map[@name="us_states"]/@href'
+#'//div[@class="wage"]',
+```
+
+```{r}
+lego_movie <- html("https://www.nrs.fs.fed.us/data/urban/")
+lego_movie %>% 
+  html_node("strong span") %>%
+  html_text()
+```
+
