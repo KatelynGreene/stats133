@@ -9,13 +9,13 @@ USACountyEduAttainment.Rmd -- Data preprocessing excel file into R containing ed
  * *Source: https://www.ers.usda.gov/data-products/county-level-data-sets/county-level-data-sets-download-data.aspx*
 
 School and County.Rmd -- Downloaded an excel file and then determined which schools belong wo which county in California. 
- * *Source: http://www.cde.ca.gov/ds/si/ds/pubschls.asp *
+ * *Source: http://www.cde.ca.gov/ds/si/ds/pubschls.asp*
  
 ## Environment related files
 
 CACountyEmission.RMD -- Data scraping file of all emission data for all California counties.
   * Might need to make counties without a space: SantaBarbara
-  * *Source: https://www.arb.ca.gov/ei/maps/statemap/cntymap.htm *
+  * *Source: https://www.arb.ca.gov/ei/maps/statemap/cntymap.htm*
 
 ## Economic related files 
 
