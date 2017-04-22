@@ -13,6 +13,7 @@ output:
 library(DataComputing)
 library(XML)
 library(RCurl)
+library(Curl)
 ```
 *Source file* 
 ```{r, results='asis', echo=FALSE}
@@ -40,17 +41,38 @@ stateNames <- xpathSApply(doc, '//ul/li/a/strong', xmlValue)
 stateLinks <- xpathSApply(doc, '//ul[@class="state_list"]/li/a/@href')
 baseURL <- "https://www.nrs.fs.fed.us"
 stateLinks <- paste(baseURL,as.character(stateLinks),sep="")
-stateLinks
+#stateLinks
 
-#class="state_list" id="state_list"
-#'//div[@id = "map area"]/map[@name="us_states"]/@href'
-#'//div[@class="wage"]',
-```
+#for (i in 1:length(stateLinks)){
+for (i in 1:1){ #length(stateLinks)){
+  stateURL<- stateLinks[1]
+  stateTxt <- getURLContent(stateURL)
+  stateDoc <- htmlParse(stateTxt)
+  stateExcel <- xpathSApply(stateDoc, '//ol[@id="data_options"]/li/a/@href')
+  stateExcel <- as.character(stateExcel)
+  length(stateExcel)
+  for (j in 1:length(stateExcel)){
+     if (grepl(".xls", stateExcel[j])){
+      stateExcel <- stateExcel[j]
+      break 
+    }
+  }
+  print(stateExcel)
+}
 
-```{r}
-lego_movie <- html("https://www.nrs.fs.fed.us/data/urban/")
-lego_movie %>% 
-  html_node("strong span") %>%
-  html_text()
+  
+download.file(url=stateExcel,
+              destfile='/Users/anishakumar/Desktop', method  = "curl")
+
+  
+
+#this works '//div[@id="bio"]/p'
+#'//div[@id="bio"]/p/ol[@id = "data_options"]/li/a'
 ```
+for (j in 1:length(stateExcel)){
+    if grepl( "xls$", stateExcel[j]){ 
+      stateExcel <- stateExcel[j]
+      break
+    }
+  }
 
