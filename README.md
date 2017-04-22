@@ -8,3 +8,7 @@ CACountyEmission.RMD -- Data scraping file of all emission data for all Californ
   
 USACountyEduAttainment.Rmd -- Data preprocessing excel file into R containing educational attainment statistics for all US Counties.
  * Local download for preprocessing. Need to pursue URL content download.
+ 
+ School and County.Rmd -- Downloaded an excel file and then determined which schools belong wo which county in California. 
+
+county_income_ca.R -- Data scraping of wikipedia page with income for every county in california
