@@ -1,4 +1,4 @@
-# This is our stats133 Final Project Repo
+# Team Senioritis Final Project Repo (Stats 133)
 
 ## Education related files
 
