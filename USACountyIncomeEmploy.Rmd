@@ -1,0 +1,58 @@
+---
+title: "USACountyIncomeEmploy"
+author: "Team Senioritis"
+date: "4/19/2017"
+output: 
+  html_document:
+    fig_height: 3
+    fig_width: 5
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
+
+
+Reading-in data on educational attainment from 1974-2015. Original source: https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762
+
+Note file had to be downloaded first and then read-in as there appears to be no easy way to directly read-in a xlsx file from a URL.
+
+Ultimately had to download excel file, delete excess info at the top, save as csv, then read.csv()
+```{r}
+library(readxl)
+
+#Works but the issue is that file must be handled locally during preprocessing.
+download.file("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Unemployment.xls?v=42762", destfile = "C:\\Users\\kagex\\Downloads\\income.xls", mode = "wb" )
+
+data <- read_excel("C:\\Users\\kagex\\Downloads\\income.xls", sheet = 1, skip = 7)
+
+
+#"C:\\Users\\kagex\\Downloads\\income.xls"
+```
+
+```{r}
+
+#Note that there is data for: US,  states, AND counties.
+#Should be able to filter by FIPS code to help isolate what we want (those that end in 0 are not counties)
+head(data)
+
+
+data2 <- data %>% mutate(Area_name= gsub(", ..$", "", Area_name), Area_name)
+
+
+head(data2)
+
+```
+
+```{r}
+dog <- read.csv("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762")
+head(dog)
+```
+
+
