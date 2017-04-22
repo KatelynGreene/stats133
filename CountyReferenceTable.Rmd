@@ -1,0 +1,30 @@
+---
+title: "CountyReference"
+author: "Team Senioritis"
+date: ""
+output: 
+  html_document:
+    fig_height: 3
+    fig_width: 5
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
+
+Reading in reference table concerning county information.
+Source: https://www.census.gov/geo/reference/codes/cou.html
+
+```{r}
+#Note: colClasses = "character" helps keep the leading 0s
+df <- read.table("https://www2.census.gov/geo/docs/reference/codes/files/national_county.txt", sep = ",", col.names = c("State", "StateFIPS", "CountyFIPS", "CountyName", "ClassFIPSCode" ), colClasses = "character")
+
+head(df)
+```
+
