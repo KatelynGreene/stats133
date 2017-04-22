@@ -11,7 +11,7 @@ output:
 ```{r include=FALSE}
 # Don't delete this chunk if you are using the DataComputing package
 library(DataComputing) 
-library(tidyr)
+library(tidyr) 
 library(dplyr)
 library(rvest) 
 library(lubridate)
