@@ -10,7 +10,7 @@ output:
 <!-- Don't edit in between this line and the one below -->
 ```{r include=FALSE}
 # Don't delete this chunk if you are using the DataComputing package
-library(DataComputing)
+library(DataComputing) 
 library(XML)
 library(RCurl)
 library(Curl)
