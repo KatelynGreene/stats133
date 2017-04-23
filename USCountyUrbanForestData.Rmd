@@ -43,8 +43,8 @@ baseURL <- "https://www.nrs.fs.fed.us"
 stateLinks <- paste(baseURL,as.character(stateLinks),sep="")
 #stateLinks
 
-#for (i in 1:length(stateLinks)){
-for (i in 1:1){ #length(stateLinks)){
+#only goes into one state right now
+for (i in 1:1){# length(stateLinks)){
   stateURL<- stateLinks[1]
   stateTxt <- getURLContent(stateURL)
   stateDoc <- htmlParse(stateTxt)
@@ -57,10 +57,10 @@ for (i in 1:1){ #length(stateLinks)){
       break 
     }
   }
-  print(stateExcel)
+  print(stateExcel) #stateExcel isn't being stored anywayre
 }
 
-  
+#stateExcel is only one state URL 
 download.file(url=stateExcel,
               destfile='/Users/anishakumar/Desktop', method  = "curl")
 
