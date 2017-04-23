@@ -30,53 +30,51 @@ library(RCurl)
 URL <- "https://www.arb.ca.gov/ei/maps/statemap/cntymap.htm"
 txt <- getURLContent(URL)
 doc <- htmlParse(txt)
-#link <- doc %>% getNodeSet('//td/ul/li/a/@href')
 
 #Scrape the county name
-countyName <- xpathSApply(doc, "//td/ul/li/a", xmlValue)
+countyNames <- xpathSApply(doc, "//td/ul/li/a", xmlValue)
 
 #Clean up stray \n and \t in names
-for(i in 1:length(countyName)){
-  countyName[i] <- gsub("\\n", "", countyName[i])
-  countyName[i] <- gsub("\\t", " ", countyName[i])
+for(i in 1:length(countyNames)){
+  countyNames[i] <- gsub("\\n", "", countyNames[i])
+  countyNames[i] <- gsub("\\t", " ", countyNames[i])
 }
 
 #Scrape the county link
-countyLink <- doc %>% xpathSApply('//td/ul/li/a/@href')
-countyLink <- as.character(countyLink)
+countyLinks <- doc %>% xpathSApply('//td/ul/li/a/@href')
+#class(countyLinks)
+#typeof(countyLinks)
+#countyLinks <- as.character(countyLinks) <-- Not needed, they're already character vectors
 
 #Clean up stray \n in links
-for(i in 1:length(countyLink)){
-  countyLink[i] <- gsub("\\n", "", countyLink[i])
+for(i in 1:length(countyLinks)){
+  countyLinks[i] <- gsub("\\n", "", countyLinks[i])
 }
 
 #dataframe of countyName and countyLink
-df <- as.data.frame(countyName, countyLink)
+AllCounties <- data.frame(countyNames, countyLinks, stringsAsFactors = FALSE)
 
-head(df)
+head(AllCounties)
+
 ```
 
 
-Scrape the csv download handle links from each county's data page. 
+Scrape the csv download links from each county's data page. 
 ```{r}
 
-downloadLinks <- vector(mode="character", length=length(df$countyLink))
+downloadLinks <- vector(mode="character", length=length(AllCounties$countyLinks))
 
-for(i in 1:length(countyLink)){
-  URL <- countyLink[i]
+for(i in 1:length(AllCounties$countyNames)){
+  URL <- AllCounties$countyLinks[i]
 
   txt <- getURLContent(URL)
   doc <- htmlParse(txt)
     
-  downloadLink <- doc %>% xpathSApply('//div[@id="content_area"]/a/@href')
-  
-  df <- as.data.frame(downloadLink)
-  
-  downloadLinks[i] <- as.character(df$downloadLink[1])
+  downloadLinks[i] <- doc %>% xpathSApply('//div[@id="content_area"]/a/@href')
   
 }
 
-downloadLinks
+AllCounties$downloadLinks <- downloadLinks
 
 ```
 
@@ -85,10 +83,19 @@ Load each dataset into R for further processing. Csv files are read-in and assig
 
 ```{r}
 
-for(i in 1:length(countyLink)){
-  myURL <- paste("https://www.arb.ca.gov/app/emsinv/2013/", downloadLinks[i], sep = "")
+class(AllCounties$countyNames[1])
+class(AllCounties$countyLinks[1])
+class(AllCounties$downloadLinks[1])
 
-  assign(countyName[i], read.csv(myURL))
+```
+
+```{r}
+
+for(i in 1:length(AllCounties$countyNames)){
+  print(downloadLinks[i])
+  myURL <- paste("https://www.arb.ca.gov/app/emsinv/2013/", AllCounties$downloadLinks[i], sep = "")
+
+  assign(AllCounties$countyNames[i], read.csv(myURL))
 }
 
 head(Yuba)
