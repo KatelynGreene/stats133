@@ -12,8 +12,8 @@ output:
 # Don't delete this chunk if you are using the DataComputing package
 library(DataComputing) 
 library(XML)
-library(RCurl)
-library(Curl)
+#library(RCurl)
+library(readxl)
 ```
 *Source file* 
 ```{r, results='asis', echo=FALSE}
@@ -25,45 +25,79 @@ The purpose of this document is to extract urban forest from all the counties in
 The original data source is:
 https://www.nrs.fs.fed.us/data/urban/ 
 
-Extracts the links to each county from the main link:
+Extracts the links to each State from the main link:
 https://www.nrs.fs.fed.us/data/urban/
 ```{r}
-
 URL <- "https://www.nrs.fs.fed.us/data/urban/"
 txt <- getURLContent(URL)
 doc <- htmlParse(txt)
-#link <- doc %>% getNodeSet('//td/ul/li/a/@href')
 
 #Scrape the county name
 stateNames <- xpathSApply(doc, '//ul/li/a/strong', xmlValue)
-#stateNames
 
+#****NOTE: Missing Alaska and Hawaii*******
 stateLinks <- xpathSApply(doc, '//ul[@class="state_list"]/li/a/@href')
 baseURL <- "https://www.nrs.fs.fed.us"
 stateLinks <- paste(baseURL,as.character(stateLinks),sep="")
-#stateLinks
 
-#only goes into one state right now
-for (i in 1:1){# length(stateLinks)){
-  stateURL<- stateLinks[1]
+#Data Frame of StateName and stateLink
+AllStates <- data.frame(stateNames, stateLinks, stringsAsFactors = FALSE)
+head(AllStates) 
+```
+
+Extracts the excel file download link for each state
+```{r}
+downloadLinks <- vector(mode="character", length=length(AllStates$stateNames))
+
+for (i in 1:length(stateLinks)){
+  stateURL<- stateLinks[i]
   stateTxt <- getURLContent(stateURL)
   stateDoc <- htmlParse(stateTxt)
-  stateExcel <- xpathSApply(stateDoc, '//ol[@id="data_options"]/li/a/@href')
-  stateExcel <- as.character(stateExcel)
-  length(stateExcel)
-  for (j in 1:length(stateExcel)){
-     if (grepl(".xls", stateExcel[j])){
-      stateExcel <- stateExcel[j]
+  downloadLink <- xpathSApply(stateDoc, '//ol[@id="data_options"]/li/a/@href')
+
+  #The HTML source code is poor so need to use grepl to extract .xls from Xpath results
+  length(downloadLink)
+  for (j in 1:length(downloadLink)){
+     if (grepl(".xls", downloadLink[j])){
+      downloadLinks[i] <- downloadLink[j]
       break 
     }
   }
-  print(stateExcel) #stateExcel isn't being stored anywayre
 }
 
-#stateExcel is only one state URL 
-download.file(url=stateExcel,
-              destfile='/Users/anishakumar/Desktop', method  = "curl")
+AllStates$downloadLinks <- downloadLinks
+ 
+```
 
+
+Download each excel file, load it into R as a dataframe, and assign the data frame to the respective state name.
+NOTE THE DOWNLOAD TIME IS ENORMOUS!!! DON'T RUN THIS ON ALL STATES YET, IT CRASHES EVERYTHING.
+```{r}
+library(readxl)
+for(i in 1:1){ #length(AllStates$stateNames)){
+  destination <- paste("C:\\Users\\Katrlyn\\Downloads\\", AllStates$stateNames[i], ".xls", sep = "")
+  #Works but the issue is that file must be handled locally during preprocessing.
+  download.file(AllStates$downloadLinks[i], destfile = destination, mode = "wb" )
+
+  test <- read_excel(destination, sheet = 10, skip = 3)
+  
+  assign(AllStates$stateNames[i], test)
+  
+}
+```
+
+Accessing the stored tables
+```{r}
+head(Alabama)
+
+#Accessing names:
+#as.name(countyName[1])
+
+```
+
+
+
+#'/Users/anishakumar/Desktop'
   
 
 #this works '//div[@id="bio"]/p'
