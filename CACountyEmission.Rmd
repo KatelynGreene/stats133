@@ -92,7 +92,6 @@ class(AllCounties$downloadLinks[1])
 ```{r}
 
 for(i in 1:length(AllCounties$countyNames)){
-  print(downloadLinks[i])
   myURL <- paste("https://www.arb.ca.gov/app/emsinv/2013/", AllCounties$downloadLinks[i], sep = "")
 
   assign(AllCounties$countyNames[i], read.csv(myURL))
@@ -100,6 +99,8 @@ for(i in 1:length(AllCounties$countyNames)){
 
 head(Yuba)
 
+
+AllCounties$countyNames[1]
 #Accessing names:
 #as.name(countyName[1])
 
