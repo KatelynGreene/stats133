@@ -103,6 +103,7 @@ head(county_map)
 ```{r}
 # Download county shape file.
 #us.map <- tigris::counties(cb = TRUE, year = 2015)
+#Source https://www.census.gov/geo/maps-data/data/tiger.html
 us.map2 <- readOGR(dsn = "C:\\Users\\kagex\\stats133Project\\cb_2016_us_county_500k", layer = "cb_2016_us_county_500k", stringsAsFactors = FALSE)
 names(us.map2)
 summary(us.map2)
