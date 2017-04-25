@@ -65,8 +65,10 @@ county_dat$state <- state.abb[match(county_dat$state,state.name)]
 Map Acquisition and Cleaning
 ```{r}
 # Download county shape file.
-us.map <- tigris::counties(cb = TRUE, year = 2015)
+#us.map <- tigris::counties(cb = TRUE, year = 2015)
+us.map <- readOGR(dsn = "C:\\Users\\kagex\\stats133Project\\tl_2016_us_county", layer = "tl_2016_us_county", stringsAsFactors = FALSE)
 names(us.map)
+summary(us.map)
 
 # Remove Alaska(2), Hawaii(15), Puerto Rico (72), Guam (66), Virgin Islands (78), American Samoa (60)
 #  Mariana Islands (69), Micronesia (64), Marshall Islands (68), Palau (70), Minor Islands (74)
@@ -95,6 +97,8 @@ head(county_map)
 ```
 
 Plot
+https://www.census.gov/cgi-bin/geo/shapefiles/index.php?year=2016&layergroup=Counties+%28and+equivalent%29
+
 ```{r}
 library(mapproj)
 ggplot() +
