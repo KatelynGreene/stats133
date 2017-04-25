@@ -1,0 +1,131 @@
+---
+title: "Untitled"
+author: ""
+date: ""
+output: 
+  html_document:
+    fig_height: 3
+    fig_width: 5
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
+
+```{r}
+head(dat)
+```
+
+
+Delete this sentence and start entering your text here.
+```{r}
+library(sp)
+library(ggplot2)
+library(rgeos)
+library(rgdal)
+library(maptools)
+library(tigris)
+```
+```{r}
+### Begin data prep
+# Grab air/water quality data from the EPA
+url = "https://data.cdc.gov/api/views/cjae-szjv/rows.csv?accessType=DOWNLOAD"
+dat <- read.csv(url, stringsAsFactors = FALSE)
+```
+
+```{r}
+# Colnames tolower
+names(dat) <- tolower(names(dat))
+names(dat)
+dat$countyname <- tolower(dat$countyname)
+# Wide data set, subset only what we need.
+county_dat <- subset(dat, measureid == "296", 
+                 select = c("countyfips","reportyear", "statename", "countyname", "value", "unitname"))
+names(county_dat)
+
+county_dat <- subset(county_dat, reportyear == 2011, select = c("countyfips","statename", "countyname", "value", "unitname"))
+# Rename columns to make for a clean df merge later.
+colnames(county_dat) <- c("fips", "state", "county_name", "value", "unitname")
+# Have to add leading zeos to any FIPS code that's less than 5 digits long to get a good match.
+# I'm cheating by using C code. sprintf will work as well.
+county_dat$fips <- formatC(county_dat$fips, width = 5, format = "d", flag = "0")
+# Convert full state names to abbreviations for a clean df merge later.
+county_dat$state <- state.abb[match(county_dat$state,state.name)]
+### End data prep
+
+# Download county shape file.
+us.map <- tigris::counties(cb = TRUE, year = 2015)
+
+# Remove Alaska(2), Hawaii(15), Puerto Rico (72), Guam (66), Virgin Islands (78), American Samoa (60)
+#  Mariana Islands (69), Micronesia (64), Marshall Islands (68), Palau (70), Minor Islands (74)
+us.map <- us.map[!us.map$STATEFP %in% c("02", "15", "72", "66", "78", "60", "69",
+                                        "64", "68", "70", "74"),]
+# Make sure other outling islands are removed.
+us.map <- us.map[!us.map$STATEFP %in% c("81", "84", "86", "87", "89", "71", "76",
+                                        "95", "79"),]
+# Projuce map
+county_map <- ggplot2::fortify(us.map, region="GEOID")
+
+head(county_map)
+
+library(dplyr)
+county_map <- left_join(county_map, county_dat, by = c("id" = "fips"))
+
+head(county_map)
+```
+
+Plot
+```{r}
+ggplot() +
+    geom_map(data=county_map, map=county_map,
+             aes(x=long, y=lat, map_id=id, group=group, fill = value),
+             color="black", size=0.15) +
+    #geom_polygon(color = "black")+
+    scale_fill_gradientn(colors = c("green", "red"))  +
+    #coord_map(“polyconic”) +
+    labs(title="Air Quality") + 
+    theme_bw() +
+    theme(axis.line=element_blank(),
+          axis.text.x=element_blank(),
+          axis.text.y=element_blank(),
+          axis.ticks=element_blank(),
+          axis.title.x=element_blank(),
+          axis.title.y=element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_blank(),
+          panel.background = element_blank(),
+          legend.title=element_blank())
+```
+
+
+
+ggplot2::ggplot() +
+    geom_map(data=county_map, map=county_map,
+             aes(x=long, y=lat, map_id=id, group=group),
+             fill="#ffffff", color="#0e0e0e", size=0.15) +
+    geom_map(data=county_dat, map=county_map, aes_string(map_id="fips", fill=county_dat$value),
+             color="#0e0e0e", size=0.15) +
+    scale_fill_gradientn(colors = c("green", "red"))  +
+    #coord_map(“polyconic”) +
+    labs(title="Air Quality") + 
+    theme_bw() +
+    theme(axis.line=element_blank(),
+          axis.text.x=element_blank(),
+          axis.text.y=element_blank(),
+          axis.ticks=element_blank(),
+          axis.title.x=element_blank(),
+          axis.title.y=element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_blank(),
+          panel.background = element_blank(),
+          legend.title=element_blank())
+
+```
