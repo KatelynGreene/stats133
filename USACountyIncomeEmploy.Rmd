@@ -23,36 +23,50 @@ Reading-in data on educational attainment from 1974-2015. Original source: https
 
 Note file had to be downloaded first and then read-in as there appears to be no easy way to directly read-in a xlsx file from a URL.
 
-Ultimately had to download excel file, delete excess info at the top, save as csv, then read.csv()
+1) Obtaining Data
+Ultimately had to download excel file, delete excess rows at the top, save as csv, then read.csv()
 ```{r}
 library(readxl)
 
-#Works but the issue is that file must be handled locally during preprocessing.
-download.file("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Unemployment.xls?v=42762", destfile = "C:\\Users\\kagex\\Downloads\\income.xls", mode = "wb" )
+download.file("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Unemployment.xls?v=42762", destfile = "C:\\Users\\Katrlyn\\Downloads\\income.xls", mode = "wb" )
 
-data <- read_excel("C:\\Users\\kagex\\Downloads\\income.xls", sheet = 1, skip = 7)
+#Irrelevant description rows are omitted by starting the read at row 8 (skip =7).
+data <- read_excel("C:\\Users\\Katrlyn\\Downloads\\income.xls", sheet = 1, skip = 7)
 
-
+#Paths for other computers in Team Senioritis.
 #"C:\\Users\\kagex\\Downloads\\income.xls"
+#"C:\\Users\\Katrlyn\\Downloads\\income.xls"
 ```
 
+2) Data Cleaning
 ```{r}
-
 #Note that there is data for: US,  states, AND counties.
 #Should be able to filter by FIPS code to help isolate what we want (those that end in 0 are not counties)
 head(data)
 
+#Eliminate punctuation
+data_clean <- data %>% mutate(Area_name= gsub(", ..$", "", Area_name), Area_name)
 
-data2 <- data %>% mutate(Area_name= gsub(", ..$", "", Area_name), Area_name)
-
-
-head(data2)
+head(data_clean)
 
 ```
 
+Extract the relevant variables
 ```{r}
-dog <- read.csv("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762")
-head(dog)
+#Support loop to see the index of the variable names
+for(i in 1:length(names(data_clean))){
+  print(i)
+  print(names(data_clean[i]))
+}
+
+#Subset the data table
+subset_vars <- c(1:7,44,45)
+data_subset <- data_clean[subset_vars]
+head(data_subset)
 ```
+
+
+
+
 
 
