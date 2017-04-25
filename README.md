@@ -14,6 +14,16 @@
 **CACountyEmission.RMD** -- Data scraping file of all emission data for all California counties.
   * Might need to make counties without a space: SantaBarbara
   * *Source: https://www.arb.ca.gov/ei/maps/statemap/cntymap.htm*
+  
+**PollutionPerCounty.Rmd** -- Air quality for all US counties
+ * *Source: https://data.cdc.gov/dataset/Air-Quality-Measures-on-the-National-Environmental/cjae-szjv*
+
+**USCountyUrbanForestData.Rmd** --Data scraping tables describing the tree canopy cover and available green space for each county in each state. 
+  * *Source: https://www.nrs.fs.fed.us/data/urban/*
+  * Tables do not read-in correctly due to merged cells
+  * Need to Decide which sheets we want
+  * Alaska and Hawaii are not included
+  * Will need to correlate back to an all county reference table to see which counties are missing data
 
 ## Economic related files 
 
