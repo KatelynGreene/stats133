@@ -65,11 +65,51 @@ county_dat$state <- state.abb[match(county_dat$state,state.name)]
 Map Acquisition and Cleaning
 ```{r}
 # Download county shape file.
-#us.map <- tigris::counties(cb = TRUE, year = 2015)
-us.map <- readOGR(dsn = "C:\\Users\\kagex\\stats133Project\\tl_2016_us_county", layer = "tl_2016_us_county", stringsAsFactors = FALSE)
+us.map <- tigris::counties(cb = TRUE, year = 2015)
+#us.map <- readOGR(dsn = "C:\\Users\\kagex\\stats133Project\\tl_2016_us_county", layer = "tl_2016_us_county", stringsAsFactors = FALSE)
 names(us.map)
 summary(us.map)
+View(us.map)
 
+```
+```{r}
+
+# Remove Alaska(2), Hawaii(15), Puerto Rico (72), Guam (66), Virgin Islands (78), American Samoa (60)
+#  Mariana Islands (69), Micronesia (64), Marshall Islands (68), Palau (70), Minor Islands (74)
+us.map <- us.map[!us.map$STATEFP %in% c("02", "15", "72", "66", "78", "60", "69",
+                                        "64", "68", "70", "74"),]
+# Make sure other outling islands are removed.
+us.map <- us.map[!us.map$STATEFP %in% c("81", "84", "86", "87", "89", "71", "76",
+                                        "95", "79"),]
+
+dog <- as.data.frame(us.map)
+head(dog)
+
+# Projuce map
+#county_map <- ggplot2::fortify(us.map, region="GEOID")
+library(broom)
+county_map <- tidy(us.map, region="GEOID")
+
+
+head(county_map)
+
+
+library(dplyr)
+county_map <- left_join(county_map, county_dat, by = c("id" = "fips"))
+
+head(county_map)
+```
+
+```{r}
+# Download county shape file.
+#us.map <- tigris::counties(cb = TRUE, year = 2015)
+us.map2 <- readOGR(dsn = "C:\\Users\\kagex\\stats133Project\\cb_2016_us_county_500k", layer = "cb_2016_us_county_500k", stringsAsFactors = FALSE)
+names(us.map2)
+summary(us.map2)
+View(us.map2)
+
+```
+```{r}
 # Remove Alaska(2), Hawaii(15), Puerto Rico (72), Guam (66), Virgin Islands (78), American Samoa (60)
 #  Mariana Islands (69), Micronesia (64), Marshall Islands (68), Palau (70), Minor Islands (74)
 us.map <- us.map[!us.map$STATEFP %in% c("02", "15", "72", "66", "78", "60", "69",
