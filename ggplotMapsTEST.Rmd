@@ -83,10 +83,8 @@ head(county_map)
 Plot
 ```{r}
 ggplot() +
-    geom_map(data=county_map, map=county_map,
-             aes(x=long, y=lat, map_id=id, group=group, fill = value),
-             color="black", size=0.15) +
-    #geom_polygon(color = "black")+
+    geom_polygon(data=county_map, aes(x=long, y=lat, map_id=id, group=group, fill = value), color="black", size=0.25) +
+
     scale_fill_gradientn(colors = c("green", "red"))  +
     #coord_map(“polyconic”) +
     labs(title="Air Quality") + 
