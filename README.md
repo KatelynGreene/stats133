@@ -24,6 +24,13 @@
   * Need to Decide which sheets we want
   * Alaska and Hawaii are not included
   * Will need to correlate back to an all county reference table to see which counties are missing data
+  
+  Sheet 7:
+  -Tree canopy (m^2/person)
+  -Available green space
+  Sheet 10:
+  -Tree canopy cover (for developped section)
+  
 
 ## Economic related files 
 
