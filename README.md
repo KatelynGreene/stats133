@@ -17,6 +17,14 @@
   
 **PollutionPerCounty.Rmd** -- Air quality for all US counties
  * *Source: https://data.cdc.gov/dataset/Air-Quality-Measures-on-the-National-Environmental/cjae-szjv*
+ 
+ TO-DO:
+ ##Data Cleaning:##
+ * check the year of the list of all counties 
+ * Be aware of the Shannon --> Oolga dakota county in 2015
+ * See https://www.census.gov/geo/reference/county-changes.html
+ * Also: https://www.census.gov/geo/reference/codes/cou.html is the most recent list of FIPS codes (but it's weirdly from 2010)
+ 
 
 **USCountyUrbanForestData.Rmd** --Data scraping tables describing the tree canopy cover and available green space for each county in each state. 
   * *Source: https://www.nrs.fs.fed.us/data/urban/*
