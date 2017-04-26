@@ -31,6 +31,7 @@ library(rgeos)
 library(rgdal)
 library(maptools)
 library(tigris)
+library(broom)
 ```
 ```{r}
 ### Begin data prep
@@ -89,6 +90,9 @@ head(dog)
 #county_map <- ggplot2::fortify(us.map, region="GEOID")
 library(broom)
 county_map <- tidy(us.map, region="GEOID")
+
+##in case this throws an error that says isTRUE(gpclibPermitStatus()) is not TRUE, install "gpclib"
+## http://stackoverflow.com/questions/21093399/how-to-turn-gpclibpermit-to-true
 
 
 head(county_map)
