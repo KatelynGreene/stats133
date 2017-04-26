@@ -39,17 +39,17 @@
 
 **USCountyUrbanForestData.Rmd** --Data scraping tables describing the tree canopy cover and available green space for each county in each state. 
   * *Source: https://www.nrs.fs.fed.us/data/urban/*
-  * Tables do not read-in correctly due to merged cells
-  * Need to Decide which sheets we want
+  * ~~Tables do not read-in correctly due to merged cells~~
+  * ~~Need to Decide which sheets we want~~
   * Alaska and Hawaii are not included
   * Will need to correlate back to an all county reference table to see which counties are missing data
   
   **TO-DO:** (Katelyn/Vanessa(if time))
   ---
   **Downloading data**
-  * download state zip files to temp folders using for loop
-  * Unzip folder and get xls and assign to temp file
-  * Read as a dataframe (Arbitrary name)
+  * ~~download state zip files to temp folders using for loop~~
+  * ~~Unzip folder and get xls and assign to temp file~~
+  * ~~Read as a dataframe (Arbitrary name)~~
   * This dataset only uses county names, need to map them to FIPS codes
   * left_join each dataframe to one base data frame of FIPS codes
   
