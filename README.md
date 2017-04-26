@@ -4,6 +4,7 @@
 
 **USACountyEduAttainment.Rmd** -- Data preprocessing excel file into R containing educational attainment statistics for all US Counties.
  * Local download for preprocessing. Need to pursue URL content download.
+ * We can also do visualization of rural codes
  * *Source: https://www.ers.usda.gov/data-products/county-level-data-sets/county-level-data-sets-download-data.aspx*
  
  To-do:
