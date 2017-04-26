@@ -232,10 +232,11 @@ leafmap <- merge(us.map, county_dat, by=c("GEOID"))
 # I HAVE NO IDEA HOW THINGS WORK BELOW THIS POINT 
 
 # Format popup data for leaflet map.
-popup_dat <- paste0("<strong>County: </strong>", 
-                    leafmap$NAME, 
-                    "<br><strong>Value: </strong>", 
-                    leafmap$airqlty)
+popup_dat <- paste0(sep = "<br/>",
+  "<b><strong>County: </strong>", 
+  leafmap$NAME, 
+  "<br><strong>Value: </strong>", 
+  leafmap$airqlty)
 
 pal <- colorQuantile("YlOrRd", NULL, n = 9)
 # Render final map in leaflet.
