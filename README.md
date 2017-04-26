@@ -68,7 +68,7 @@
  * *Source: https://www.ers.usda.gov/data-products/county-level-data-sets/county-level-data-sets-download-data.aspx*
  
  **To-do**
- ** Data-cleaning ***
+ **Data-cleaning ***
  * select varibales
  * checking FIPS codes for county changes
 
