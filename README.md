@@ -82,3 +82,4 @@
  * zip file capablity
 
 **Plotting in leaflet** (Katelyn)
+ * Add list of best spatial visualization tutorials on google gocs (DONE)
