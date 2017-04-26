@@ -27,7 +27,18 @@ poll_county<-poll_county %>%
   group_by(ReportYear)%>%
   arrange(CountyName)%>%
   arrange(StateName)
-  
- 
+
+
+every_us_county <- 
+  "https://en.wikipedia.org/wiki/List_of_United_States_counties_and_county_equivalents" %>%
+  read_html() %>%
+  html_nodes(xpath = '//*[@id="mw-content-text"]/table') %>%
+  html_table(fill=TRUE)
+every_us_county<-every_us_county[[2]]
+names(every_us_county)[names(every_us_county) == 'INCITS'] <- 'CountyFips'
+head(every_us_county)
+
+poll_county_compl<-poll_county %>%  
+  full_join(every_us_county, by="CountyFips")
 ```
 
