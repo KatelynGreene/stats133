@@ -12,7 +12,7 @@ output:
 # Don't delete this chunk if you are using the DataComputing package
 library(DataComputing) 
 library(XML)
-#library(RCurl)
+library(RCurl)
 library(readxl)
 ```
 *Source file* 
@@ -66,6 +66,8 @@ for (i in 1:length(stateLinks)){
 }
 
 AllStates$downloadLinks <- downloadLinks
+
+AllStates$downloadLinks
  
 ```
 
