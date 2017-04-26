@@ -83,6 +83,25 @@ Downloading and loading Excel files (Method 1: Using Tempfiles)
   
 ```
 
+Function that returns a dataframe with the FIPS info 
+```{r}
+#Note: colClasses = "character" helps keep the leading 0s
+#http://stackoverflow.com/questions/17414776/read-csv-warning-eof-within-quoted-string-prevents-complete-reading-of-file
+df <- read.table("https://www2.census.gov/geo/docs/reference/codes/files/national_county.txt", sep = ",", col.names = c("State", "StateFIPS", "CountyFIPS", "CountyName", "ClassFIPSCode" ), colClasses = "character", quote = "")
+
+#Shannon County (46-113) change to Oglala Lakota County (46-102) (Effective 2015)
+df2 <- data.frame(State = "SD", StateFIPS = "46", CountyFIPS = "102", CountyName = "Oglala Lakota County", ClassFIPSCode = "H1")
+df <- rbind(df, df2)
+
+#Merge state and county into one FIPS code
+FIPS_base <- df %>% mutate(FIPS = paste(StateFIPS, CountyFIPS, sep = ""))
+head(FIPS_base)
+
+#Minimal dataframe to facilitate joins
+FIPS_base_compact <- FIPS_base %>% select(c(State, CountyName, FIPS))
+```
+
+
 ```{r}
   
   #Read-in relevant sheets (7 and 10)
@@ -91,31 +110,27 @@ Downloading and loading Excel files (Method 1: Using Tempfiles)
   
   #Clean and select relevant variables
   
-  #head(xl_7)
   xl_7 <- xl_7 %>% select(c(`X__1`, `m2/person__1`, `Available green space (ha)`))
   #Units: Tree canopy Covering (m2/person), Available green space (ha)
   colnames(xl_7) <- c("CountyName","TreeCanopy", "AvailGreenSpace")
   
-  #summary(xl_7)
-  head(xl_7)
-  
   xl_10 <- xl_10 %>% select(c(`X__1`, `Tree % h`))
   #Tree canopy cover in developped regions (%)
   colnames(xl_10) <- c("CountyName", "TreeCanopyCover")
-  #head(xl_10)
   
   #Exclude the variable descriptions at the end of the sheet
   xl_10 <- na.omit(xl_10)
-  head(xl_10)
-  #summary(xl_10)
   
-  #Join the two sheets
+  #Join the two excel sheets to create one datframe of county data
   joined <- full_join(xl_7, xl_10, by = "CountyName")
-  View(joined)
-  
+  #get ride of statewide summary row
   joined_clean <- joined %>% subset(CountyName != "Statewide")
   
-  View(joined_clean)
+
+  #Add FIPS codes
+  stateAbbrev <- state.abb[match(AllStates$stateNames[1],state.name)]
+  
+  
   #unlink(tmp)
 #}
 
