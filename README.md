@@ -25,11 +25,19 @@
   * Alaska and Hawaii are not included
   * Will need to correlate back to an all county reference table to see which counties are missing data
   
+  TO-DO:
+  **Downloading data**
+  * download state zip files to temp folders using for loop
+  * Unzip folder and get xls and assign to temp file
+  * Read as a dataframe (Arbitrary name)
+  * left_join each dataframe to one base data frame of FIPS codes
+  
+  **Clean data:**
   Sheet 7:
-  -Tree canopy (m^2/person)
-  -Available green space
-  Sheet 10:
-  -Tree canopy cover (for developped section)
+  * Tree canopy (m^2/person)
+   * Available green space
+  * Sheet 10:
+   * Tree canopy cover (for developped section)
   
 
 ## Economic related files 
