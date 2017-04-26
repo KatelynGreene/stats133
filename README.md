@@ -7,7 +7,9 @@
  * We can also do visualization of rural codes
  * *Source: https://www.ers.usda.gov/data-products/county-level-data-sets/county-level-data-sets-download-data.aspx*
  
- To-do:
+
+ **To-do:**
+ ---
  **Data Cleaning** (Vanessa)
  * Need to select appropriate variables
  * Check FIPS codes for county cleaning (Oogla vs Shannon County) (add leading zeros)
@@ -25,7 +27,7 @@
  * *Source: https://data.cdc.gov/dataset/Air-Quality-Measures-on-the-National-Environmental/cjae-szjv*
  
  **TO-DO:  (Vanessa)**
-
+ ---
  **Data Cleaning:**
  
  * check the year of the list of all counties 
@@ -43,15 +45,17 @@
   * Will need to correlate back to an all county reference table to see which counties are missing data
   
   **TO-DO:** (Katelyn/Vanessa(if time))
+  ---
   **Downloading data**
   * download state zip files to temp folders using for loop
   * Unzip folder and get xls and assign to temp file
   * Read as a dataframe (Arbitrary name)
+  * This dataset only uses county names, need to map them to FIPS codes
   * left_join each dataframe to one base data frame of FIPS codes
   
   **Clean data:**
-  Sheet 7:
-  * Tree canopy (m^2/person)
+  * Sheet 7:
+   * Tree canopy (m^2/person)
    * Available green space
   * Sheet 10:
    * Tree canopy cover (for developped section)
@@ -69,6 +73,7 @@
  * *Source: https://www.ers.usda.gov/data-products/county-level-data-sets/county-level-data-sets-download-data.aspx*
  
  **To-do**
+ ---
  **Data-cleaning ***
  * select varibales
  * checking FIPS codes for county changes
