@@ -7,7 +7,7 @@
  * *Source: https://www.ers.usda.gov/data-products/county-level-data-sets/county-level-data-sets-download-data.aspx*
  
  To-do:
- ** Data Cleaning** (Vanessa)
+ **Data Cleaning** (Vanessa)
  * Need to select appropriate variables
  * Check FIPS codes for county cleaning (Oogla vs Shannon County) (add leading zeros)
 
@@ -23,8 +23,10 @@
 **PollutionPerCounty.Rmd** -- Air quality for all US counties
  * *Source: https://data.cdc.gov/dataset/Air-Quality-Measures-on-the-National-Environmental/cjae-szjv*
  
- TO-DO:  (Vanessa)
- ##Data Cleaning:##
+ **TO-DO:  (Vanessa)**
+
+ **Data Cleaning:**
+ 
  * check the year of the list of all counties 
  * Be aware of the Shannon --> Oolga dakota county in 2015
  * See https://www.census.gov/geo/reference/county-changes.html
@@ -65,7 +67,7 @@
 **USACountyIncomeEmploy.RMD** -- Data Scraping of county-level income and employment data
  * *Source: https://www.ers.usda.gov/data-products/county-level-data-sets/county-level-data-sets-download-data.aspx*
  
- To-do
+ **To-do**
  ** Data-cleaning ***
  * select varibales
  * checking FIPS codes for county changes
