@@ -23,6 +23,7 @@ Source: https://www.census.gov/geo/reference/codes/cou.html
 
 ```{r}
 #Note: colClasses = "character" helps keep the leading 0s
+#http://stackoverflow.com/questions/17414776/read-csv-warning-eof-within-quoted-string-prevents-complete-reading-of-file
 df <- read.table("https://www2.census.gov/geo/docs/reference/codes/files/national_county.txt", sep = ",", col.names = c("State", "StateFIPS", "CountyFIPS", "CountyName", "ClassFIPSCode" ), colClasses = "character", quote = "")
 
 #summary(df)
@@ -33,15 +34,15 @@ df <- rbind(df, df2)
 
 
 #Merge state and county into one FIPS code
-df <- df %>% mutate(FIPS = paste(StateFIPS, CountyFIPS, sep = ""))
+FIPS_base <- df %>% mutate(FIPS = paste(StateFIPS, CountyFIPS, sep = ""))
 
 #summary(df4)
 #View(df4)
 
 #Minimal dataframe to facilitate joins
-df_compact <- df %>% select(c(CountyName, FIPS))
+FIPS_base_compact <- FIPS_base %>% select(c(CountyName, FIPS))
 
-head(df_compact)
+head(FIPS_base_compact)
 
 ```
 
