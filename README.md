@@ -9,7 +9,7 @@
 **School and County.Rmd** -- Downloaded an excel file and then determined which schools belong wo which county in California. 
  * *Source: http://www.cde.ca.gov/ds/si/ds/pubschls.asp*
  
-## Environment related files
+## Environment related files 
 
 **CACountyEmission.RMD** -- Data scraping file of all emission data for all California counties.
   * Might need to make counties without a space: SantaBarbara
