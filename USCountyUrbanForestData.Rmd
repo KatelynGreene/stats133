@@ -99,7 +99,7 @@ FIPS_fun <- function(state = NA){
   
   #return FIPS codes of the state passed in
   if(!is.na(state)){
-    df <- FIPS_base %>% subset(State == state) %>% select(CountyName, FIPS)
+    df <- FIPS_base %>% subset(State == state) %>% select(State, CountyName, FIPS)
     return(df)
   }else{return(FIPS_base)}
   
@@ -121,6 +121,9 @@ extractStateData <- function(tmp, stateAbbrev){
   
   #Known Bug: DC messes lots of things up due to sheet differences, naming, etc.
   # Solution: various fixes changing DC to District of Columbia and reading sheet 5 & 8 instead. Start at line 4 in sheet 8 because of the random space
+  
+  # tmp = "C:\\Users\\Katrlyn\\stats133Project\\AllStates\\Louisiana.xls"
+  # stateAbbrev = "LA"
   
   if(stateAbbrev == "DC"){
     xl_7 <- read_excel(tmp, sheet = "5", skip = 3)
@@ -147,16 +150,22 @@ extractStateData <- function(tmp, stateAbbrev){
   joined <- full_join(xl_7, xl_10, by = "CountyName")
   #get ride of statewide summary row
   joined_clean <- joined %>% subset(CountyName != "Statewide")
+  #Add column of state Abbreviations to assist debugging later
+  joined_clean$StateAbb <- rep(stateAbbrev, times = length(joined_clean$CountyName))
   
 
   #Add FIPS codes
   #Moved to main code to prevent looping error
   #stateAbbrev <- state.abb[match(AllStates$stateNames[1],state.name)]
   
+  #Corrections:
+  
   #Fix Washington DC Error. Must be called District of Columbia to find FIPS code
   if(stateAbbrev == "DC"){
     joined_clean[1, "CountyName"] <- "District of Columbia"
-  }
+  } #else if(stateAbbrev == "LA"){
+  #   joined_clean[28,"CountyName"] <- "LaSalle Parish"
+  # }
   
   FIPS_base <- FIPS_fun(state = stateAbbrev)
   
