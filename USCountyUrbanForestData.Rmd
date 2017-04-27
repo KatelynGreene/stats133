@@ -95,6 +95,11 @@ FIPS_fun <- function(state = NA){
   
   #Merge state and county into one FIPS code
   FIPS_base <- df %>% mutate(FIPS = paste(StateFIPS, CountyFIPS, sep = ""))
+  
+  #Delete Shannon County
+  FIPS_base <- FIPS_base %>% filter(FIPS != "46113")
+  
+  
   #iew(FIPS_base)
   
   #return FIPS codes of the state passed in
@@ -122,8 +127,8 @@ extractStateData <- function(tmp, stateAbbrev){
   #Known Bug: DC messes lots of things up due to sheet differences, naming, etc.
   # Solution: various fixes changing DC to District of Columbia and reading sheet 5 & 8 instead. Start at line 4 in sheet 8 because of the random space
   
-  # tmp = "C:\\Users\\Katrlyn\\stats133Project\\AllStates\\Louisiana.xls"
-  # stateAbbrev = "LA"
+  #tmp = "C:\\Users\\kagex\\stats133Project\\AllStates\\Illinois.xls"
+  #stateAbbrev = "IL"
   
   if(stateAbbrev == "DC"){
     xl_7 <- read_excel(tmp, sheet = "5", skip = 3)
@@ -160,12 +165,21 @@ extractStateData <- function(tmp, stateAbbrev){
   
   #Corrections:
   
-  #Fix Washington DC Error. Must be called District of Columbia to find FIPS code
+  
+  # Washington DC must be called District of Columbia to find FIPS code
+  # La Salle county in IL changed to LaSalle County in 2001 
+  # Clifton Forge city is no longer a county as of 2001
   if(stateAbbrev == "DC"){
-    joined_clean[1, "CountyName"] <- "District of Columbia"
-  } #else if(stateAbbrev == "LA"){
-  #   joined_clean[28,"CountyName"] <- "LaSalle Parish"
-  # }
+    #joined_clean[1, "CountyName"] <- "District of Columbia"
+    joined_clean$CountyName[joined_clean$CountyName == "Washington, D.C."] <- "District of Columbia"
+  }else if(stateAbbrev == "IL"){
+    #joined_clean[49,"CountyName"] <- "LaSalle County"
+    joined_clean$CountyName[joined_clean$CountyName == "La Salle County"] <- "LaSalle County"
+  }else if(stateAbbrev == "VA"){
+    joined_clean <- joined_clean %>% filter(CountyName != "Clifton Forge city")
+  }else if(stateAbbrev == "SD"){
+    joined_clean$CountyName[joined_clean$CountyName == "Shannon County"] <- "Oglala Lakota County"
+  }
   
   FIPS_base <- FIPS_fun(state = stateAbbrev)
   
@@ -193,24 +207,7 @@ for(i in 1:1){ #:length(AllStates$downloadLinks)){
   tmp <- tempfile(fileext=".xls")
   download.file(url,destfile=tmp, mode="wb")
   
-  stateAbbrev <- state.abb[match(AllStates$stateNames[31],state.name)]
-  state_df <- extractStateData(tmp, stateAbbrev)
-  
-  if(i == 1){
-    df_base <- state_df
-    #View(df_base)
-  }else if( i == 2){
-    df_full <- rbind(df_base, state_df)
-    #View(df_full)
-  }else{
-    df_full <- rbind(df_full, state_df)
-    #View(df_full)
-  }
-  unlink(tmp)
-  
-}
-
-View(df_full)
+CODE WILL BE UPDATED HERE SOON
 
 
 ```
@@ -244,7 +241,7 @@ Main code (assuming you downloaded all the files)
 
 for(i in 1:length(AllStates$downloadLinks)){
   print(AllStates$stateNames[i])
-  print(AllStates$fileLocations[i])
+  #print(AllStates$fileLocations[i])
   if(AllStates$stateNames[i] == "District of Columbia"){
     stateAbbrev <- "DC"
   }else{
@@ -277,7 +274,7 @@ df
 ```
 
 
-!!!!!!!!DO NOT USE THE BELOW CODE:!!!!!!!!!!!!!!11
+!!!!!!!!DO NOT USE THE BELOW CODE:!!!!!!!!!!!!!!
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Downloading and loading Excel files (Method 2: Lots of local files) 
