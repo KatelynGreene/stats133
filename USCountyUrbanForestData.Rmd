@@ -71,42 +71,55 @@ AllStates$downloadLinks
  
 ```
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Downloading and loading Excel files (Method 1: Using Tempfiles)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+All the support functions:
+
+Function that returns a dataframe with the base FIPS info from the 2010 census (with Oglala update maybe)
 ```{r}
-#for(i in 1:1){ #length(AllStates$downloadLinks)){
-  #Download xls file
-  url <- AllStates$downloadLinks[1]
-  tmp <- tempfile(fileext=".xls")
-  download.file(url,destfile=tmp, mode="wb")
+
+FIPS_fun <- function(state = NA){
+  #Note: colClasses = "character" helps keep the leading 0s
+  #http://stackoverflow.com/questions/17414776/read-csv-warning-eof-within-quoted-string-prevents-complete-reading-of-file
+  df <- read.table("https://www2.census.gov/geo/docs/reference/codes/files/national_county.txt", sep = ",", col.names = c("State", "StateFIPS", "CountyFIPS", "CountyName", "ClassFIPSCode" ), colClasses = "character", quote = "")
   
+  #Shannon County (46-113) change to Oglala Lakota County (46-102) (Effective 2015)
+  df2 <- data.frame(State = "SD", StateFIPS = "46", CountyFIPS = "102", CountyName = "Oglala Lakota County", ClassFIPSCode = "H1")
+  df <- rbind(df, df2)
+  
+  #Merge state and county into one FIPS code
+  FIPS_base <- df %>% mutate(FIPS = paste(StateFIPS, CountyFIPS, sep = ""))
+  View(FIPS_base)
+  
+  #return FIPS codes of the state passed in
+  if(!is.na(state)){
+    df <- FIPS_base %>% subset(State == state) %>% select(CountyName, FIPS)
+    return(df)
+  }else{return(FIPS_base)}
+  
+  #Minimal dataframe to facilitate joins
+  #FIPS_base_compact <- FIPS_base %>% select(c(State, CountyName, FIPS))
+}
+
 ```
 
-Function that returns a dataframe with the FIPS info 
-```{r}
-#Note: colClasses = "character" helps keep the leading 0s
-#http://stackoverflow.com/questions/17414776/read-csv-warning-eof-within-quoted-string-prevents-complete-reading-of-file
-df <- read.table("https://www2.census.gov/geo/docs/reference/codes/files/national_county.txt", sep = ",", col.names = c("State", "StateFIPS", "CountyFIPS", "CountyName", "ClassFIPSCode" ), colClasses = "character", quote = "")
 
-#Shannon County (46-113) change to Oglala Lakota County (46-102) (Effective 2015)
-df2 <- data.frame(State = "SD", StateFIPS = "46", CountyFIPS = "102", CountyName = "Oglala Lakota County", ClassFIPSCode = "H1")
-df <- rbind(df, df2)
-
-#Merge state and county into one FIPS code
-FIPS_base <- df %>% mutate(FIPS = paste(StateFIPS, CountyFIPS, sep = ""))
-head(FIPS_base)
-
-#Minimal dataframe to facilitate joins
-FIPS_base_compact <- FIPS_base %>% select(c(State, CountyName, FIPS))
-```
-
+Function that extracts data from an excel file relating to the Tree canopy Covering (m2/person), Available green space (ha), and Tree canopy cover in developped regions (%) for each county in the state. This data, along with the County name and the FIPS code is returned as a data frame.
 
 ```{r}
+extractStateData <- function(tmp, stateAbbrev){
   
-  #Read-in relevant sheets (7 and 10)
+  #---------debugging extractState function---------------
+  
+    #Read-in relevant sheets (7 and 10)
   xl_7 <- read_excel(tmp, sheet = 7, skip = 3)
   xl_10 <- read_excel(tmp, sheet = 10, skip = 3)
+  
+  #head(xl_7)
+  #head(xl_10)
   
   #Clean and select relevant variables
   
@@ -128,22 +141,58 @@ FIPS_base_compact <- FIPS_base %>% select(c(State, CountyName, FIPS))
   
 
   #Add FIPS codes
-  stateAbbrev <- state.abb[match(AllStates$stateNames[1],state.name)]
+  #Moved to main code to prevent looping error
+  #stateAbbrev <- state.abb[match(AllStates$stateNames[1],state.name)]
   
+  FIPS_base <- FIPS_fun(state = stateAbbrev)
   
-  #unlink(tmp)
-#}
-
-
-
+  final_df <- full_join(joined_clean, FIPS_base, by = "CountyName")
+  #View(final_df)
+  return(final_df)
+  
+  #-----------End debugging---------------------
+}
 
 #names(df)[names(df) == 'old.var.name'] <- 'new.var.name'
   
 ```
 
 
+Main Code:
 
 
+Downloading and processing each state to extract all counties. 
+```{r}
+for(i in 1:5){ #length(AllStates$downloadLinks)){
+  #Download xls file
+  url <- AllStates$downloadLinks[i]
+  tmp <- tempfile(fileext=".xls")
+  download.file(url,destfile=tmp, mode="wb")
+  
+  stateAbbrev <- state.abb[match(AllStates$stateNames[i],state.name)]
+  state_df <- extractStateData(tmp, stateAbbrev)
+  View(state_df)
+
+  if(i == 1){
+    df_base <- state_df
+    View(df_base)
+  }else if( i == 2){
+    df_full <- rbind(df_base, state_df)
+    View(df_full)
+  }else{
+    df_full <- rbind(df_full, state_df)
+    View(df_full)
+  }
+  unlink(tmp)
+}
+
+
+```
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Downloading and loading Excel files (Method 1: Using Tempfiles)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Download each excel file, load it into R as a dataframe, and assign the data frame to the respective state name.
 NOTE THE DOWNLOAD TIME IS ENORMOUS!!! DON'T RUN THIS ON ALL STATES YET, IT CRASHES EVERYTHING.
@@ -171,17 +220,4 @@ head(Alabama)
 ```
 
 
-
-#'/Users/anishakumar/Desktop'
-  
-
-#this works '//div[@id="bio"]/p'
-#'//div[@id="bio"]/p/ol[@id = "data_options"]/li/a'
-```
-for (j in 1:length(stateExcel)){
-    if grepl( "xls$", stateExcel[j]){ 
-      stateExcel <- stateExcel[j]
-      break
-    }
-  }
 
