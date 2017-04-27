@@ -12,7 +12,7 @@ output:
 # Don't delete this chunk if you are using the DataComputing package
 library(DataComputing) 
 library(XML)
-#library(RCurl)
+library(RCurl)
 library(readxl)
 ```
 *Source file* 
@@ -42,7 +42,10 @@ stateLinks <- paste(baseURL,as.character(stateLinks),sep="")
 
 #Data Frame of StateName and stateLink
 AllStates <- data.frame(stateNames, stateLinks, stringsAsFactors = FALSE)
-head(AllStates) 
+AllStates 
+
+AllStates[46, "stateNames"] <- "District of Columbia"
+AllStates
 ```
 
 Extracts the excel file download link for each state
@@ -66,10 +69,11 @@ for (i in 1:length(stateLinks)){
 }
 
 AllStates$downloadLinks <- downloadLinks
+
+AllStates$downloadLinks
  
 ```
 
-<<<<<<< HEAD
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Downloading and loading Excel files (Method 1: Using Tempfiles)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -217,7 +221,7 @@ library(readxl)
 
 fileLocations <- vector(mode="character", length=length(AllStates$stateNames))
 for(i in 1:length(AllStates$stateNames)){
-  destination <- paste("C:\\Users\\Katrlyn\\stats133Project\\AllStates\\", AllStates$stateNames[i], ".xls", sep = "")
+  destination <- paste("C:\\Users\\kagex\\stats133Project\\AllStates\\", AllStates$stateNames[i], ".xls", sep = "")
   #file must be handled locally during preprocessing.
   download.file(AllStates$downloadLinks[i], destfile = destination, mode = "wb" )
   
@@ -231,7 +235,7 @@ View(AllStates)
 
 Load the filepaths if you're using the downloaded files
 ```{r}
-AllStates$fileLocations <- paste("C:\\Users\\Katrlyn\\stats133Project\\AllStates\\", AllStates$stateNames, ".xls", sep = "")
+AllStates$fileLocations <- paste("C:\\Users\\kagex\\stats133Project\\AllStates\\", AllStates$stateNames, ".xls", sep = "")
 AllStates
 ```
 
@@ -278,27 +282,23 @@ df
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Downloading and loading Excel files (Method 2: Lots of local files) 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-=======
->>>>>>> c627b1fbed1dcf0a864801fb20c63d024a51de4a
 
 Download each excel file, load it into R as a dataframe, and assign the data frame to the respective state name.
 NOTE THE DOWNLOAD TIME IS ENORMOUS!!! DON'T RUN THIS ON ALL STATES YET, IT CRASHES EVERYTHING.
-```{r}
+```{r,eval=FALSE}
 library(readxl)
 for(i in 1:1){ #length(AllStates$stateNames)){
-  destination <- paste("C:\\Users\\Katrlyn\\Downloads\\", AllStates$stateNames[i], ".xls", sep = "")
+  destination <- paste("C:\\Users\\Katrlyn\\stats133Project\\AllStates\\", AllStates$stateNames[i], ".xls", sep = "")
   #Works but the issue is that file must be handled locally during preprocessing.
   download.file(AllStates$downloadLinks[i], destfile = destination, mode = "wb" )
 
-  test <- read_excel(destination, sheet = 10, skip = 3)
-  
   assign(AllStates$stateNames[i], test)
   
 }
 ```
 
 Accessing the stored tables
-```{r}
+```{r, eval=FALSE}
 head(Alabama)
 
 #Accessing names:
@@ -306,18 +306,4 @@ head(Alabama)
 
 ```
 
-
-
-#'/Users/anishakumar/Desktop'
-  
-
-#this works '//div[@id="bio"]/p'
-#'//div[@id="bio"]/p/ol[@id = "data_options"]/li/a'
-```
-for (j in 1:length(stateExcel)){
-    if grepl( "xls$", stateExcel[j]){ 
-      stateExcel <- stateExcel[j]
-      break
-    }
-  }
 
