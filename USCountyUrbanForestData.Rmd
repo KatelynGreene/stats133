@@ -42,7 +42,7 @@ stateLinks <- paste(baseURL,as.character(stateLinks),sep="")
 
 #Data Frame of StateName and stateLink
 AllStates <- data.frame(stateNames, stateLinks, stringsAsFactors = FALSE)
-head(AllStates) 
+AllStates 
 ```
 
 Extracts the excel file download link for each state
@@ -115,11 +115,11 @@ extractStateData <- function(tmp, stateAbbrev){
   #---------debugging extractState function---------------
   
     #Read-in relevant sheets (7 and 10)
-  xl_7 <- read_excel(tmp, sheet = 7, skip = 3)
-  xl_10 <- read_excel(tmp, sheet = 10, skip = 3)
+  xl_7 <- read_excel(tmp, sheet = "7", skip = 3)
+  xl_10 <- read_excel(tmp, sheet = "10", skip = 3)
   
-  #head(xl_7)
-  #head(xl_10)
+  head(xl_7)
+  head(xl_10)
   
   #Clean and select relevant variables
   
@@ -163,35 +163,84 @@ Main Code:
 
 Downloading and processing each state to extract all counties. 
 ```{r}
-for(i in 1:5){ #length(AllStates$downloadLinks)){
+for(i in 1:1){ #:length(AllStates$downloadLinks)){
   #Download xls file
-  url <- AllStates$downloadLinks[i]
+  url <- AllStates$downloadLinks[31]
   tmp <- tempfile(fileext=".xls")
   download.file(url,destfile=tmp, mode="wb")
   
-  stateAbbrev <- state.abb[match(AllStates$stateNames[i],state.name)]
+  stateAbbrev <- state.abb[match(AllStates$stateNames[31],state.name)]
   state_df <- extractStateData(tmp, stateAbbrev)
-  View(state_df)
-
+  
   if(i == 1){
     df_base <- state_df
-    View(df_base)
+    #View(df_base)
   }else if( i == 2){
     df_full <- rbind(df_base, state_df)
-    View(df_full)
+    #View(df_full)
   }else{
     df_full <- rbind(df_full, state_df)
-    View(df_full)
+    #View(df_full)
   }
   unlink(tmp)
+  
 }
 
+View(df_full)
+
+
+```
+
+To keep from wasting time redownloading files, use this code to download once and use your local files. 
+```{r}
+library(readxl)
+
+fileLocations <- vector(mode="character", length=length(AllStates$stateNames))
+for(i in 1:length(AllStates$stateNames)){
+  destination <- paste("C:\\Users\\Katrlyn\\stats133Project\\AllStates\\", AllStates$stateNames[i], ".xls", sep = "")
+  #file must be handled locally during preprocessing.
+  download.file(AllStates$downloadLinks[i], destfile = destination, mode = "wb" )
+  
+  fileLocations[i] <- destination
+}
+
+AllStates$fileLocations <- fileLocations
+
+View(AllStates)
+```
+
+  #Known bug: NC 7th sheet is actually sheet 8....grrrr.
+  # Solution: sheet = string instead of sheet = integer when reading the excel file.
+```{r}
+for(i in 1:length(AllStates$downloadLinks)){
+  print(AllStates$stateNames[i])
+  print(AllStates$fileLocations[i])
+  stateAbbrev <- state.abb[match(AllStates$stateNames[i],state.name)]
+  print(paste("Start", stateAbbrev))
+  state_df <- extractStateData(AllStates$fileLocations[i], stateAbbrev)
+  #View(state_df)
+  
+  if(i == 1){
+    df_base <- state_df
+    #View(df_base)
+  }else if( i == 2){
+    df_full <- rbind(df_base, state_df)
+    #View(df_full)
+  }else{
+    df_full <- rbind(df_full, state_df)
+    #View(df_full)
+  }
+  #unlink(tmp)
+  
+}
+
+View(df_full)
 
 ```
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Downloading and loading Excel files (Method 1: Using Tempfiles)
+Downloading and loading Excel files (Method 2: Lots of local files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Download each excel file, load it into R as a dataframe, and assign the data frame to the respective state name.
@@ -199,12 +248,10 @@ NOTE THE DOWNLOAD TIME IS ENORMOUS!!! DON'T RUN THIS ON ALL STATES YET, IT CRASH
 ```{r}
 library(readxl)
 for(i in 1:1){ #length(AllStates$stateNames)){
-  destination <- paste("C:\\Users\\Katrlyn\\Downloads\\", AllStates$stateNames[i], ".xls", sep = "")
+  destination <- paste("C:\\Users\\Katrlyn\\stats133Project\\AllStates\\", AllStates$stateNames[i], ".xls", sep = "")
   #Works but the issue is that file must be handled locally during preprocessing.
   download.file(AllStates$downloadLinks[i], destfile = destination, mode = "wb" )
 
-  test <- read_excel(destination, sheet = 10, skip = 3)
-  
   assign(AllStates$stateNames[i], test)
   
 }
