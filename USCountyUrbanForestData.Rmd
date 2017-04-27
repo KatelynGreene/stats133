@@ -43,6 +43,9 @@ stateLinks <- paste(baseURL,as.character(stateLinks),sep="")
 #Data Frame of StateName and stateLink
 AllStates <- data.frame(stateNames, stateLinks, stringsAsFactors = FALSE)
 AllStates 
+
+AllStates[46, "stateNames"] <- "District of Columbia"
+AllStates
 ```
 
 Extracts the excel file download link for each state
@@ -92,7 +95,7 @@ FIPS_fun <- function(state = NA){
   
   #Merge state and county into one FIPS code
   FIPS_base <- df %>% mutate(FIPS = paste(StateFIPS, CountyFIPS, sep = ""))
-  View(FIPS_base)
+  #iew(FIPS_base)
   
   #return FIPS codes of the state passed in
   if(!is.na(state)){
@@ -112,14 +115,20 @@ Function that extracts data from an excel file relating to the Tree canopy Cover
 ```{r}
 extractStateData <- function(tmp, stateAbbrev){
   
-  #---------debugging extractState function---------------
+  #Read-in relevant sheets (7 and 10)
+  #Known bug: NC 7th sheet is actually sheet 8....grrrr.
+  # Solution: sheet = string instead of sheet = integer when reading the excel file.
   
-    #Read-in relevant sheets (7 and 10)
-  xl_7 <- read_excel(tmp, sheet = "7", skip = 3)
-  xl_10 <- read_excel(tmp, sheet = "10", skip = 3)
+  #Known Bug: DC messes lots of things up due to sheet differences, naming, etc.
+  # Solution: various fixes changing DC to District of Columbia and reading sheet 5 & 8 instead. Start at line 4 in sheet 8 because of the random space
   
-  head(xl_7)
-  head(xl_10)
+  if(stateAbbrev == "DC"){
+    xl_7 <- read_excel(tmp, sheet = "5", skip = 3)
+    xl_10 <- read_excel(tmp, sheet = "8", skip = 4) 
+  }else{
+    xl_7 <- read_excel(tmp, sheet = "7", skip = 3)
+    xl_10 <- read_excel(tmp, sheet = "10", skip = 3)
+  }
   
   #Clean and select relevant variables
   
@@ -144,13 +153,17 @@ extractStateData <- function(tmp, stateAbbrev){
   #Moved to main code to prevent looping error
   #stateAbbrev <- state.abb[match(AllStates$stateNames[1],state.name)]
   
+  #Fix Washington DC Error. Must be called District of Columbia to find FIPS code
+  if(stateAbbrev == "DC"){
+    joined_clean[1, "CountyName"] <- "District of Columbia"
+  }
+  
   FIPS_base <- FIPS_fun(state = stateAbbrev)
   
   final_df <- full_join(joined_clean, FIPS_base, by = "CountyName")
   #View(final_df)
   return(final_df)
-  
-  #-----------End debugging---------------------
+
 }
 
 #names(df)[names(df) == 'old.var.name'] <- 'new.var.name'
@@ -162,7 +175,9 @@ Main Code:
 
 
 Downloading and processing each state to extract all counties. 
-```{r}
+
+THIS CODE IS NOT READY -- STILL DEBUGGING USING LOCAL XLS FILES
+```{r, eval=FALSE}
 for(i in 1:1){ #:length(AllStates$downloadLinks)){
   #Download xls file
   url <- AllStates$downloadLinks[31]
@@ -192,7 +207,7 @@ View(df_full)
 ```
 
 To keep from wasting time redownloading files, use this code to download once and use your local files. 
-```{r}
+```{r, eval=FALSE}
 library(readxl)
 
 fileLocations <- vector(mode="character", length=length(AllStates$stateNames))
@@ -209,16 +224,26 @@ AllStates$fileLocations <- fileLocations
 View(AllStates)
 ```
 
-  #Known bug: NC 7th sheet is actually sheet 8....grrrr.
-  # Solution: sheet = string instead of sheet = integer when reading the excel file.
+Load the filepaths if you're using the downloaded files
 ```{r}
+AllStates$fileLocations <- paste("C:\\Users\\Katrlyn\\stats133Project\\AllStates\\", AllStates$stateNames, ".xls", sep = "")
+AllStates
+```
+
+Main code (assuming you downloaded all the files)
+```{r}
+
 for(i in 1:length(AllStates$downloadLinks)){
   print(AllStates$stateNames[i])
   print(AllStates$fileLocations[i])
-  stateAbbrev <- state.abb[match(AllStates$stateNames[i],state.name)]
+  if(AllStates$stateNames[i] == "District of Columbia"){
+    stateAbbrev <- "DC"
+  }else{
+    stateAbbrev <- state.abb[match(AllStates$stateNames[i],state.name)]
+  }
+  
   print(paste("Start", stateAbbrev))
   state_df <- extractStateData(AllStates$fileLocations[i], stateAbbrev)
-  #View(state_df)
   
   if(i == 1){
     df_base <- state_df
@@ -236,16 +261,22 @@ for(i in 1:length(AllStates$downloadLinks)){
 
 View(df_full)
 
+#Things that need fixing still
+df <- df_full %>% subset(is.na(FIPS) | is.na(TreeCanopy))
+df
+
 ```
 
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Downloading and loading Excel files (Method 2: Lots of local files
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!!!!!!!!DO NOT USE THE BELOW CODE:!!!!!!!!!!!!!!11
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Downloading and loading Excel files (Method 2: Lots of local files) 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Download each excel file, load it into R as a dataframe, and assign the data frame to the respective state name.
 NOTE THE DOWNLOAD TIME IS ENORMOUS!!! DON'T RUN THIS ON ALL STATES YET, IT CRASHES EVERYTHING.
-```{r}
+```{r,eval=FALSE}
 library(readxl)
 for(i in 1:1){ #length(AllStates$stateNames)){
   destination <- paste("C:\\Users\\Katrlyn\\stats133Project\\AllStates\\", AllStates$stateNames[i], ".xls", sep = "")
@@ -258,7 +289,7 @@ for(i in 1:1){ #length(AllStates$stateNames)){
 ```
 
 Accessing the stored tables
-```{r}
+```{r, eval=FALSE}
 head(Alabama)
 
 #Accessing names:
