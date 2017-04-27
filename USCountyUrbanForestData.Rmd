@@ -44,7 +44,8 @@ stateLinks <- paste(baseURL,as.character(stateLinks),sep="")
 AllStates <- data.frame(stateNames, stateLinks, stringsAsFactors = FALSE)
 AllStates 
 
-AllStates[46, "stateNames"] <- "District of Columbia"
+#AllStates[46, "stateNames"] <- "District of Columbia"
+AllStates$stateNames[AllStates$stateNames == "Washington, D.C"] <- "District of Columbia"
 AllStates
 ```
 
