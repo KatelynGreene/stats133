@@ -1,0 +1,90 @@
+---
+title: "Untitled"
+author: ""
+date: ""
+output: 
+  html_document:
+    fig_height: 3
+    fig_width: 5
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(XML)
+library(readxl)
+library(lubridate)
+
+library(gstat)
+library(sp)
+library(maptools)
+library(tigris)
+library(spatstat)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
+
+
+```{r}
+download.file("https://water.usgs.gov/nawqa/trace/data/arsenic_nov2001.xls", destfile = "~/_Berkeley/_2017 Spring/Stat 133/final_project/arsenic.xls")
+arsenic <- read.csv("~/_Berkeley/_2017 Spring/Stat 133/final_project/arsenic_nov2001.csv", stringsAsFactors = FALSE)
+
+arsenic <- arsenic[!arsenic$STATE %in% c("AK","PR"),]
+arsenic$SAMPDATE <- dmy(arsenic$SAMPDATE)
+arsenic$LAT_DD <- as.numeric(arsenic$LAT_DD)
+arsenic$LON_DD <- as.numeric(arsenic$LON_DD)
+arsenic$AS_CONC <- as.numeric(arsenic$AS_CONC)
+arsenic$FIPS <- as.numeric(arsenic$FIPS)
+arsenic <- arsenic[complete.cases(arsenic[,7]),]
+arsenic <- arsenic %>%
+  select(-LAT_DMS, -LON_DMS)
+arsenic_test <- arsenic %>%
+  filter(AS_CONC <50)
+
+
+ggplot() +
+  geom_polygon(data= county_map, aes(x=long, y=lat, group=group), fill = "white", color="black", size=0.25) +
+  geom_point(data=arsenic_test, aes(x=-LON_DD, y=LAT_DD, col=AS_CONC))
+
+
+xy <- arsenic[, c(9,10)]
+xy$LON_DD <- -1*xy$LAT_DD
+spdf <- SpatialPointsDataFrame(coords = xy, data = arsenic, proj4string = CRS("+proj=longlat +datum=NAD83 +no_defs +ellps=GRS80 +towgs84=0,0,0"))
+
+arsenic_test <- arsenic
+arsenic_test$x <- -1*arsenic_test$LON_DD
+arsenic_test$y <- arsenic_test$LAT_DD
+
+coordinates(arsenic_test) = ~x + y
+plot(arsenic_test)
+proj4string(arsenic_test) <- proj4string(us.map)
+
+x.range <- as.numeric(c(-125, -66))  # min/max longitude of the interpolation area
+y.range <- as.numeric(c(24, 50))  # min/max latitude of the interpolation area
+
+grd <- expand.grid(x = seq(from = x.range[1], to = x.range[2], by = 1), y = seq(from = y.range[1], to = y.range[2], by = 1))  # expand points to grid
+coordinates(grd) <- ~x + y
+proj4string(grd) <- proj4string(us.map)
+gridded(grd) <- TRUE
+plot(grd, cex = 1.5, col = "grey")
+points(arsenic_test, pch = 1, col = "red", cex = 1)
+
+
+idw <- krige(AS_CONC ~ 1, arsenic_test, grd)
+idw.out = as.data.frame(idw)
+names(idw.out)[1:3] <- c("long", "lat", "arsenic_pred")
+
+
+
+ggplot() +
+  geom_tile(data = idw.out, alpha = 0.8, aes(x = long, y = lat, fill = round(arsenic_pred, 0))) + scale_fill_gradient(low = "cyan", high = "orange") + 
+  geom_polygon(data= county_map, aes(x=long, y=lat, group=group), fill = NA, color="black", size=0.25) +
+  geom_point(data=arsenic, aes(x=-LON_DD, y=LAT_DD, col=AS_CONC))
+
+```
