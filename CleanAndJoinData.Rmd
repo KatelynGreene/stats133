@@ -18,6 +18,7 @@ library(readr)
 library(tidyr) 
 library(dplyr)
 library(stringi)
+library(XML)
 ```
 *Source file* 
 ```{r, results='asis', echo=FALSE}
@@ -31,7 +32,10 @@ download.file("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_
 
 edu_data <- read_excel("C:\\Users\\Katrlyn\\Downloads\\edu.xls", sheet = 1, skip = 4)
 edu_data<-edu_data[, -grep("1970|1980|1990", colnames(edu_data))]
+edu_data<-edu_data%>%subset(select=-c( `State`, `Area name`))
+```
 
+```{r}
 #dowload/wrangle the PollutionPerCounty data
 poll_county<-read.csv("https://data.cdc.gov/api/views/cjae-szjv/rows.csv?accessType=DOWNLOAD")
 head(poll_county)
@@ -40,13 +44,72 @@ poll_county<-poll_county %>%
   group_by(ReportYear)%>%
   arrange(CountyName)%>%
   arrange(StateName)%>%
-  rename(FIPSCode=CountyFips)
+  rename(FIPSCode=CountyFips)%>%
+  subset(select=c(FIPSCode, ReportYear, Value, Unit))
 poll_county$FIPSCode<-stri_pad_left(poll_county$FIPSCode, 5, "0")
+```
 
-#download CountyReferenceTable data
+```{r}
+#download/clean CountyReferenceTable data
 fips_ref <- read.table("https://www2.census.gov/geo/docs/reference/codes/files/national_county.txt", sep = ",", col.names = c("State", "StateFIPS", "CountyFIPS", "CountyName", "ClassFIPSCode" ), colClasses = "character")
 fips_ref$CountyFIPS = paste(fips_ref$StateFIPS, fips_ref$CountyFIPS, sep="")
+fips_ref<-rename(fips_ref, FIPSCode=CountyFIPS)%>%subset(select=-c(ClassFIPSCode))
 View(fips_ref)
 ```
 
+```{r}
+#download/clean USACountyIncomeEmploy data
+download.file("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Unemployment.xls?v=42762", destfile = "C:\\Users\\Katrlyn\\Downloads\\income.xls", mode = "wb" )
 
+data <- read_excel("C:\\Users\\Katrlyn\\Downloads\\income.xls", sheet = 1, skip = 7)
+head(data)
+data_clean <- data %>% mutate(Area_name= gsub(", ..$", "", Area_name), Area_name)
+
+```
+
+```{r}
+#downlaod/clean USCountyUrbanForestData
+URL <- "https://www.nrs.fs.fed.us/data/urban/"
+txt <- getURLContent(URL)
+doc <- htmlParse(txt)
+
+#Scrape the county name
+stateNames <- xpathSApply(doc, '//ul/li/a/strong', xmlValue)
+
+#****NOTE: Missing Alaska and Hawaii*******
+stateLinks <- xpathSApply(doc, '//ul[@class="state_list"]/li/a/@href')
+baseURL <- "https://www.nrs.fs.fed.us"
+stateLinks <- paste(baseURL,as.character(stateLinks),sep="")
+
+#Data Frame of StateName and stateLink
+AllStates <- data.frame(stateNames, stateLinks, stringsAsFactors = FALSE)
+head(AllStates) 
+downloadLinks <- vector(mode="character", length=length(AllStates$stateNames))
+
+for (i in 1:length(stateLinks)){
+  stateURL<- stateLinks[i]
+  stateTxt <- getURLContent(stateURL)
+  stateDoc <- htmlParse(stateTxt)
+  downloadLink <- xpathSApply(stateDoc, '//ol[@id="data_options"]/li/a/@href')
+
+  #The HTML source code is poor so need to use grepl to extract .xls from Xpath results
+  length(downloadLink)
+  for (j in 1:length(downloadLink)){
+     if (grepl(".xls", downloadLink[j])){
+      downloadLinks[i] <- downloadLink[j]
+      break 
+    }
+  }
+}
+
+AllStates$downloadLinks <- downloadLinks
+ 
+
+```
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Joining all datatables 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+```{r}
+join_all(list(edu_date, fips_ref, poll_county), by='Flag', type='left')
