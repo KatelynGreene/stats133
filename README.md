@@ -50,15 +50,16 @@
   * ~~download state zip files to temp folders using for loop~~
   * ~~Unzip folder and get xls and assign to temp file~~
   * ~~Read as a dataframe (Arbitrary name)~~
-  * This dataset only uses county names, need to map them to FIPS codes
-  * left_join each dataframe to one base data frame of FIPS codes
+  * ~~This dataset only uses county names, need to map them to FIPS codes~~
+  * ~~left_join each dataframe to one base data frame of FIPS codes~~
   
-  **Clean data:**
+  ~~**Clean data:**
   * Sheet 7:
    * Tree canopy (m^2/person)
    * Available green space
   * Sheet 10:
-   * Tree canopy cover (for developped section)
+   * Tree canopy cover (for developped section)~~
+  *Need to fix NAs caused by county changes and random counties in the dataset that aren't real counties
   
   **Find a water quality Data-set** (Kana)
   * Spatial interpolation with Arsenic
