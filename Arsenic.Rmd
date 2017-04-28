@@ -176,6 +176,6 @@ ggplot() +
 arsenic_df <- avgArsenic_df %>%
   dplyr::select(GEOID, var1.pred)
 names(arsenic_df) <- c("fips","arsenic")
-  
+
 ```
   
