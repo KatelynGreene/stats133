@@ -11,15 +11,13 @@ output:
 ```{r include=FALSE}
 # Don't delete this chunk if you are using the DataComputing package
 library(DataComputing) 
-library(XML)
-library(RCurl)
-library(readxl)
+
 ```
 *Source file* 
 ```{r, results='asis', echo=FALSE}
 includeSourceDocuments()
 ```
-<!-- Don't edit the material above this line -->
+
 
 The purpose of this document is to extract urban forest from all the counties in the U.S.
 The original data source is:
@@ -28,6 +26,9 @@ https://www.nrs.fs.fed.us/data/urban/
 Extracts the links to each State from the main link:
 https://www.nrs.fs.fed.us/data/urban/
 ```{r}
+library(XML)
+library(RCurl)
+library(readxl)
 URL <- "https://www.nrs.fs.fed.us/data/urban/"
 txt <- getURLContent(URL)
 doc <- htmlParse(txt)
@@ -195,7 +196,9 @@ extractStateData <- function(tmp, stateAbbrev){
 ```
 
 
+-------------------------
 Main Code:
+-------------------------
 
 
 Downloading and processing each state to extract all counties. 
