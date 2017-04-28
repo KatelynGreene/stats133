@@ -31,7 +31,7 @@ includeSourceDocuments()
 <!-- Don't edit the material above this line -->
 
 
-##Arsenic data
+## Arsenic data
 ```{r}
 ## DOWNLOAD FILE
 ## downloads arsenic excel file into temp file without permanently downloading onto the computer
@@ -59,7 +59,7 @@ arsenic <- arsenic[complete.cases(arsenic[,2]),]
 
 ```
 
-##US county map
+## US county map
 ```{r}
 ## bring in map of all counties from Katelyn's code: ggplotMapsTEST.Rmd
 library(tigris)
@@ -79,7 +79,7 @@ ggplot() +
 
 ```
 
-##Interpolation of arsenic data
+## Interpolation of arsenic data
 
 The reason we need to interpolate the arsenic data is because we only have point data from the field stations that take arsenic measurements. This doesn't cover every county in the US. In order to create a continuous data of arsesnic concentrations across the US, we do a spatial interpolation that essentially takes the point arsenic concentrations and estimates the arsenic concentration across the entire area using a geospatial statistical model. In this case, the units of interpolation are 0.1 degree longitude by 0.1 degree latitude (roughly 0.25 sq mi), which means we get an arsenic concentration for every 0.25 sq mi area of the US. Then we calculate the average arsenic concentration for each county. This way we get an estimated arsenic concentration for each county.
 ```{r}
@@ -176,6 +176,6 @@ ggplot() +
 arsenic_df <- avgArsenic_df %>%
   dplyr::select(GEOID, var1.pred)
 names(arsenic_df) <- c("fips","arsenic")
-  
+
 ```
   

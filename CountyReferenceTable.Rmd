@@ -18,13 +18,27 @@ includeSourceDocuments()
 ```
 <!-- Don't edit the material above this line -->
 
-Reading in reference table concerning county information.
+Reading in reference table concerning county information **FROM 2010**
 Source: https://www.census.gov/geo/reference/codes/cou.html
+
 
 ```{r}
 #Note: colClasses = "character" helps keep the leading 0s
-df <- read.table("https://www2.census.gov/geo/docs/reference/codes/files/national_county.txt", sep = ",", col.names = c("State", "StateFIPS", "CountyFIPS", "CountyName", "ClassFIPSCode" ), colClasses = "character")
+#http://stackoverflow.com/questions/17414776/read-csv-warning-eof-within-quoted-string-prevents-complete-reading-of-file
+df <- read.table("https://www2.census.gov/geo/docs/reference/codes/files/national_county.txt", sep = ",", col.names = c("State", "StateFIPS", "CountyFIPS", "CountyName", "ClassFIPSCode" ), colClasses = "character", quote = "")
 
-head(df)
+#Shannon County (46-113) change to Oglala Lakota County (46-102) (Effective 2015)
+df2 <- data.frame(State = "SD", StateFIPS = "46", CountyFIPS = "102", CountyName = "Oglala Lakota County", ClassFIPSCode = "H1")
+df <- rbind(df, df2)
+
+#Merge state and county into one FIPS code
+FIPS_base <- df %>% mutate(FIPS = paste(StateFIPS, CountyFIPS, sep = ""))
+head(FIPS_base)
+ 
+#Minimal dataframe to facilitate joins
+FIPS_base_compact <- FIPS_base %>% select(c(State, CountyName, FIPS))
+
+head(FIPS_base_compact)
+
 ```
 
