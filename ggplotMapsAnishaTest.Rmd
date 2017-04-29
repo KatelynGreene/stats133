@@ -1,0 +1,253 @@
+---
+title: "ggplotMapsAnishaTest"
+author: ""
+date: ""
+output: 
+  html_document:
+    fig_height: 3
+    fig_width: 5
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+SPATIAL VISUALIZATION: METHOD 1: GGPLOT
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Useful Spatial Packages
+```{r}
+library(sp)
+#library(rgeos)
+#library(maptools)
+```
+
+Download a sample dataset to visualize: air quality 
+```{r}
+### Begin data prep
+# Grab air/water quality data from the EPA
+url = "https://data.cdc.gov/api/views/cjae-szjv/rows.csv?accessType=DOWNLOAD"
+dat <- read.csv(url, stringsAsFactors = FALSE)
+```
+
+Data Cleaning
+```{r}
+# Convert to lowercase to create standard format among all datasets
+names(dat) <- tolower(names(dat))
+dat$countyname <- tolower(dat$countyname)
+
+# Wide data set -> ubset only what we need
+county_dat <- subset(dat, measureid == "296", 
+                 select = c("countyfips","reportyear", "statename", "countyname", "value", "unitname"))
+
+county_dat <- subset(county_dat, reportyear == 2011, select = c("countyfips","statename", "countyname", "value", "unitname"))
+
+# Rename columns to make for a clean df merge later.
+colnames(county_dat) <- c("fips", "state", "county_name", "value", "unitname")
+
+# Have to add leading zeos to any FIPS code that's less than 5 digits long to get a good match.
+
+# This is some other person's method to use C code. sprintf will work as well.
+county_dat$fips <- formatC(county_dat$fips, width = 5, format = "d", flag = "0")
+
+# Convert full state names to abbreviations for a clean df merge later.
+county_dat$state <- state.abb[match(county_dat$state,state.name)]
+
+```
+
+County Shapefile Acquisition and Cleaning
+
+Downloading county boundary shapefiles (METHOD 1: TIGRIS Package)
+~~~~~~~NEED TO DEFINE LOCATION~~~~~~~~~
+```{r}
+library(tigris)
+location <- c("/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/cb_2016_us_county_500k")
+# Download county shape file from US Census using streamlined TIGRIS package. 
+#cb = TRUE indicates that we're choosing simplified cartographic boundaries
+us.map <- tigris::counties(cb = TRUE, year = 2015)
+
+#names(us.map)
+#summary(us.map)
+#View(us.map)
+
+```
+
+Downloading county boundary shapefiles (METHOD 2: Manual read-in of raw shapefile from US Census)
+```{r}
+library(rgdal)
+# Download county shape file from https://www.census.gov/geo/maps-data/data/tiger.html
+us.map <- readOGR(dsn = location, layer = "cb_2016_us_county_500k", stringsAsFactors = FALSE)
+
+
+#names(us.map)
+#summary(us.map)
+#View(us.map)
+
+#Paths for other group members
+#"C:\\Users\\kagex\\stats133Project\\cb_2016_us_county_500k"
+```
+
+Map data Cleaning
+```{r}
+# Remove Alaska(2), Hawaii(15), Puerto Rico (72), Guam (66), Virgin Islands (78), American Samoa (60)
+#  Mariana Islands (69), Micronesia (64), Marshall Islands (68), Palau (70), Minor Islands (74)
+us.map <- us.map[!us.map$STATEFP %in% c("02", "15", "72", "66", "78", "60", "69",
+                                        "64", "68", "70", "74"),]
+# Make sure other outling islands are removed.
+us.map <- us.map[!us.map$STATEFP %in% c("81", "84", "86", "87", "89", "71", "76",
+                                        "95", "79"),]
+#To see the shapfile structure:
+#dog <- as.data.frame(us.map)
+#head(dog)
+
+#Converting shapefile to dataframe for visualization
+
+#deprecated method:
+#county_map <- ggplot2::fortify(us.map, region="GEOID")
+
+library(broom)
+county_map <- tidy(us.map, region="GEOID")
+
+#Join sample air quality data to spatial data
+library(dplyr)
+county_map <- left_join(county_map, county_dat, by = c("id" = "fips"))
+
+head(county_map)
+```
+
+Plotting the data about the county lines
+https://www.census.gov/cgi-bin/geo/shapefiles/index.php?year=2016&layergroup=Counties+%28and+equivalent%29
+
+```{r}
+library(mapproj)
+library(ggplot2)
+ggplot() +
+    #blank county map
+    geom_polygon(data= county_map, aes(x=long, y=lat, group=group), fill = "white", color="black", size=0.25) +
+    #Air quality data
+    geom_polygon(data= county_map, aes(x=long, y=lat, group=group, fill = value), color="black", size=0.25) +
+    ggplot2::coord_map() +
+    scale_fill_gradientn(colors = c("green", "red"))  +
+    labs(title="Air Quality") + 
+    theme_bw() +
+    theme(axis.line=element_blank(),
+          axis.text.x=element_blank(),
+          axis.text.y=element_blank(),
+          axis.ticks=element_blank(),
+          axis.title.x=element_blank(),
+          axis.title.y=element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_blank(),
+          panel.background = element_blank(),
+          legend.title=element_blank())
+```
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+SPATIAL VISUALIZATION: METHOD 1: Interactive maps with Leaflet
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Random Playing with leaflet
+```{r}
+library(leaflet)
+
+leaflet() %>%
+  addTiles(county_map$value) #%>%
+  #addPolygons(data = )
+
+leaflet() %>% addTiles() %>% setView(-93.65, 42.0285, zoom = 4) %>%
+  addWMSTiles(
+    "http://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0r.cgi",
+    layers = "nexrad-n0r-900913",
+    options = WMSTileOptions(format = "image/png", transparent = TRUE),
+    attribution = "Weather data © 2012 IEM Nexrad"
+  )
+```
+
+Useful packages
+```{r}
+library(sp)
+library(rgeos)
+library(rgdal)
+library(maptools)
+library(dplyr)
+library(leaflet)
+library(scales)
+```
+
+Download air quality data 
+```{r}
+# air quality data from the EPA
+url = "https://data.cdc.gov/api/views/cjae-szjv/rows.csv?accessType=DOWNLOAD"
+dat <- read.csv(url, stringsAsFactors = FALSE)
+```
+
+Clean air quality data
+```{r}
+# Convert to lowercase
+names(dat) <- tolower(names(dat))
+dat$countyname <- tolower(dat$countyname)
+
+# Subset only what we need to use
+county_dat <- subset(dat, measureid == "296", 
+                     select = c("reportyear","countyfips","statename", "countyname", "value", "unitname")) %>%
+    subset(reportyear==2011, select = c("countyfips", "value"))
+
+# Rename columns to make for a clean df merge later.
+colnames(county_dat) <- c("GEOID", "airqlty")
+
+# Add leading zeos to any FIPS code that's less than 5 digits long to get a good match.
+# FIND A BETTER METHOD
+county_dat$GEOID <- formatC(county_dat$GEOID, width = 5, format = "d", flag = "0")
+```
+
+Download county boundary shapefile
+```{r}
+# Download county shape file from Tiger.
+# https://www.census.gov/geo/maps-data/data/cbf/cbf_counties.html
+us.map <- readOGR(dsn = location, layer = "cb_2016_us_county_500k", stringsAsFactors = FALSE)
+
+# Other paths:
+# "C:\\Users\\kagex\\stats133Project\\cb_2016_us_county_500k"
+```
+
+Clean county shapefile 
+```{r}
+# Remove Alaska(2), Hawaii(15), Puerto Rico (72), Guam (66), Virgin Islands (78), American Samoa (60)
+#  Mariana Islands (69), Micronesia (64), Marshall Islands (68), Palau (70), Minor Islands (74)
+us.map <- us.map[!us.map$STATEFP %in% c("02", "15", "72", "66", "78", "60", "69",
+                                        "64", "68", "70", "74"),]
+# Make sure other outling islands are removed.
+us.map <- us.map[!us.map$STATEFP %in% c("81", "84", "86", "87", "89", "71", "76",
+                                        "95", "79"),]
+# Merge spatial df with air quality data.
+leafmap <- merge(us.map, county_dat, by=c("GEOID"))
+
+
+# I HAVE NO IDEA HOW THINGS WORK BELOW THIS POINT 
+
+# Format popup data for leaflet map.
+popup_dat <- paste0(sep = "<br/>",
+  "<b><strong>County: </strong>", 
+  leafmap$NAME, 
+  "<br><strong>Value: </strong>", 
+  leafmap$airqlty)
+
+pal <- colorQuantile("YlOrRd", NULL, n = 9)
+# Render final map in leaflet.
+leaflet(data = leafmap) %>% addTiles() %>%
+    addPolygons(fillColor = ~pal(airqlty), 
+                fillOpacity = 0.8, 
+                color = "#BDBDC3", 
+                weight = 1,
+                popup = popup_dat)
+
+```
+
