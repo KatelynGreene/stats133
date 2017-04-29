@@ -1,5 +1,5 @@
 ---
-title: "ggplotMapsAnishaTest"
+title: "Untitled"
 author: ""
 date: ""
 output: 
@@ -11,20 +11,6 @@ output:
 ```{r include=FALSE}
 # Don't delete this chunk if you are using the DataComputing package
 library(DataComputing)
-```
-*Source file* 
-```{r, results='asis', echo=FALSE}
-includeSourceDocuments()
-```
-<!-- Don't edit the material above this line -->
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SPATIAL VISUALIZATION: METHOD 1: GGPLOT
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Useful Spatial Packages
-```{r}
-library(sp)
 library(sp)
 library(rgeos)
 library(rgdal)
@@ -32,31 +18,40 @@ library(maptools)
 library(dplyr)
 library(leaflet)
 library(scales)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
 
+Clear the workspace
+```{r}
+rm(list = ls())
 ```
 
 
-Plotting the data about the county lines
-https://www.census.gov/cgi-bin/geo/shapefiles/index.php?year=2016&layergroup=Counties+%28and+equivalent%29
+#just testing a dataset we made
+```{r eval=FALSE}
+
+download.file("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762", destfile = "/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/edu.xls", mode = "wb" )
+
+edu_data_unclean <- read_excel("/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/edu.xls", sheet = 1, skip = 4)
+edu_data<-edu_data_unclean[, grep("2011|FIPS Code", colnames(edu_data_unclean))]
+edu_data<-edu_data%>%dplyr::rename(FIPSCode=`FIPS Code`)
+#View(edu_data)
+#names(edu_data)
+edu_dataTemp <- edu_data %>% select(FIPSCode, `Percent of adults with less than a high school diploma, 2011-2015`)
+
+names(edu_dataTemp) <- c("FIPSCode", "NoHSDip")
+head(edu_dataTemp)
+```
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SPATIAL VISUALIZATION: METHOD 1: Interactive maps with Leaflet
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Random Playing with leaflet
-```{r}
-leaflet() %>%
-  addTiles(county_map$value) #%>%
-  #addPolygons(data = )
-
-leaflet() %>% addTiles() %>% setView(-93.65, 42.0285, zoom = 4) %>%
-  addWMSTiles(
-    "http://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0r.cgi",
-    layers = "nexrad-n0r-900913",
-    options = WMSTileOptions(format = "image/png", transparent = TRUE),
-    attribution = "Weather data © 2012 IEM Nexrad"
-  )
-```
+Plotting the data
+https://www.census.gov/cgi-bin/geo/shapefiles/index.php?year=2016&layergroup=Counties+%28and+equivalent%29
 
 Download air quality data 
 ```{r}
@@ -85,15 +80,15 @@ county_dat$GEOID <- formatC(county_dat$GEOID, width = 5, format = "d", flag = "0
 ```
 
 Download county boundary shapefile
-Downloading county boundary shapefiles (METHOD 2: Manual read-in of raw shapefile from US Census)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Change location according to where the county map file is
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+NEED TO CHANGE LOCATION depending on who's laptop it is from
 ```{r}
 # Download county shape file from Tiger.
 # https://www.census.gov/geo/maps-data/data/cbf/cbf_counties.html
 location <- c("/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/cb_2016_us_county_500k")
 us.map <- readOGR(dsn = location, layer = "cb_2016_us_county_500k", stringsAsFactors = FALSE)
+
+# Other paths:
+# "C:\\Users\\kagex\\stats133Project\\cb_2016_us_county_500k"
 ```
 
 Clean county shapefile 
@@ -125,5 +120,6 @@ leaflet(data = leafmap) %>% addTiles() %>%
                 color = "#BDBDC3", 
                 weight = 1,
                 popup = popup_dat)
+
 ```
 
