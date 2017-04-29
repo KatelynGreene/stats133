@@ -35,8 +35,8 @@ Downloading the USACountyEduAttainment data
 download.file("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762", destfile = "C:\\Users\\Katrlyn\\Downloads\\edu.xls", mode = "wb" )
 
 edu_data_unclean <- read_excel("C:\\Users\\Katrlyn\\Downloads\\edu.xls", sheet = 1, skip = 4)
-edu_data<-edu_data_unclean[, -grep("1970|1980|1990", colnames(edu_data))]
-edu_data<-edu_data%>%subset(select=-c( `State`, `Area name`))%>%dplyr::rename(FIPSCode=`FIPS Code`)
+edu_data<-edu_data_unclean[, grep("2011|FIPS Code", colnames(edu_data_unclean))]
+edu_data<-edu_data%>%dplyr::rename(FIPSCode=`FIPS Code`)
 ```
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -44,16 +44,16 @@ Downloading the PollutionPerCounty data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```{r}
 #dowload/wrangle the PollutionPerCounty data
-poll_county_clean<-read.csv("https://data.cdc.gov/api/views/cjae-szjv/rows.csv?accessType=DOWNLOAD")
-head(poll_county)
+poll_county_unclean<-read.csv("https://data.cdc.gov/api/views/cjae-szjv/rows.csv?accessType=DOWNLOAD")
 poll_county<-poll_county_unclean %>%
   filter(MeasureType=='Average')%>%
   group_by(ReportYear)%>%
   arrange(CountyName)%>%
   arrange(StateName)%>%
   dplyr::rename(FIPSCode=CountyFips)%>%
-  subset(select=c(FIPSCode, ReportYear, Value, Unit))
+  subset(select=c(FIPSCode, ReportYear, Value, Unit))%>%mutate(FIPSCode=gsub("46113","46102", FIPSCode))%>%filter(ReportYear==2010)%>%subset(select=-c(ReportYear))
 poll_county$FIPSCode<-stri_pad_left(poll_county$FIPSCode, 5, "0")
+
 ```
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -62,10 +62,18 @@ Downloading the CountyReferenceTable data
 
 ```{r}
 #download/clean CountyReferenceTable data
-fips_ref<- read.table("https://www2.census.gov/geo/docs/reference/codes/files/national_county.txt", sep = ",", col.names = c("State", "StateFIPS", "CountyFIPS", "CountyName", "ClassFIPSCode" ), colClasses = "character")
-fips_ref$CountyFIPS = paste(fips_ref$StateFIPS, fips_ref$CountyFIPS, sep="")
-fips_ref<-dplyr::rename(fips_ref, FIPSCode=CountyFIPS)%>%subset(select=-c(ClassFIPSCode))
-View(fips_ref)
+every_us_county <- 
+  "https://en.wikipedia.org/wiki/List_of_United_States_counties_and_county_equivalents" %>%
+  read_html() %>%
+  html_nodes(xpath = '//*[@id="mw-content-text"]/table') %>%
+  html_table(fill=TRUE)
+every_us_county2<-every_us_county[[2]]
+every_county<-every_us_county2%>%
+  dplyr::rename(FIPSCode=INCITS, County=`County or equivalent`, State=`State or district`)%>%
+  subset(select=c( `FIPSCode`, `County`, `State`))
+every_county$FIPSCode<-stri_pad_left(every_county$FIPSCode, 5, "0")
+every_county<-mutate(every_county,StateFips=substr(every_county$FIPSCode,1,2))
+View(every_county)
 ```
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -78,7 +86,7 @@ download.file("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_
 
 income_unclean <- read_excel("C:\\Users\\Katrlyn\\Downloads\\income.xls", sheet = 1, skip = 7)
 head(data)
-income<- income_unclean %>% mutate(Area_name= gsub(", ..$", "", Area_name), Area_name)
+income<- income_unclean %>% mutate(Area_name= gsub(", ..$", "", Area_name), Area_name)%>%subset(select=c("FIPStxt","Median_Household_Income_2015","Unemployment_rate_2015"))%>%dplyr::rename(FIPSCode=FIPStxt)
 
 ```
 
@@ -337,6 +345,10 @@ View(df_full)
 df <- df_full %>% subset(is.na(FIPS) | is.na(TreeCanopy))
 df
 
+
+###### MY CODE  SO THAT I CAN JOIN THE TREE DATA TO MY OTHER DATA FOR THE SCATTERPLOTS######
+tree_data<-df_full[, -grep("State|Name", colnames(df_full))]
+tree_data<-rename(tree_data, FIPSCode=FIPS)
 ```
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -344,8 +356,11 @@ Joining all datatables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ```{r}
-all_data<-fips_ref%>%full_join(edu_data, by ='FIPSCode')
+all_data=NULL
+all_data<-every_county%>%left_join(edu_data, by ='FIPSCode')
+all_data<-all_data%>%full_join(income, by='FIPSCode')
 all_data<-all_data%>%full_join(poll_county, by= 'FIPSCode')
+all_data<-all_data%>%full_join(tree_data, by='FIPSCode')
 View(all_data)
 ```
 
