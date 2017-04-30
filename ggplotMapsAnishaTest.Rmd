@@ -44,7 +44,8 @@ edu_data<-edu_data%>%dplyr::rename(FIPSCode=`FIPS Code`)
 #names(edu_data)
 edu_dataTemp <- edu_data %>% select(FIPSCode, `Percent of adults with less than a high school diploma, 2011-2015`)
 
-names(edu_dataTemp) <- c("GEOID", "NoHSDip")
+#names(edu_dataTemp) <- c("GEOID", "NoHSDip")
+names(edu_dataTemp) <- c("FIPSCode", "NoHSDip")
 head(edu_dataTemp)
 
 ##Download county boundary shapefile
@@ -58,7 +59,8 @@ us.map <- us.map[!us.map$STATEFP %in% c("02", "15", "72", "66", "78", "60", "69"
 us.map <- us.map[!us.map$STATEFP %in% c("81", "84", "86", "87", "89", "71", "76",
                                         "95", "79"),]
 # Merge spatial df with air quality data.
-leafmap <- merge(us.map, edu_dataTemp, by=c("GEOID"))
+leafmap <- merge(us.map, edu_dataTemp, by.x=c("GEOID"), by.y =  c("FIPSCode"))
+
 
 # I HAVE NO IDEA HOW THINGS WORK BELOW THIS POINT 
 
@@ -69,10 +71,10 @@ popup_dat <- paste0(sep = "<br/>",
   "<br><strong>Value: </strong>", 
   leafmap$NoHSDip)
 
-pal <- colorQuantile("YlOrRd", NULL, n = 9)
+pal <- colorQuantile("YlOrRd", NULL, n = 9) #the pallete, n is the number of colors there are 
 # Render final map in leaflet.
 leaflet(data = leafmap) %>% addTiles() %>%
-    addPolygons(fillColor = ~pal(NoHSDip), 
+    addPolygons(fillColor = ~pal(NoHSDip), #the color depeneds on the value from teh dataset
                 fillOpacity = 0.8, 
                 color = "#BDBDC3", 
                 weight = 1,
