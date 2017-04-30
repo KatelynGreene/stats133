@@ -36,6 +36,7 @@ download.file("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_
 
 edu_data_unclean <- read_excel("C:\\Users\\Katrlyn\\Downloads\\edu.xls", sheet = 1, skip = 4)
 edu_data<-edu_data_unclean[, grep("2011|FIPS Code", colnames(edu_data_unclean))]
+edu_data<-edu_data[, grep("Percent|FIPS Code", colnames(edu_data))]
 edu_data<-edu_data%>%dplyr::rename(FIPSCode=`FIPS Code`)
 ```
 
