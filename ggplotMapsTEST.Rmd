@@ -35,6 +35,7 @@ Download a sample dataset to visualize: air quality
 # Grab air/water quality data from the EPA
 url = "https://data.cdc.gov/api/views/cjae-szjv/rows.csv?accessType=DOWNLOAD"
 dat <- read.csv(url, stringsAsFactors = FALSE)
+location <- "/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/cb_2016_us_county_500k"
 ```
 
 Data Cleaning
@@ -81,7 +82,7 @@ Downloading county boundary shapefiles (METHOD 2: Manual read-in of raw shapefil
 ```{r}
 library(rgdal)
 # Download county shape file from https://www.census.gov/geo/maps-data/data/tiger.html
-us.map <- readOGR(dsn = "C:\\Users\\Katrlyn\\stats133Project\\cb_2016_us_county_500k", layer = "cb_2016_us_county_500k", stringsAsFactors = FALSE)
+us.map <- readOGR(dsn = location, layer = "cb_2016_us_county_500k", stringsAsFactors = FALSE)
 
 
 #names(us.map)
@@ -193,7 +194,7 @@ Download county boundary shapefile
 ```{r}
 # Download county shape file from Tiger.
 # https://www.census.gov/geo/maps-data/data/cbf/cbf_counties.html
-us.map <- readOGR(dsn = "C:\\Users\\Katrlyn\\stats133Project\\cb_2016_us_county_500k", layer = "cb_2016_us_county_500k", stringsAsFactors = FALSE)
+us.map <- readOGR(dsn = location, layer = "cb_2016_us_county_500k", stringsAsFactors = FALSE)
 
 # Other paths:
 # "C:\\Users\\kagex\\stats133Project\\cb_2016_us_county_500k"
@@ -236,12 +237,12 @@ pal <- colorNumeric(
 
 map <- leaflet(counties) %>% addTiles()
 
-map <- map %>% 
+map %>% 
   #Stroke indicates outline presence
   #smoothFactor: how much to simplify the polyline on each zoom level (more means better performance and less accurate representation)
-  addPolygons(stroke = FALSE, color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1, 
+  addPolygons(stroke = TRUE, color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1, 
     fillColor = ~pal(airqlty), fillOpacity = 1, popup = popup_dat, 
-    highlightOptions = highlightOptions(color = "white", weight = 1, bringToFront = TRUE)) %>%
+    highlight = highlightOptions(color = "#666", weight = 3, bringToFront = TRUE)) %>%
   addLegend("bottomright", pal = pal, values = ~airqlty,
     title = "Airquality (2010)",
     labFormat = labelFormat(suffix = "Units"), na.label = "county data missing",
