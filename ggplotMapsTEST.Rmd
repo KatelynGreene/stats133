@@ -197,6 +197,7 @@ us.map <- readOGR(dsn = "C:\\Users\\Katrlyn\\stats133Project\\cb_2016_us_county_
 
 # Other paths:
 # "C:\\Users\\kagex\\stats133Project\\cb_2016_us_county_500k"
+# "/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/cb_2016_us_county_500k"
 ```
 
 Clean county shapefile 
