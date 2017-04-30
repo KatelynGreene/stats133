@@ -231,7 +231,7 @@ popup_dat <- paste(sep = "<br/>",
 #Let leaflet calculate the colors and labels for you 
 pal <- colorNumeric(
   palette =  "YlGnBu",
-  domain = counties$airqlty
+  domain = counties$airqlty 
 )
 
 
