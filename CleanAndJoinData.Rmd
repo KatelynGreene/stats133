@@ -33,7 +33,7 @@ Downloading the USACountyEduAttainment data
 ```{r}
 #download/wrangle the USACountyEduAttainment data
 download.file("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762", destfile = "/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/edu.xls", mode = "wb" )
-
+#"/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/edu.xls"
 edu_data_unclean <- read_excel("/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/edu.xls", sheet = 1, skip = 4)
 edu_data<-edu_data_unclean[, grep("2011|FIPS Code", colnames(edu_data_unclean))]
 edu_data<-edu_data[, grep("Percent|FIPS Code", colnames(edu_data))]
@@ -84,8 +84,9 @@ Downloading the USACountyIncomeEmploy data
 
 ```{r}
 #download/clean USACountyIncomeEmploy data
-download.file("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Unemployment.xls?v=42762", destfile = "/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/income.xls", mode = "wb" )
 
+download.file("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Unemployment.xls?v=42762", destfile = "/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/income.xls", mode = "wb" )
+#"/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/income.xls"
 income_unclean <- read_excel("/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/income.xls", sheet = 1, skip = 7)
 head(data)
 income<- income_unclean %>% mutate(Area_name= gsub(", ..$", "", Area_name), Area_name)%>%subset(select=c("FIPStxt","Median_Household_Income_2015","Unemployment_rate_2015"))%>%dplyr::rename(FIPSCode=FIPStxt)
@@ -295,6 +296,7 @@ library(readxl)
 fileLocations <- vector(mode="character", length=length(AllStates$stateNames))
 for(i in 1:length(AllStates$stateNames)){
   destination <- paste("/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/AllStates", AllStates$stateNames[i], ".xls", sep = "")
+  #"/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/AllStates"
   #file must be handled locally during preprocessing.
   download.file(AllStates$downloadLinks[i], destfile = destination, mode = "wb" )
   
@@ -363,8 +365,9 @@ all_data<-every_county%>%left_join(edu_data, by ='FIPSCode')
 all_data<-all_data%>%full_join(income, by='FIPSCode')
 all_data<-all_data%>%full_join(poll_county, by= 'FIPSCode')
 all_data<-all_data%>%full_join(tree_data, by='FIPSCode')
-library(xlsx)
-write.xlsx(all_data, "/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/all_data.xlsx")
+#library(xlsx)
+write.csv(all_data, "/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/all_data.csv")
+#"/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/all_data.xlsx"
 View(all_data)
 ```
 
