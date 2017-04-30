@@ -209,26 +209,51 @@ us.map <- us.map[!us.map$STATEFP %in% c("02", "15", "72", "66", "78", "60", "69"
 us.map <- us.map[!us.map$STATEFP %in% c("81", "84", "86", "87", "89", "71", "76",
                                         "95", "79"),]
 # Merge spatial df with air quality data.
-leafmap <- merge(us.map, county_dat, by=c("GEOID"))
+counties <- merge(us.map, county_dat, by=c("GEOID"))
 
-
-# I HAVE NO IDEA HOW THINGS WORK BELOW THIS POINT 
+#Leftoin isn't used because cannot left join this data! 
+#leafmap <- us.map %>% left_join(county_dat, by = c("GEOID"))
 
 # Format popup data for leaflet map.
-popup_dat <- paste0(sep = "<br/>",
-  "<b><strong>County: </strong>", 
-  leafmap$NAME, 
-  "<br><strong>Value: </strong>", 
-  leafmap$airqlty)
+popup_dat <- paste(sep = "<br/>",
+  "<b>County: </b>", 
+  counties$NAME, 
+  "<b>Value: </b>", 
+  counties$airqlty)
 
-pal <- colorQuantile("YlOrRd", NULL, n = 9)
+
+#pal <- colorQuantile("YlOrRd", NULL, n = 9)  #Manual color bins
+
+#Let leaflet calculate the colors and labels for you 
+pal <- colorNumeric(
+  palette =  "YlGnBu",
+  domain = counties$airqlty
+)
+
+
 # Render final map in leaflet.
-leaflet(data = leafmap) %>% addTiles() %>%
-    addPolygons(fillColor = ~pal(airqlty), 
-                fillOpacity = 0.8, 
-                color = "#BDBDC3", 
-                weight = 1,
-                popup = popup_dat)
+
+map <- leaflet(counties) %>% addTiles()
+
+map %>% 
+  #Stroke indicates outline presence
+  #smoothFactor: how much to simplify the polyline on each zoom level (more means better performance and less accurate representation)
+  addPolygons(stroke = FALSE, color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1, 
+    fillColor = ~pal(airqlty), fillOpacity = 1, popup = popup_dat, 
+    highlightOptions = highlightOptions(color = "white", weight = 1, bringToFront = TRUE)) %>%
+  addLegend("bottomright", pal = pal, values = ~airqlty,
+    title = "Airquality (2010)",
+    labFormat = labelFormat(suffix = "Units"), na.label = "county data missing",
+    opacity = 1)
+
+#Stripped down version
+
+# map %>% 
+#     addPolygons(fillColor = ~pal(airqlty), 
+#                 fillOpacity = 0.8, 
+#                 color = "#BDBDC3", 
+#                 weight = 1,
+#                 popup = popup_dat)
 
 ```
 
