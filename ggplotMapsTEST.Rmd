@@ -36,6 +36,8 @@ Download a sample dataset to visualize: air quality
 url = "https://data.cdc.gov/api/views/cjae-szjv/rows.csv?accessType=DOWNLOAD"
 dat <- read.csv(url, stringsAsFactors = FALSE)
 location <- "/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/cb_2016_us_county_500k"
+
+#"C:\\Users\\kagex\\stats133Project\\cb_2016_us_county_500k"
 ```
 
 Data Cleaning
