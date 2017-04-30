@@ -35,8 +35,8 @@ Downloading the USACountyEduAttainment data
 download.file("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762", destfile = "~/Downloads/stats133data/edu.xls", mode = "wb" )
 #"/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/edu.xls"
 edu_data_unclean <- read_excel("/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/edu.xls", sheet = 1, skip = 4)
-edu_data<-edu_data_unclean[, grep("2011|FIPS Code", colnames(edu_data_unclean))]
-edu_data<-edu_data[, grep("Percent|FIPS Code", colnames(edu_data))]
+edu_data<-edu_data_unclean[, grep("2011|FIPS Code|2013 Urban", colnames(edu_data_unclean))]
+edu_data<-edu_data[, grep("Percent|FIPS Code|2013 Urban", colnames(edu_data))]
 edu_data<-edu_data%>%dplyr::rename(FIPSCode=`FIPS Code`)
 #/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/edu.xls
 ```
