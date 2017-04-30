@@ -18,6 +18,7 @@ library(maptools)
 library(dplyr)
 library(leaflet)
 library(scales)
+
 ```
 *Source file* 
 ```{r, results='asis', echo=FALSE}
@@ -25,7 +26,7 @@ includeSourceDocuments()
 ```
 <!-- Don't edit the material above this line -->
 
-Clear the workspace
+Clear the workspace (note, a lot of chunks are eval = FALSE)
 ```{r}
 rm(list = ls())
 ```
@@ -33,21 +34,80 @@ rm(list = ls())
 
 #just testing a dataset we made
 Download/wrangle the USACountyEduAttainment data (from CleanAndJoinData)
-```{r eval=FALSE}
+```{r}
+library(readxl)
 
 download.file("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762", destfile = "/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/edu.xls", mode = "wb" )
 
 edu_data_unclean <- read_excel("/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/edu.xls", sheet = 1, skip = 4)
 edu_data<-edu_data_unclean[, grep("2011|FIPS Code", colnames(edu_data_unclean))]
 edu_data<-edu_data%>%dplyr::rename(FIPSCode=`FIPS Code`)
+
 #View(edu_data)
 #names(edu_data)
 edu_dataTemp <- edu_data %>% select(FIPSCode, `Percent of adults with less than a high school diploma, 2011-2015`)
-
+edu_dataTemp2 <- edu_data %>% select(FIPSCode, `Less than a high school diploma, 2011-2015`, `Percent of adults with less than a high school diploma, 2011-2015`)
 #names(edu_dataTemp) <- c("GEOID", "NoHSDip")
 names(edu_dataTemp) <- c("FIPSCode", "NoHSDip")
-head(edu_dataTemp)
+names(edu_dataTemp2) <- c("FIPSCode", "other", "NoHSDip")
+#head(edu_dataTemp2)
+#head(edu_dataTemp)
+```
 
+```{r}
+
+
+makeMap <- function( dataSet, location, column, varNum = 1){
+#dataSet is the data set being analyzed, it needs to have a column that has the fips code
+#location is a string with the location of the boundary file in the computer (Download county shape file from Tiger https://www.census.gov/geo/maps-data/data/cbf/cbf_counties.html). To make life easier, call the file cb_2016_us_county_500k. 
+#Ex: location <- c("/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/cb_2016_us_county_500k")
+#column is the name of the column that dataSet and us.maps has in common. It is a string. Ex: "FIPSCode"
+#varNum is the variable number that you want to analyze. varNum does NOT include the column that has the fips code. 
+#purpose of varNum: I know that us.map has 9 columns. Let's say that we added wanted to added 2 variables in dataSet rather than one variable. But you only wanted to analyze one of those variables. You will indicate which variable is to be analyzed (variable 1 or 2). 
+
+#Example call to the function: makeMap(edu_dataTemp2, "/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/cb_2016_us_county_500k", "FIPSCode", 2)
+
+us.map <- readOGR(dsn = location, layer = "cb_2016_us_county_500k", stringsAsFactors = FALSE)
+
+##Clean county shapefile 
+us.map <- us.map[!us.map$STATEFP %in% c("02", "15", "72", "66", "78", "60", "69",
+                                        "64", "68", "70", "74"),]
+# Make sure other outlying islands are removed.
+us.map <- us.map[!us.map$STATEFP %in% c("81", "84", "86", "87", "89", "71", "76",
+                                        "95", "79"),]
+# Merge spatial df with air quality data.
+leafmap <- merge(us.map, dataSet, by.x=c("GEOID"), by.y = column)
+
+
+lastCol <- ncol(us.map) + varNum
+
+
+# Format popup data for leaflet map.
+popup_dat <- paste0(sep = "<br/>",
+  "<b><strong>County: </strong>", 
+  leafmap$NAME, 
+  "<br><strong>Value: </strong>",
+  leafmap[[lastCol]])
+
+
+pal <- colorQuantile("YlOrRd", NULL, n = 9) #the pallete, n is the number of colors there are 
+# Render final map in leaflet.
+leaflet(data = leafmap) %>% addTiles() %>%
+    addPolygons(fillColor = ~pal(leafmap[[lastCol]]), #the color depeneds on the value from dataSet
+                fillOpacity = 0.8, 
+                color = "#BDBDC3", 
+                weight = 1,
+                popup = popup_dat)
+}
+```
+
+```{r}
+makeMap(edu_dataTemp2, "/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/cb_2016_us_county_500k", "FIPSCode", 2)
+```
+
+
+Code to make the map
+```{r eval=FALSE}
 ##Download county boundary shapefile
 location <- c("/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/cb_2016_us_county_500k")
 us.map <- readOGR(dsn = location, layer = "cb_2016_us_county_500k", stringsAsFactors = FALSE)
@@ -60,6 +120,7 @@ us.map <- us.map[!us.map$STATEFP %in% c("81", "84", "86", "87", "89", "71", "76"
                                         "95", "79"),]
 # Merge spatial df with air quality data.
 leafmap <- merge(us.map, edu_dataTemp, by.x=c("GEOID"), by.y =  c("FIPSCode"))
+View(leafmap)
 
 
 # I HAVE NO IDEA HOW THINGS WORK BELOW THIS POINT 
@@ -83,6 +144,7 @@ leaflet(data = leafmap) %>% addTiles() %>%
 
 ```
 
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SPATIAL VISUALIZATION: METHOD 1: Interactive maps with Leaflet
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -90,14 +152,14 @@ Plotting the data
 https://www.census.gov/cgi-bin/geo/shapefiles/index.php?year=2016&layergroup=Counties+%28and+equivalent%29
 
 Download air quality data 
-```{r}
+```{r eval = FALSE}
 # air quality data from the EPA
 url = "https://data.cdc.gov/api/views/cjae-szjv/rows.csv?accessType=DOWNLOAD"
 dat <- read.csv(url, stringsAsFactors = FALSE)
 ```
 
 Clean air quality data
-```{r}
+```{r eval= FALSE}
 # Convert to lowercase
 names(dat) <- tolower(names(dat))
 dat$countyname <- tolower(dat$countyname)
@@ -117,7 +179,7 @@ county_dat$GEOID <- formatC(county_dat$GEOID, width = 5, format = "d", flag = "0
 
 Download county boundary shapefile
 NEED TO CHANGE LOCATION depending on who's laptop it is from
-```{r}
+```{r eval = FALSE}
 # Download county shape file from Tiger.
 # https://www.census.gov/geo/maps-data/data/cbf/cbf_counties.html
 location <- c("/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/cb_2016_us_county_500k")
@@ -128,7 +190,7 @@ us.map <- readOGR(dsn = location, layer = "cb_2016_us_county_500k", stringsAsFac
 ```
 
 Clean county shapefile 
-```{r}
+```{r eval = FALSE}
 # Remove Alaska(2), Hawaii(15), Puerto Rico (72), Guam (66), Virgin Islands (78), American Samoa (60)
 #  Mariana Islands (69), Micronesia (64), Marshall Islands (68), Palau (70), Minor Islands (74)
 us.map <- us.map[!us.map$STATEFP %in% c("02", "15", "72", "66", "78", "60", "69",
