@@ -236,7 +236,7 @@ pal <- colorNumeric(
 
 map <- leaflet(counties) %>% addTiles()
 
-map %>% 
+map <- map %>% 
   #Stroke indicates outline presence
   #smoothFactor: how much to simplify the polyline on each zoom level (more means better performance and less accurate representation)
   addPolygons(stroke = FALSE, color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1, 
@@ -246,6 +246,8 @@ map %>%
     title = "Airquality (2010)",
     labFormat = labelFormat(suffix = "Units"), na.label = "county data missing",
     opacity = 1)
+
+#saveWidget(map, file = "mymap.html", selfcontained = T)
 
 #Stripped down version
 
