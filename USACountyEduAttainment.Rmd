@@ -25,42 +25,123 @@ Note file had to be downloaded first and then read-in as there appears to be no 
 
 Ultimately had to download excel file, delete excess info at the top, save as csv, then read.csv()
 ```{r}
+
+#This is the cleaning and downloading of the education data
 library(RCurl)
 library(readxl)
 library(mosaic)
 library(readr)
 
-#No Luck using getURLContent but would like to pursue
-#URL <- getURLContent("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762")
 
-
-#Works but the issue is that file must be handled locally during preprocessing.
 download.file("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762", destfile = "C:\\Users\\Katrlyn\\Downloads\\edu.xls", mode = "wb" )
 
-data <- read_excel("C:\\Users\\Katrlyn\\Downloads\\edu.xls", sheet = 1, skip = 4)
-
-#read_file() can't find xls finle extension
-#data <- read_excel(read_file("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762"), sheet = 1, skip = 4)
-
-
-#Try tempfile
-#excelData <- tempfile(fileext = ".xls")
-#download.file(url = "https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls", destfile = excelData)
-
-#df <- read_excel(excelData, sheet = 1, skip = 4)
+edu_data_unclean <- read_excel("C:\\Users\\Katrlyn\\Downloads\\edu.xls", sheet = 1, skip = 4)
+edu_data<-edu_data_unclean[, grep("2011|FIPS Code", colnames(edu_data_unclean))]
+edu_data<-edu_data[, grep("Percent|FIPS Code", colnames(edu_data))]
+edu_data<-edu_data%>%dplyr::rename(FIPSCode=`FIPS Code`)
  
 ```
 
-```{r}
-
-#Note that there is data for: US,  states, AND counties.
-#Should be able to filter by FIPS code to help isolate what we want (those that end in 0 are not counties)
-head(data)
-```
 
 ```{r}
-dog <- read.csv("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762")
-head(dog)
+#download the county/fips code to be able to map it
+poll_county_unclean<-read.csv("https://data.cdc.gov/api/views/cjae-szjv/rows.csv?accessType=DOWNLOAD")
+poll_county<-poll_county_unclean %>%
+  filter(MeasureType=='Average')%>%
+  group_by(ReportYear)%>%
+  arrange(CountyName)%>%
+  arrange(StateName)%>%
+  dplyr::rename(FIPSCode=CountyFips)%>%
+  subset(select=c(FIPSCode, ReportYear, Value, Unit))%>%mutate(FIPSCode=gsub("46113","46102", FIPSCode))%>%filter(ReportYear==2010)%>%subset(select=-c(ReportYear))
+poll_county$FIPSCode<-stri_pad_left(poll_county$FIPSCode, 5, "0")
 ```
 
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+MAPPING THE DATA USING KATELYN'S CODE
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+```{r}
+
+#Join the data
+edu_data_full<-every_county%>%left_join(edu_data, by="FIPSCode")
+
+# Convert to lowercase to create standard format among all datasets
+names(edu_data_full) <- tolower(names(edu_data_full))
+edu_data_full$county <- tolower(edu_data_full$county)
+edu_data_full$state <- tolower(edu_data_full$state)
+
+
+```
+
+County Shapefile Acquisition and Cleaning
+
+Downloading county boundary shapefiles (METHOD 1: TIGRIS Package)
+```{r}
+library(tigris)
+# Download county shape file from US Census using streamlined TIGRIS package. 
+#cb = TRUE indicates that we're choosing simplified cartographic boundaries
+us.map <- tigris::counties(cb = TRUE, year = 2015)
+
+#names(us.map)
+#summary(us.map)
+#View(us.map)
+
+```
+
+
+Map data Cleaning
+```{r}
+# Remove Alaska(2), Hawaii(15), Puerto Rico (72), Guam (66), Virgin Islands (78), American Samoa (60)
+#  Mariana Islands (69), Micronesia (64), Marshall Islands (68), Palau (70), Minor Islands (74)
+us.map <- us.map[!us.map$STATEFP %in% c("02", "15", "72", "66", "78", "60", "69",
+                                        "64", "68", "70", "74"),]
+# Make sure other outling islands are removed.
+us.map <- us.map[!us.map$STATEFP %in% c("81", "84", "86", "87", "89", "71", "76",
+                                        "95", "79"),]
+#To see the shapfile structure:
+#dog <- as.data.frame(us.map)
+#head(dog)
+
+#Converting shapefile to dataframe for visualization
+
+#deprecated method:
+#county_map <- ggplot2::fortify(us.map, region="GEOID")
+
+library(broom)
+county_map <- tidy(us.map, region="GEOID")
+
+#Join sample edu data to spatial data
+library(dplyr)
+county_map <- left_join(county_map, edu_data_full, by = c("id" = "fipscode"))
+View(county_map)
+head(county_map)
+```
+
+Plotting the data
+https://www.census.gov/cgi-bin/geo/shapefiles/index.php?year=2016&layergroup=Counties+%28and+equivalent%29
+
+```{r}
+library(mapproj)
+library(ggplot2)
+ggplot() +
+    #blank county map
+    geom_polygon(data= county_map, aes(x=long, y=lat, group=group), fill = "white", color="black", size=0.25) +
+    #Air quality data
+    geom_polygon(data= county_map, aes(x=long, y=lat, group=group, fill = bachelors), color="black", size=0.25) +
+    ggplot2::coord_map() +
+    scale_fill_gradientn(colors = c("white", "red"))  +
+    labs(title="Percent of Adults with a High School Degree") + 
+    theme_bw() +
+    theme(axis.line=element_blank(),
+          axis.text.x=element_blank(),
+          axis.text.y=element_blank(),
+          axis.ticks=element_blank(),
+          axis.title.x=element_blank(),
+          axis.title.y=element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_blank(),
+          panel.background = element_blank(),
+          legend.title=element_blank())
 
