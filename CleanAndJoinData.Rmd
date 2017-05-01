@@ -526,16 +526,13 @@ poll_data <- GetPollutionData()
 tree_data <- GetTreeData()
 
 
-all_data<-plyr::join_all(list(every_county, edu_data, income_data, poll_data, tree_data), by='FIPSCode', type='full')
-
-all_data_narrow<-all_data %>% 
-  gather(key=EducationLevel, value=PercentOfAdults, LessThanHS:Bachelors) %>%
+all_data<-plyr::join_all(list(every_county, edu_data, income_data, poll_data, tree_data), by='FIPSCode', type='full')%>%
   mutate(bach_HS = Bachelors/HSDiploma) %>%
   mutate(coll_HS = (SomeCollege + Bachelors)/(LessThanHS + HSDiploma))
 
 
 head(all_data)
-head(all_data_narrow)
+
 ```
 
 
