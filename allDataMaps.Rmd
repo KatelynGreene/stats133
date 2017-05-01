@@ -13,6 +13,14 @@ output:
 library(DataComputing)
 library(readr)
 library(rgdal)
+
+library(sp)
+library(rgeos)
+library(rgdal)
+library(maptools)
+library(dplyr)
+library(leaflet)
+library(scales)
 ```
 *Source file* 
 ```{r, results='asis', echo=FALSE}
@@ -20,44 +28,177 @@ includeSourceDocuments()
 ```
 <!-- Don't edit the material above this line -->
 Need to have all_data in your workspace, get it from CleanAndJoinData
-```{r}
-#"/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/all_data.csv"
-#fileLocation <- "/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/all_data.csv"
 
-#all_data <- read.csv(file=fileLocation,head=TRUE,sep=",")
-#View(all_data)
+
+
+-------------------
+Visualization
+-------------------
+
+```{r}
+
+GetCountyShapefile <- function(){
+  
+  # Download county shape file from Tiger.
+  # https://www.census.gov/geo/maps-data/data/cbf/cbf_counties.html
+  #location <- "C:\\Users\\Katrlyn\\stats133Project\\cb_2016_us_county_500k"
+  #us.map <- readOGR(dsn = location, layer = "cb_2016_us_county_500k", stringsAsFactors = FALSE)
+  
+  # Other Download method
+  library(tigris)
+  # Download county shape file from US Census using streamlined TIGRIS package. 
+  #cb = TRUE indicates that we're choosing simplified cartographic boundaries
+  us.map <- tigris::counties(cb = TRUE, year = 2015)
+  
+  # Clean county shapefile 
+  
+  # Remove Alaska(2), Hawaii(15), Puerto Rico (72), Guam (66), Virgin Islands (78), American Samoa (60)
+  # Mariana Islands (69), Micronesia (64), Marshall Islands (68), Palau (70), Minor Islands (74)
+  us.map <- us.map[!us.map$STATEFP %in% c("02", "15", "72", "66", "78", "60", "69",
+                                          "64", "68", "70", "74"),]
+  # Make sure other outling islands are removed.
+  us.map <- us.map[!us.map$STATEFP %in% c("81", "84", "86", "87", "89", "71", "76",
+                                          "95", "79"),]
+
+  return(us.map)  
+}
+
 ```
 
+---------------------------------
+Pollution leaflet visualization
+--------------------------------
+
 ```{r}
-mapLocation <- "/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/cb_2016_us_county_500k"
-# Download county shape file from Tiger.
-# https://www.census.gov/geo/maps-data/data/cbf/cbf_counties.html
-us.map <- readOGR(dsn = location, layer = "cb_2016_us_county_500k", stringsAsFactors = FALSE)
 
-# Other paths:
-# "C:\\Users\\kagex\\stats133Project\\cb_2016_us_county_500k"
-# "/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/cb_2016_us_county_500k"
-```
+countyShapefile <- GetCountyShapefile()
+
+small_data <- all_data %>% 
+  select(FIPSCode, UrbanCode, Income,Unemployment, Pollution, TreeCanopy, AvailGreenSpace, TreeCanopyCover)
 
 
-
-Clean county shapefile 
-```{r}
-# Remove Alaska(2), Hawaii(15), Puerto Rico (72), Guam (66), Virgin Islands (78), American Samoa (60)
-#  Mariana Islands (69), Micronesia (64), Marshall Islands (68), Palau (70), Minor Islands (74)
-#all <- all_data
-us.map <- us.map[!us.map$STATEFP %in% c("02", "15", "72", "66", "78", "60", "69",
-                                        "64", "68", "70", "74"),]
-# Make sure other outling islands are removed.
-us.map <- us.map[!us.map$STATEFP %in% c("81", "84", "86", "87", "89", "71", "76",
-                                        "95", "79"),]
-#View(us.map)
 # Merge spatial df with air quality data.
-#counties <- merge(us.map, all_data, by.x=c("GEOID"), by.y =c("FIPSCode") )
+counties <- geo_join(countyShapefile, small_data, "GEOID", "FIPSCode", how = "left")
 
-#Leftoin isn't used because cannot left join this data! 
-#leafmap <- us.map %>% left_join(county_dat, by = c("GEOID"))
 ```
+
+```{r}
+# Format popup data for leaflet map.
+popup_dat1 <- paste(sep = "<br/>",
+  "<b>County: </b>", 
+  counties$NAME, 
+  "<b>Value: </b>", 
+  counties$Pollution)
+
+#Let leaflet calculate the colors and labels for you 
+pal1 <- colorNumeric(
+  palette =  "YlGnBu",
+  domain = counties$Pollution
+)
+
+# Render final map in leaflet.
+
+map <- leaflet(counties) %>% addTiles()
+
+map %>% 
+  #Base Groups
+  #Stroke indicates outline presence
+  #smoothFactor: how much to simplify the polyline on each zoom level (more means better performance and less accurate representation)
+  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
+    fillColor = ~pal1(Pollution), fillOpacity = 1, popup = popup_dat1, 
+    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE), group = "Pollution") %>%
+  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
+    fillColor = ~pal2(UrbanCode), fillOpacity = 1, popup = popup_dat2, 
+    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE), group = "UrbanInfluenceCodes") %>% 
+  # addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
+  #   fillColor = ~pal3(HouseholdIncome2015), fillOpacity = 1, popup = popup_dat3, 
+  #   highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE), group = "HouseholdIncome2015") %>% 
+  
+  # Layers control
+  addLayersControl(
+    baseGroups = c("Pollution", "UrbanInfluenceCodes"),
+    options = layersControlOptions(collapsed = FALSE)
+  ) 
+
+
+```
+
+
+
+#Playing with Layer Control
+
+```{r}
+# Format popup data for leaflet map.
+popup_dat1 <- paste(sep = "<br/>",
+  "<b>County: </b>", 
+  counties$NAME, 
+  "<b>Value: </b>", 
+  counties$Pollution)
+
+popup_dat2 <- paste(sep = "<br/>",
+  "<b>County: </b>", 
+  counties$NAME, 
+  "<b>Value: </b>", 
+  counties$UrbanCode)
+
+popup_dat3 <- paste(sep = "<br/>",
+  "<b>County: </b>", 
+  counties$NAME, 
+  "<b>Value: </b>", 
+  counties$Income)
+
+
+#Let leaflet calculate the colors and labels for you 
+pal1 <- colorNumeric(
+  palette =  "YlGnBu",
+  domain = counties$Pollution
+)
+
+pal2 <- colorNumeric(
+  palette =  "YlGnBu",
+  domain = counties$UrbanCode
+)
+
+pal3 <- colorNumeric(
+  palette =  "YlGnBu",
+  domain = counties$Income
+)
+
+# Render final map in leaflet.
+
+map <- leaflet(counties) %>% addTiles()
+
+map %>% 
+  #Base Groups
+  #Stroke indicates outline presence
+  #smoothFactor: how much to simplify the polyline on each zoom level (more means better performance and less accurate representation)
+  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
+    fillColor = ~pal1(Pollution), fillOpacity = 1, popup = popup_dat1, 
+    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE), group = "Pollution") %>%
+  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
+    fillColor = ~pal2(UrbanCode), fillOpacity = 1, popup = popup_dat2, 
+    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE), group = "UrbanInfluenceCodes") %>% 
+  # addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
+  #   fillColor = ~pal3(HouseholdIncome2015), fillOpacity = 1, popup = popup_dat3, 
+  #   highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE), group = "HouseholdIncome2015") %>% 
+  
+  # Layers control
+  addLayersControl(
+    baseGroups = c("Pollution", "UrbanInfluenceCodes"),
+    options = layersControlOptions(collapsed = FALSE)
+  ) 
+
+
+```
+
+```{r}
+  
+  addLegend("bottomright", pal = pal, values = ~Pollution,
+    title = "Airquality (2010)",
+    labFormat = labelFormat(suffix = "Units"), na.label = "county data missing",
+    opacity = 1)
+```
+
 
 #graph TreeCanopy
 ```{r}
@@ -92,5 +233,3 @@ map %>%
     labFormat = labelFormat(suffix = "Units"), na.label = "county data missing",
     opacity = 1)
 ```
-
-
