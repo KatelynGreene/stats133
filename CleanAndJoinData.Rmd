@@ -589,17 +589,13 @@ library(rpart.plot)
 library(stats)
 library(mosaicData)
 
-all_data_test <- all_data %>%
-  mutate(bach_HS = Bachelors/HSDiploma) %>%
-  mutate(coll_HS = (SomeCollege + Bachelors)/(LessThanHS + HSDiploma))
 
-
-income_edu_plot<-all_data_test %>%
+income_edu_plot<-all_data %>%
   ggplot(aes(coll_HS, Income)) +
   geom_point() +
   geom_smooth(method = "lm")
 
-lm(coll_HS~Pollution  + Income, data=all_data_test) %>% summary()
+lm(coll_HS~Pollution  + Income, data=all_data) %>% summary()
 
 ```
 
