@@ -144,6 +144,7 @@ GetIncomeData <- function(){
     dplyr::rename(FIPSCode=FIPStxt)
   
   colnames(income) <- c("FIPSCode", "Income", "Unemployment")
+  income$IncomeQuartile <- ntile(income$Income, 4) 
   
   return(income)
 }
@@ -527,7 +528,6 @@ tree_data <- GetTreeData()
 
 
 all_data<-plyr::join_all(list(every_county, edu_data, income_data, poll_data, tree_data), by='FIPSCode', type='full')%>%
-  mutate(bach_HS = Bachelors/HSDiploma) %>%
   mutate(coll_HS = (SomeCollege + Bachelors)/(LessThanHS + HSDiploma))
 
 
@@ -540,7 +540,7 @@ head(all_data)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Scatterplots
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-```{r}
+```{r eval = FALSE}
 # use ggplot to make a scatter plot of education versus TREE DATA
 
 #all_data_narrow_tree<-all_data_narrow%>%gather(key=TreeType, value=TreeValue, TreeCanopy,AvailGreenSpace, TreeCanopyCover)
@@ -556,7 +556,7 @@ edu_green_plot
 
 ```
 
-```{r}
+```{r eval = FALSE}
 #use ggplot to plot edication data versus income data
 edu_inc_plot<-all_data_narrow%>%
   ggplot(aes(x=PercentOfAdults, y=Income))+
@@ -566,7 +566,7 @@ View(all_data_narrow)
 edu_inc_plot
 ```
 
-```{r}
+```{r eval = FALSE}
 
 #use ggplot to graph education versus pollution
 edu_poll_graph<-all_data_narrow%>%
@@ -577,7 +577,7 @@ edu_poll_graph<-all_data_narrow%>%
 edu_poll_graph  
 ```
 
-```{r}
+```{r eval = FALSE}
 #Linear Regerssion Time......
 library(statisticalModeling)
 library(rpart)
@@ -598,7 +598,20 @@ lm(coll_HS~Pollution  + Income, data=all_data) %>% summary()
 
 
 
+Convert income into its quartiles
+```{r}
+#all_data$quartile <- ntile(all_data$Income, 4)  
+View(all_data)
+pollutionVRatioQuartiles<-all_data%>%
+  filter(!is.na(Income)) %>%
+  ggplot(aes(x=Pollution, y=coll_HS))+
+  geom_point(aes(color=IncomeQuartile))+
+  facet_grid(IncomeQuartile~.)
+#View(all_data_narrow)
+pollutionVRatioQuartiles 
+#education is ratio of higher education to high school or less 
 
+```
 
 
 
