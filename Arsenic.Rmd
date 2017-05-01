@@ -178,4 +178,90 @@ arsenic_df <- avgArsenic_df %>%
 names(arsenic_df) <- c("fips","arsenic")
 
 ```
+
+
+## Combine with education data
+
+```{r}
+GetEduData <- function(){
   
+  #Download and read data
+  url <- "https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762"
+  tmp <- tempfile(fileext=".xls")
+  download.file(url, destfile=tmp, mode="wb")
+  edu_data_unclean <- read_excel(tmp, sheet = 1, skip = 4)
+  
+  unlink(tmp)
+  
+  #Wrangle and select variables
+  edu_data<-edu_data_unclean[, grep("2011|FIPS Code|2013 Urban", colnames(edu_data_unclean))]
+  edu_data<-edu_data[, grep("Percent|FIPS Code|2013 Urban", colnames(edu_data))]
+  edu_data<-edu_data%>%dplyr::rename(FIPSCode=`FIPS Code`)
+  colnames(edu_data)<-c('FIPSCode', 'UrbanCode', 'LessThanHS', 'HSDiploma', 'SomeCollege','Bachelors')
+  
+  return(edu_data)
+}
+
+edu_data <- GetEduData()
+
+GetIncomeData <- function(){
+  
+  #download/clean USACountyIncomeEmploy data
+  url <- "https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Unemployment.xls?v=42762"
+  tmp <- tempfile(fileext=".xls")
+  download.file(url, destfile=tmp, mode="wb")
+    
+  income_unclean <- read_excel(tmp, sheet = 1, skip = 7)
+  
+  unlink(tmp)
+  
+  income <- income_unclean %>% 
+    mutate(Area_name= gsub(", ..$", "", Area_name), Area_name)%>%
+    subset(select=c("FIPStxt","Median_Household_Income_2015","Unemployment_rate_2015"))%>%
+    dplyr::rename(FIPSCode=FIPStxt)
+  
+  return(income)
+}
+
+income <- GetIncomeData()
+
+all_data <- arsenic_df %>%
+  left_join(income, by = c("fips" = "FIPSCode")) %>%
+  left_join(edu_data, by = c("fips" = "FIPSCode"))
+
+
+all_data_test <- arsenic_df %>%
+  left_join(income, by = c("fips" = "FIPSCode")) %>%
+  left_join(edu_data, by = c("fips" = "FIPSCode"))
+```
+
+## Testing different manipulations of variables
+```{r}
+all_data_test <- all_data_test %>%
+  mutate(bach_HS = Bachelors/HSDiploma) %>%
+  mutate(coll_HS = (SomeCollege + Bachelors)/(LessThanHS + HSDiploma))
+all_data_test$arsenic[all_data_test$arsenic > 100] <- NA
+
+
+all_data_test %>%
+  ggplot(aes(arsenic, bach_HS)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+all_data_test %>%
+  ggplot(aes(coll_HS, Median_Household_Income_2015)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+```
+
+## Visualizing arsenic data
+
+```{r}
+all_data_test %>%
+  ggplot(aes(log(arsenic), log(bach_HS))) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+
+```

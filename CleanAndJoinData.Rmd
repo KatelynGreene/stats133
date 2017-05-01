@@ -372,7 +372,7 @@ DownloadLocally <- function(AllStates){
   
   #Download file for each state
   for(i in 1:length(AllStates$stateNames)){
-    destination <- paste("C:\\Users\\Katrlyn\\stats133Project\\AllStates\\", AllStates$stateNames[i], ".xls", sep = "")
+    destination <- paste("/Users/anishakumar/Documents/Stats133/RStudioFiles/Stats133Project/AllStates/", AllStates$stateNames[i], ".xls", sep = "")
     
     download.file(AllStates$downloadLinks[i], destfile = destination, mode = "wb" )
     
@@ -393,7 +393,7 @@ Load the filepaths if you're using the downloaded files
 #' @param AllStates data frame that contains stateNames and downloadLinks
 #' @return Data frame with stateNames, downloadLinks, and fileLocations 
 LoadFilepaths <- function(AllStates){
-  AllStates$fileLocations <- paste("C:\\Users\\Katrlyn\\stats133Project\\AllStates\\", AllStates$stateNames, ".xls", sep = "")
+  AllStates$fileLocations <- paste("/Users/anishakumar/Documents/Stats133/RStudioFiles/Stats133Project/AllStates/", AllStates$stateNames, ".xls", sep = "")
   return(AllStates)
 }
 
@@ -558,10 +558,10 @@ edu_green_plot
 ```{r}
 #use ggplot to plot edication data versus income data
 edu_inc_plot<-all_data_narrow%>%
-  ggplot(aes(x=PercentOfAdults, y=Median_Household_Income_2015))+
+  ggplot(aes(x=PercentOfAdults, y=Income))+
   geom_point(aes(color=EducationLevel))+
   facet_grid(EducationLevel~.)
-                        
+View(all_data_narrow)
 edu_inc_plot
 ```
 
@@ -569,7 +569,7 @@ edu_inc_plot
 
 #use ggplot to graph education versus pollution
 edu_poll_graph<-all_data_narrow%>%
-  ggplot(aes(x=PercentOfAdults, y=Value))+
+  ggplot(aes(x=PercentOfAdults, y=Pollution))+
   geom_point(aes(color=EducationLevel))+
   facet_grid(EducationLevel~.)
 
