@@ -35,14 +35,6 @@ Downloading the USACountyEduAttainment data
 ```{r}
 #download/wrangle the USACountyEduAttainment data
 
-download.file("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762", destfile = "~/Downloads/stats133data/edu.xls", mode = "wb" )
-#"/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/edu.xls"
-edu_data_unclean <- read_excel("~/Downloads/stats133data/edu.xls", sheet = 1, skip = 4)
-edu_data<-edu_data_unclean[, grep("2011|FIPS Code|2013 Urban", colnames(edu_data_unclean))]
-edu_data<-edu_data[, grep("Percent|FIPS Code|2013 Urban", colnames(edu_data))]
-colnames(edu_data)<-c('FIPSCode', 'UrbanCode', 'LessThanHS', 'HSDiploma', 'SomeCollege','Bachelors')
-#/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/edu.xls
-
 GetEduData <- function(){
   
   #Download and read data
@@ -57,6 +49,7 @@ GetEduData <- function(){
   edu_data<-edu_data_unclean[, grep("2011|FIPS Code|2013 Urban", colnames(edu_data_unclean))]
   edu_data<-edu_data[, grep("Percent|FIPS Code|2013 Urban", colnames(edu_data))]
   edu_data<-edu_data%>%dplyr::rename(FIPSCode=`FIPS Code`)
+  colnames(edu_data)<-c('FIPSCode', 'UrbanCode', 'LessThanHS', 'HSDiploma', 'SomeCollege','Bachelors')
   
   return(edu_data)
 }
@@ -69,21 +62,6 @@ Downloading the PollutionPerCounty data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```{r}
 
-#dowload/wrangle the PollutionPerCounty data
-poll_county_unclean<-read.csv("https://data.cdc.gov/api/views/cjae-szjv/rows.csv?accessType=DOWNLOAD")
-
-poll_county<-poll_county_unclean %>%
-  filter(MeasureType=='Average')%>%
-  group_by(ReportYear)%>%
-  arrange(CountyName)%>%
-  arrange(StateName)%>%
-  filter(MeasureId==296)%>%
-  dplyr::rename(FIPSCode=CountyFips)%>%
-  subset(select=c(FIPSCode, ReportYear, Value, Unit))%>%
-  mutate(FIPSCode=gsub("46113","46102", FIPSCode))%>%
-  filter(ReportYear==2010)%>%
-  subset(select=-c(ReportYear))
-poll_county$FIPSCode<-stri_pad_left(poll_county$FIPSCode, 5, "0")
 
 GetPollutionData <- function(){
   #dowload/wrangle the PollutionPerCounty data
@@ -93,6 +71,7 @@ GetPollutionData <- function(){
     group_by(ReportYear)%>%
     arrange(CountyName)%>%
     arrange(StateName)%>%
+    filter(MeasureId==296)%>%
     dplyr::rename(FIPSCode=CountyFips)%>%
     subset(select=c(FIPSCode, ReportYear, Value, Unit))%>%
     mutate(FIPSCode=gsub("46113","46102", FIPSCode))%>%
@@ -115,19 +94,6 @@ Downloading the CountyReferenceTable data
 ```{r}
 
 #download/clean CountyReferenceTable data
-every_us_county <- 
-  "https://en.wikipedia.org/wiki/List_of_United_States_counties_and_county_equivalents" %>%
-  read_html() %>%
-  html_nodes(xpath = '//*[@id="mw-content-text"]/table') %>%
-  html_table(fill=TRUE)
-every_us_county2<-every_us_county[[2]]
-every_county<-every_us_county2%>%
-  dplyr::rename(FIPSCode=INCITS, County=`County or equivalent`, State=`State or district`)%>%
-  subset(select=c( `FIPSCode`, `County`, `State`))
-every_county$FIPSCode<-stri_pad_left(every_county$FIPSCode, 5, "0")
-every_county<-mutate(every_county,StateFips=substr(every_county$FIPSCode,1,2))
-#View(every_county)
-
 
 GetCountyReference <- function(){
   
@@ -158,13 +124,6 @@ Downloading the USACountyIncomeEmploy data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ```{r}
-
-
-download.file("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Unemployment.xls?v=42762", destfile = "~/Downloads/stats133data/income.xls", mode = "wb" )
-#"/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/income.xls"
-income_unclean <- read_excel("~/Downloads/stats133data/income.xls", sheet = 1, skip = 7)
-head(data)
-income<- income_unclean %>% mutate(Area_name= gsub(", ..$", "", Area_name), Area_name)%>%subset(select=c("FIPStxt","Median_Household_Income_2015","Unemployment_rate_2015"))%>%dplyr::rename(FIPSCode=FIPStxt)
 
 GetIncomeData <- function(){
   
@@ -441,14 +400,6 @@ Main code (Method 1: Download all the files locally)
 ------------------------------------------------------
 ```{r}
 
-
-fileLocations <- vector(mode="character", length=length(AllStates$stateNames))
-for(i in 1:length(AllStates$stateNames)){
-  destination <- paste("~/Downloads/stats133data/AllStates", AllStates$stateNames[i], ".xls", sep = "")
-  #"/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/AllStates"
-  #file must be handled locally during preprocessing.
-  download.file(AllStates$downloadLinks[i], destfile = destination, mode = "wb" )
-
 GetTreeData <- function(){
   #Webscrape the data links from the USDA Forest Service
   #The original data source is: https://www.nrs.fs.fed.us/data/urban/ 
@@ -458,7 +409,6 @@ GetTreeData <- function(){
   #Download all the xls files locally for data processing
   #AllStates <- DownloadLocally(AllStates)
   AllStates <- LoadFilepaths(AllStates) #You will need to load this every time if you're working from local files
->>>>>>> 37018db2623a58164ccb187b062c16974079a58b
   
   #Extract urban forestry for each state in the United States
   for(i in 1:length(AllStates$downloadLinks)){
@@ -504,12 +454,6 @@ GetTreeData <- function(){
 
 ```
 
-
-Load the filepaths if you're using the downloaded files
-```{r}
-AllStates$fileLocations <- paste("~/Downloads/stats133data/AllStates/", AllStates$stateNames, ".xls", sep = "")
-AllStates
-```
 
 ------------------------------------------------------
 Main code (Method 2: Download via temporary files)
@@ -570,13 +514,19 @@ Joining all datatables
 ```{r}
 all_data=NULL
 
-#library(xlsx)
-#write.csv(all_data, "/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/all_data.csv")
-#"/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/all_data.xlsx"
-all_data<-plyr::join_all(list(every_county, edu_data, income, poll_county, tree_data), by='FIPSCode', type='full')
+every_county <- GetCountyReference()
+
+edu_data <- GetEduData()
+income_data <- GetIncomeData()
+poll_data <- GetPollutionData()
+tree_data <- GetTreeData()
+
+
+all_data<-plyr::join_all(list(every_county, edu_data, income_data, poll_data, tree_data), by='FIPSCode', type='full')
 
 all_data_narrow<-all_data%>% gather(key=EducationLevel, value=PercentOfAdults, LessThanHS:Bachelors)
 ```
+
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Scatterplots
@@ -630,172 +580,10 @@ library(mosaicData)
 ```
 
 
-```{r}
-every_county <- GetCountyReference()
-
-edu_data <- GetEduData()
-income_data <- GetIncomeData()
-poll_data <- GetPollutionData()
-tree_data <- GetTreeData()
-
-all_data<-every_county%>%left_join(edu_data, by ='FIPSCode')
-all_data<-all_data%>%full_join(income_data, by='FIPSCode')
-all_data<-all_data%>%full_join(poll_data, by= 'FIPSCode')
-all_data<-all_data%>%full_join(tree_data, by='FIPSCode')
-
-head(all_data)
-
-#library(xlsx)
-#write.csv(all_data, "/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/all_data.csv")
-#"/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/all_data.xlsx"
-#View(all_data)
-```
-
-Original code before I modified it:
-```{r, eval=FALSE}
-all_data=NULL
-
-all_data<-every_county%>%left_join(edu_data, by ='FIPSCode')
-all_data<-all_data%>%full_join(income, by='FIPSCode')
-all_data<-all_data%>%full_join(poll_county, by= 'FIPSCode')
-all_data<-all_data%>%full_join(tree_data, by='FIPSCode')
-#library(xlsx)
-#write.csv(all_data, "/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/all_data.csv")
-#"/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/all_data.xlsx"
-#View(all_data)
 
 
-head(all_data)
-summary(all_data)
-```
 
 
--------------------
-Visualization
--------------------
-
-```{r}
-
-GetCountyShapefile <- function(){
-  
-  # Download county shape file from Tiger.
-  # https://www.census.gov/geo/maps-data/data/cbf/cbf_counties.html
-  #location <- "C:\\Users\\Katrlyn\\stats133Project\\cb_2016_us_county_500k"
-  #us.map <- readOGR(dsn = location, layer = "cb_2016_us_county_500k", stringsAsFactors = FALSE)
-  
-  # Other Download method
-  library(tigris)
-  # Download county shape file from US Census using streamlined TIGRIS package. 
-  #cb = TRUE indicates that we're choosing simplified cartographic boundaries
-  us.map <- tigris::counties(cb = TRUE, year = 2015)
-  
-  # Clean county shapefile 
-  
-  # Remove Alaska(2), Hawaii(15), Puerto Rico (72), Guam (66), Virgin Islands (78), American Samoa (60)
-  # Mariana Islands (69), Micronesia (64), Marshall Islands (68), Palau (70), Minor Islands (74)
-  us.map <- us.map[!us.map$STATEFP %in% c("02", "15", "72", "66", "78", "60", "69",
-                                          "64", "68", "70", "74"),]
-  # Make sure other outling islands are removed.
-  us.map <- us.map[!us.map$STATEFP %in% c("81", "84", "86", "87", "89", "71", "76",
-                                          "95", "79"),]
-
-  return(us.map)  
-}
-```
-
-Pollution leaflet visualization
-```{r}
-library(sp)
-library(rgeos)
-library(rgdal)
-library(maptools)
-library(dplyr)
-library(leaflet)
-library(scales)
-
-countyShapefile <- GetCountyShapefile()
-
-small_data <- all_data %>% 
-  select(FIPSCode,  `2013 Urban Influence Code`, Median_Household_Income_2015,Unemployment_rate_2015, Value, TreeCanopy, AvailGreenSpace, TreeCanopyCover)
-
-colnames(small_data) <- c("FIPSCode", "UrbanInfluence2013", "HouseholdIncome2015", "Unemployment2015", "Pollution", "TreeCanopy", "AvailGreenSpace", "TreeCanopyCover")
-
-# Merge spatial df with air quality data.
-counties <- geo_join(countyShapefile, small_data, "GEOID", "FIPSCode", how = "left")
-
-```
-
-```{r}
-# Format popup data for leaflet map.
-popup_dat1 <- paste(sep = "<br/>",
-  "<b>County: </b>", 
-  counties$NAME, 
-  "<b>Value: </b>", 
-  counties$Pollution)
-
-popup_dat2 <- paste(sep = "<br/>",
-  "<b>County: </b>", 
-  counties$NAME, 
-  "<b>Value: </b>", 
-  counties$UrbanInfluence2013)
-
-popup_dat3 <- paste(sep = "<br/>",
-  "<b>County: </b>", 
-  counties$NAME, 
-  "<b>Value: </b>", 
-  counties$HouseholdIncome2015)
-
-
-#Let leaflet calculate the colors and labels for you 
-pal1 <- colorNumeric(
-  palette =  "YlGnBu",
-  domain = counties$Pollution
-)
-
-pal2 <- colorNumeric(
-  palette =  "YlGnBu",
-  domain = counties$UrbanInfluence2013
-)
-
-pal3 <- colorNumeric(
-  palette =  "YlGnBu",
-  domain = counties$HouseholdIncome2015
-)
-
-# Render final map in leaflet.
-
-map <- leaflet(counties) %>% addTiles()
-
-map %>% 
-  #Base Groups
-  #Stroke indicates outline presence
-  #smoothFactor: how much to simplify the polyline on each zoom level (more means better performance and less accurate representation)
-  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
-    fillColor = ~pal1(Pollution), fillOpacity = 1, popup = popup_dat1, 
-    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE), group = "Pollution") %>%
-  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
-    fillColor = ~pal2(UrbanInfluence2013), fillOpacity = 1, popup = popup_dat2, 
-    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE), group = "UrbanInfluenceCodes") %>% 
-  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
-    fillColor = ~pal3(HouseholdIncome2015), fillOpacity = 1, popup = popup_dat3, 
-    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE), group = "HouseholdIncome2015") %>% 
-  
-  # Layers control
-  addLayersControl(
-    baseGroups = c("Pollution", "UrbanInfluenceCodes","HouseholdIncome"),
-    options = layersControlOptions(collapsed = FALSE)
-  ) 
-
-
-```
-
-```{r}
-  
-  addLegend("bottomright", pal = pal, values = ~Pollution,
-    title = "Airquality (2010)",
-    labFormat = labelFormat(suffix = "Units"), na.label = "county data missing",
-    opacity = 1)
-```
 
 
 
