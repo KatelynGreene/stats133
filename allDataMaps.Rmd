@@ -85,7 +85,7 @@ map %>%
   #Stroke indicates outline presence
   #smoothFactor: how much to simplify the polyline on each zoom level (more means better performance and less accurate representation)
   addPolygons(stroke = TRUE, color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1, 
-    fillColor = ~pal(airqlty), fillOpacity = 1, popup = popup_dat, 
+    fillColor = ~pal(TreeCanopy), fillOpacity = 1, popup = popup_dat, 
     highlight = highlightOptions(color = "#666", weight = 3, bringToFront = TRUE)) %>%
   addLegend("bottomright", pal = pal, values = ~airqlty,
     title = "Airquality (2010)",
