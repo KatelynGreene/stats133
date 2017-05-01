@@ -20,6 +20,7 @@ library(dplyr)
 library(stringi)
 library(XML)
 library(rvest)
+library(rgdal)
 ```
 *Source file* 
 ```{r, results='asis', echo=FALSE}
@@ -527,7 +528,6 @@ Original code before I modified it:
 ```{r, eval=FALSE}
 all_data=NULL
 
-
 all_data<-every_county%>%left_join(edu_data, by ='FIPSCode')
 all_data<-all_data%>%full_join(income, by='FIPSCode')
 all_data<-all_data%>%full_join(poll_county, by= 'FIPSCode')
@@ -536,5 +536,111 @@ all_data<-all_data%>%full_join(tree_data, by='FIPSCode')
 #write.csv(all_data, "/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/all_data.csv")
 #"/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/all_data.xlsx"
 #View(all_data)
+
+
+head(all_data)
+summary(all_data)
 ```
+
+
+-------------------
+Visualization
+-------------------
+
+```{r}
+
+GetCountyShapefile <- function(){
+  
+  # Download county shape file from Tiger.
+  # https://www.census.gov/geo/maps-data/data/cbf/cbf_counties.html
+  #location <- "C:\\Users\\Katrlyn\\stats133Project\\cb_2016_us_county_500k"
+  #us.map <- readOGR(dsn = location, layer = "cb_2016_us_county_500k", stringsAsFactors = FALSE)
+  
+  # Other Download method
+  library(tigris)
+  # Download county shape file from US Census using streamlined TIGRIS package. 
+  #cb = TRUE indicates that we're choosing simplified cartographic boundaries
+  us.map <- tigris::counties(cb = TRUE, year = 2015)
+  
+  # Clean county shapefile 
+  
+  # Remove Alaska(2), Hawaii(15), Puerto Rico (72), Guam (66), Virgin Islands (78), American Samoa (60)
+  # Mariana Islands (69), Micronesia (64), Marshall Islands (68), Palau (70), Minor Islands (74)
+  us.map <- us.map[!us.map$STATEFP %in% c("02", "15", "72", "66", "78", "60", "69",
+                                          "64", "68", "70", "74"),]
+  # Make sure other outling islands are removed.
+  us.map <- us.map[!us.map$STATEFP %in% c("81", "84", "86", "87", "89", "71", "76",
+                                          "95", "79"),]
+
+  return(us.map)  
+}
+```
+
+Playing with pollution
+```{r}
+library(sp)
+library(rgeos)
+library(rgdal)
+library(maptools)
+library(dplyr)
+library(leaflet)
+library(scales)
+countyShapefile <- GetCountyShapefile()
+
+small_data <- all_data %>% 
+  select(FIPSCode, Value)
+
+colnames(small_data) <- c("GEOID", "Pollution")
+
+head(small_data)
+
+small_data[duplicated(small_data),]
+
+nrow(small_data)
+nrow(unique(small_data))
+# Merge spatial df with air quality data.
+#counties <- merge(countyShapefile, small_data, by=c("GEOID"))
+
+counties <- geo_join(countyShapefile, small_data, "GEOID", "GEOID", how = "left")
+
+
+#Leftoin isn't used because cannot left join this data! 
+#leafmap <- us.map %>% left_join(county_dat, by = c("GEOID"))
+
+# Format popup data for leaflet map.
+popup_dat <- paste(sep = "<br/>",
+  "<b>County: </b>", 
+  counties$NAME, 
+  "<b>Value: </b>", 
+  counties$Pollution)
+
+
+#pal <- colorQuantile("YlOrRd", NULL, n = 9)  #Manual color bins
+
+#Let leaflet calculate the colors and labels for you 
+pal <- colorNumeric(
+  palette =  "YlGnBu",
+  domain = counties$Pollution
+)
+
+
+# Render final map in leaflet.
+
+map <- leaflet(counties) %>% addTiles()
+
+map %>% 
+  #Stroke indicates outline presence
+  #smoothFactor: how much to simplify the polyline on each zoom level (more means better performance and less accurate representation)
+  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
+    fillColor = ~pal(Pollution), fillOpacity = 1, popup = popup_dat, 
+    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE)) %>%
+  addLegend("bottomright", pal = pal, values = ~Pollution,
+    title = "Airquality (2010)",
+    labFormat = labelFormat(suffix = "Units"), na.label = "county data missing",
+    opacity = 1)
+```
+
+
+
+
 
