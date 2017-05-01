@@ -64,10 +64,9 @@ GetCountyShapefile <- function(){
 }
 
 ```
-
----------------------------------
-Pollution leaflet visualization
---------------------------------
+------------------
+Visualization Prep
+-----------------
 
 ```{r}
 
@@ -82,244 +81,11 @@ counties <- geo_join(countyShapefile, small_data, "GEOID", "FIPSCode", how = "le
 
 ```
 
+
+----------
+Income
+----------
 ```{r}
-# Format popup data for leaflet map.
-popup_dat1 <- paste(sep = "<br/>",
-  "<b>County: </b>", 
-  counties$NAME, 
-  "<b>Value: </b>", 
-  counties$Pollution)
-
-#Let leaflet calculate the colors and labels for you 
-pal1 <- colorNumeric(
-  palette =  "YlGnBu",
-  domain = counties$Pollution
-)
-
-# Render final map in leaflet.
-
-map <- leaflet(counties) %>% addTiles()
-
-map %>% 
-  #Base Groups
-  #Stroke indicates outline presence
-  #smoothFactor: how much to simplify the polyline on each zoom level (more means better performance and less accurate representation)
-  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
-    fillColor = ~pal1(Pollution), fillOpacity = 1, popup = popup_dat1, 
-    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE), group = "Pollution") %>%
-  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
-    fillColor = ~pal2(UrbanCode), fillOpacity = 1, popup = popup_dat2, 
-    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE), group = "UrbanInfluenceCodes") %>% 
-  # addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
-  #   fillColor = ~pal3(HouseholdIncome2015), fillOpacity = 1, popup = popup_dat3, 
-  #   highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE), group = "HouseholdIncome2015") %>% 
-  
-  # Layers control
-  addLayersControl(
-    baseGroups = c("Pollution", "UrbanInfluenceCodes"),
-    options = layersControlOptions(collapsed = FALSE)
-  ) 
-
-
-```
-
-
-
-#Playing with Layer Control
-
-```{r}
-# Format popup data for leaflet map.
-popup_dat1 <- paste(sep = "<br/>",
-  "<b>County: </b>", 
-  counties$NAME, 
-  "<b>Value: </b>", 
-  counties$Pollution)
-
-popup_dat2 <- paste(sep = "<br/>",
-  "<b>County: </b>", 
-  counties$NAME, 
-  "<b>Value: </b>", 
-  counties$UrbanCode)
-
-popup_dat3 <- paste(sep = "<br/>",
-  "<b>County: </b>", 
-  counties$NAME, 
-  "<b>Value: </b>", 
-  counties$Income)
-
-
-#Let leaflet calculate the colors and labels for you 
-pal1 <- colorNumeric(
-  palette =  "YlGnBu",
-  domain = counties$Pollution
-)
-
-pal2 <- colorNumeric(
-  palette =  "YlGnBu",
-  domain = counties$UrbanCode
-)
-
-pal3 <- colorNumeric(
-  palette =  "YlGnBu",
-  domain = counties$Income
-)
-
-# Render final map in leaflet.
-
-map <- leaflet(counties) %>% addTiles()
-
-map %>% 
-  #Base Groups
-  #Stroke indicates outline presence
-  #smoothFactor: how much to simplify the polyline on each zoom level (more means better performance and less accurate representation)
-  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
-    fillColor = ~pal1(Pollution), fillOpacity = 1, popup = popup_dat1, 
-    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE), group = "Pollution") %>%
-  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
-    fillColor = ~pal2(UrbanCode), fillOpacity = 1, popup = popup_dat2, 
-    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE), group = "UrbanInfluenceCodes") %>% 
-  # addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
-  #   fillColor = ~pal3(HouseholdIncome2015), fillOpacity = 1, popup = popup_dat3, 
-  #   highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE), group = "HouseholdIncome2015") %>% 
-  
-  # Layers control
-  addLayersControl(
-    baseGroups = c("Pollution", "UrbanInfluenceCodes"),
-    options = layersControlOptions(collapsed = FALSE)
-  ) 
-
-
-```
-
-```{r}
-  
-  addLegend("bottomright", pal = pal, values = ~Pollution,
-    title = "Airquality (2010)",
-    labFormat = labelFormat(suffix = "Units"), na.label = "county data missing",
-    opacity = 1)
-```
-
-
-#graph TreeCanopy
-```{r}
-View(all)
-counties <- merge(us.map, all, by.x=c("GEOID"), by.y =c("FIPSCode"))
-# Format popup data for leaflet map.
-popup_dat <- paste(sep = "<br/>",
-  "<b>County: </b>", 
-  counties$NAME, 
-  "<b>Value: </b>", 
-  counties$TreeCanopy)
-
-#Let leaflet calculate the colors and labels for you 
-pal <- colorNumeric(
-  palette =  "YlGnBu",
-  domain = counties$TreeCanopy
-)
-
-
-# Render final map in leaflet.
-
-map <- leaflet(counties) %>% addTiles()
-
-map %>% 
-  #Stroke indicates outline presence
-  #smoothFactor: how much to simplify the polyline on each zoom level (more means better performance and less accurate representation)
-  addPolygons(stroke = TRUE, color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1, 
-    fillColor = ~pal(TreeCanopy), fillOpacity = 1, popup = popup_dat, 
-    highlight = highlightOptions(color = "#666", weight = 3, bringToFront = TRUE)) %>%
-  addLegend("bottomright", pal = pal, values = ~airqlty,
-    title = "Airquality (2010)",
-    labFormat = labelFormat(suffix = "Units"), na.label = "county data missing",
-    opacity = 1)
-```
-
-
------
-ANISHA HERE
------
-
-
-#TreeCanopy
-```{r}
-
-countyShapefile <- GetCountyShapefile()
-
-
-tree_small<- all_data %>% 
-  select(FIPSCode, TreeCanopy)
-
-colnames(tree_small) <- c("GEOID", "TreeCanopy")
-
-
-tree_small[duplicated(tree_small),]
-
-
-# Merge spatial df with air quality data.
-#counties <- merge(countyShapefile, small_data, by=c("GEOID"))
-
-counties <- geo_join(countyShapefile, tree_small, "GEOID", "GEOID", how = "left")
-
-
-#Leftoin isn't used because cannot left join this data! 
-#leafmap <- us.map %>% left_join(county_dat, by = c("GEOID"))
-
-# Format popup data for leaflet map.
-popup_dat <- paste(sep = "<br/>",
-  "<b>County: </b>", 
-  counties$NAME, 
-  "<b>Value: </b>", 
-  counties$TreeCanopy)
-
-
-#pal <- colorQuantile("YlOrRd", NULL, n = 9)  #Manual color bins
-
-#Let leaflet calculate the colors and labels for you 
-pal <- colorNumeric(
-  palette =  "YlGnBu",
-  domain = counties$TreeCanopy
-)
-
-
-# Render final map in leaflet.
-
-map <- leaflet(counties) %>% addTiles()
-
-map %>% 
-  #Stroke indicates outline presence
-  #smoothFactor: how much to simplify the polyline on each zoom level (more means better performance and less accurate representation)
-  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
-    fillColor = ~pal(TreeCanopy), fillOpacity = 1, popup = popup_dat, 
-    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE)) %>%
-  addLegend("bottomright", pal = pal, values = ~TreeCanopy,
-    title = "Tree Canopy",
-    labFormat = labelFormat(suffix = "Units"), na.label = "county data missing",
-    opacity = 1)
-```
-
-mapping income 
-```{r}
-
-countyShapefile <- GetCountyShapefile()
-
-
-income_small<- all_data %>% 
-  select(FIPSCode, Median_Household_Income_2015)
-
-colnames(income_small) <- c("GEOID", "Income")
-
-
-income_small[duplicated(income_small),]
-
-
-# Merge spatial df with air quality data.
-#counties <- merge(countyShapefile, small_data, by=c("GEOID"))
-
-counties <- geo_join(countyShapefile, income_small, "GEOID", "GEOID", how = "left")
-
-
-#Leftoin isn't used because cannot left join this data! 
-#leafmap <- us.map %>% left_join(county_dat, by = c("GEOID"))
 
 # Format popup data for leaflet map.
 popup_dat <- paste(sep = "<br/>",
@@ -337,22 +103,130 @@ pal <- colorNumeric(
   domain = counties$Income
 )
 
-
 # Render final map in leaflet.
 
 map <- leaflet(counties) %>% addTiles()
 
-map %>% 
-  #Stroke indicates outline presence
-  #smoothFactor: how much to simplify the polyline on each zoom level (more means better performance and less accurate representation)
+income_map <- map %>% 
   addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
     fillColor = ~pal(Income), fillOpacity = 1, popup = popup_dat, 
     highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE)) %>%
   addLegend("bottomright", pal = pal, values = ~Income,
-    title = "Income (2015)",
-    labFormat = labelFormat(suffix = "Units"), na.label = "county data missing",
+    title = "Median Household Income (2015)",
+    labFormat = labelFormat(prefix = "$"), na.label = "county data missing",
     opacity = 1)
+
+income_map
 ```
+-------------------
+Unemployment rate
+------------------
+```{r}
+
+# Format popup data for leaflet map.
+popup_dat <- paste(sep = "<br/>",
+  "<b>County: </b>", 
+  counties$NAME, 
+  "<b>Value: </b>",  
+  counties$Unemployment)
+
+
+#pal <- colorQuantile("YlOrRd", NULL, n = 9)  #Manual color bins
+
+#Let leaflet calculate the colors and labels for you 
+pal <- colorNumeric(
+  palette =  "YlGnBu",
+  domain = counties$Unemployment
+)
+
+
+# Render final map in leaflet.
+
+map <- leaflet(counties) %>% addTiles()
+
+unemploy_map <- map %>% 
+  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
+    fillColor = ~pal(Unemployment), fillOpacity = 1, popup = popup_dat, 
+    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE)) %>%
+  addLegend("bottomright", pal = pal, values = ~Unemployment,
+    title = "Unemployment Rate (2015)",
+    labFormat = labelFormat(suffix = "%"), na.label = "county data missing",
+    opacity = 1)
+
+unemploy_map
+```
+---------------------------------
+Pollution leaflet visualization
+--------------------------------
+
+```{r}
+# Format popup data for leaflet map.
+popup_dat <- paste(sep = "<br/>",
+  "<b>County: </b>", 
+  counties$NAME, 
+  "<b>Value: </b>", 
+  counties$Pollution)
+
+#Let leaflet calculate the colors and labels for you 
+pal <- colorNumeric(
+  palette =  "YlGnBu",
+  domain = counties$Pollution
+)
+
+# Render base map
+map <- leaflet(counties) %>% addTiles()
+
+pollution_map <- map %>% 
+  #Stroke indicates outline presence
+  #smoothFactor: how much to simplify the polyline on each zoom level (more means better performance and less accurate representation)
+  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
+    fillColor = ~pal1(Pollution), fillOpacity = 1, popup = popup_dat1, 
+    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE), group = "Pollution") %>%
+  addLegend("bottomright", pal = pal, values = ~Pollution,
+    title = "Pollution Data",
+    labFormat = labelFormat(suffix = "µg/m³"), na.label = "county data missing",
+    opacity = 1) 
+
+pollution_map
+```
+
+
+
+
+#TreeCanopy
+```{r}
+# Format popup data for leaflet map.
+popup_dat <- paste(sep = "<br/>",
+  "<b>County: </b>", 
+  counties$NAME, 
+  "<b>Value: </b>", 
+  counties$TreeCanopy)
+
+
+#Let leaflet calculate the colors and labels for you 
+pal <- colorNumeric(
+  palette =  "YlGnBu",
+  domain = counties$TreeCanopy, n= 9
+)
+
+#pal <- colorQuantile("YlGnBu", NULL, n = 9)  #Manual color bins
+
+# Render map in leaflet.
+map <- leaflet(counties) %>% addTiles()
+
+treeCanopy_map <- map %>% 
+  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
+    fillColor = ~pal(TreeCanopy), fillOpacity = 1, popup = popup_dat, 
+    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE)) %>%
+  addLegend("bottomright", pal = pal, values = ~TreeCanopy,
+    title = "Tree canopy Covering",
+    labFormat = labelFormat(suffix = " m2/person"), na.label = "county data missing",
+    opacity = 1)
+
+treeCanopy_map
+```
+
+
 
 mapping 2013 Urban Influence
 ```{r}
@@ -411,62 +285,7 @@ map %>%
     opacity = 1)
 ```
 
-mapping unemployment rate
-```{r}
 
-countyShapefile <- GetCountyShapefile()
-
-
-unemploy_small<- all_data %>% 
-  select(FIPSCode, Unemployment_rate_2015)
-
-colnames(unemploy_small) <- c("GEOID", "Unemployment")
-
-
-unemploy_small[duplicated(unemploy_small),]
-
-
-# Merge spatial df with air quality data.
-#counties <- merge(countyShapefile, small_data, by=c("GEOID"))
-
-counties <- geo_join(countyShapefile, unemploy_small, "GEOID", "GEOID", how = "left")
-
-
-#Leftoin isn't used because cannot left join this data! 
-#leafmap <- us.map %>% left_join(county_dat, by = c("GEOID"))
-
-# Format popup data for leaflet map.
-popup_dat <- paste(sep = "<br/>",
-  "<b>County: </b>", 
-  counties$NAME, 
-  "<b>Value: </b>", 
-  counties$Unemployment)
-
-
-#pal <- colorQuantile("YlOrRd", NULL, n = 9)  #Manual color bins
-
-#Let leaflet calculate the colors and labels for you 
-pal <- colorNumeric(
-  palette =  "YlGnBu",
-  domain = counties$Unemployment
-)
-
-
-# Render final map in leaflet.
-
-map <- leaflet(counties) %>% addTiles()
-
-map %>% 
-  #Stroke indicates outline presence
-  #smoothFactor: how much to simplify the polyline on each zoom level (more means better performance and less accurate representation)
-  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
-    fillColor = ~pal(Unemployment), fillOpacity = 1, popup = popup_dat, 
-    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE)) %>%
-  addLegend("bottomright", pal = pal, values = ~Unemployment,
-    title = "Unemployment Rate (2015)",
-    labFormat = labelFormat(suffix = "Units"), na.label = "county data missing",
-    opacity = 1)
-```
 
 mapping AvailGreenSpace
 ```{r}
@@ -806,3 +625,71 @@ map %>%
     opacity = 1)
 ```
 
+
+
+
+#Playing with Layer Control
+
+```{r}
+# Format popup data for leaflet map.
+popup_dat1 <- paste(sep = "<br/>",
+  "<b>County: </b>", 
+  counties$NAME, 
+  "<b>Value: </b>", 
+  counties$Pollution)
+
+popup_dat2 <- paste(sep = "<br/>",
+  "<b>County: </b>", 
+  counties$NAME, 
+  "<b>Value: </b>", 
+  counties$UrbanCode)
+
+popup_dat3 <- paste(sep = "<br/>",
+  "<b>County: </b>", 
+  counties$NAME, 
+  "<b>Value: </b>", 
+  counties$Income)
+
+
+#Let leaflet calculate the colors and labels for you 
+pal1 <- colorNumeric(
+  palette =  "YlGnBu",
+  domain = counties$Pollution
+)
+
+pal2 <- colorNumeric(
+  palette =  "YlGnBu",
+  domain = counties$UrbanCode
+)
+
+pal3 <- colorNumeric(
+  palette =  "YlGnBu",
+  domain = counties$Income
+)
+
+# Render final map in leaflet.
+
+map <- leaflet(counties) %>% addTiles()
+
+map %>% 
+  #Base Groups
+  #Stroke indicates outline presence
+  #smoothFactor: how much to simplify the polyline on each zoom level (more means better performance and less accurate representation)
+  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
+    fillColor = ~pal1(Pollution), fillOpacity = 1, popup = popup_dat1, 
+    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE), group = "Pollution") %>%
+  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
+    fillColor = ~pal2(UrbanCode), fillOpacity = 1, popup = popup_dat2, 
+    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE), group = "UrbanInfluenceCodes") %>% 
+  # addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
+  #   fillColor = ~pal3(HouseholdIncome2015), fillOpacity = 1, popup = popup_dat3, 
+  #   highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE), group = "HouseholdIncome2015") %>% 
+  
+  # Layers control
+  addLayersControl(
+    baseGroups = c("Pollution", "UrbanInfluenceCodes"),
+    options = layersControlOptions(collapsed = FALSE)
+  ) 
+
+
+```
