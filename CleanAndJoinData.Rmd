@@ -79,6 +79,8 @@ GetPollutionData <- function(){
     subset(select=-c(ReportYear))
   poll_county$FIPSCode<-stri_pad_left(poll_county$FIPSCode, 5, "0")  
   
+  colnames(poll_county) <- c("FIPSCode", "Pollution", "Unit")
+  
   return(poll_county)
 }
 
@@ -140,6 +142,8 @@ GetIncomeData <- function(){
     mutate(Area_name= gsub(", ..$", "", Area_name), Area_name)%>%
     subset(select=c("FIPStxt","Median_Household_Income_2015","Unemployment_rate_2015"))%>%
     dplyr::rename(FIPSCode=FIPStxt)
+  
+  colnames(income) <- c("FIPSCode", "Income", "Unemployment")
   
   return(income)
 }
@@ -525,7 +529,11 @@ tree_data <- GetTreeData()
 all_data<-plyr::join_all(list(every_county, edu_data, income_data, poll_data, tree_data), by='FIPSCode', type='full')
 
 all_data_narrow<-all_data%>% gather(key=EducationLevel, value=PercentOfAdults, LessThanHS:Bachelors)
+
+head(all_data)
+head(all_data_narrow)
 ```
+
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
