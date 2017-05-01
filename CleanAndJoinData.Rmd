@@ -34,10 +34,10 @@ Downloading the USACountyEduAttainment data
 #download/wrangle the USACountyEduAttainment data
 download.file("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762", destfile = "~/Downloads/stats133data/edu.xls", mode = "wb" )
 #"/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/edu.xls"
-edu_data_unclean <- read_excel("/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/edu.xls", sheet = 1, skip = 4)
+edu_data_unclean <- read_excel("~/Downloads/stats133data/edu.xls", sheet = 1, skip = 4)
 edu_data<-edu_data_unclean[, grep("2011|FIPS Code|2013 Urban", colnames(edu_data_unclean))]
 edu_data<-edu_data[, grep("Percent|FIPS Code|2013 Urban", colnames(edu_data))]
-edu_data<-edu_data%>%dplyr::rename(FIPSCode=`FIPS Code`)
+colnames(edu_data)<-c('FIPSCode', 'UrbanCode', 'LessThanHS', 'HSDiploma', 'SomeCollege','Bachelors')
 #/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/edu.xls
 ```
 
@@ -47,13 +47,18 @@ Downloading the PollutionPerCounty data
 ```{r}
 #dowload/wrangle the PollutionPerCounty data
 poll_county_unclean<-read.csv("https://data.cdc.gov/api/views/cjae-szjv/rows.csv?accessType=DOWNLOAD")
+
 poll_county<-poll_county_unclean %>%
   filter(MeasureType=='Average')%>%
   group_by(ReportYear)%>%
   arrange(CountyName)%>%
   arrange(StateName)%>%
+  filter(MeasureId==296)%>%
   dplyr::rename(FIPSCode=CountyFips)%>%
-  subset(select=c(FIPSCode, ReportYear, Value, Unit))%>%mutate(FIPSCode=gsub("46113","46102", FIPSCode))%>%filter(ReportYear==2010)%>%subset(select=-c(ReportYear))
+  subset(select=c(FIPSCode, ReportYear, Value, Unit))%>%
+  mutate(FIPSCode=gsub("46113","46102", FIPSCode))%>%
+  filter(ReportYear==2010)%>%
+  subset(select=-c(ReportYear))
 poll_county$FIPSCode<-stri_pad_left(poll_county$FIPSCode, 5, "0")
 
 ```
@@ -75,7 +80,7 @@ every_county<-every_us_county2%>%
   subset(select=c( `FIPSCode`, `County`, `State`))
 every_county$FIPSCode<-stri_pad_left(every_county$FIPSCode, 5, "0")
 every_county<-mutate(every_county,StateFips=substr(every_county$FIPSCode,1,2))
-View(every_county)
+#View(every_county)
 ```
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -85,9 +90,9 @@ Downloading the USACountyIncomeEmploy data
 ```{r}
 #download/clean USACountyIncomeEmploy data
 
-download.file("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Unemployment.xls?v=42762", destfile = "/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/income.xls", mode = "wb" )
+download.file("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Unemployment.xls?v=42762", destfile = "~/Downloads/stats133data/income.xls", mode = "wb" )
 #"/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/income.xls"
-income_unclean <- read_excel("/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/income.xls", sheet = 1, skip = 7)
+income_unclean <- read_excel("~/Downloads/stats133data/income.xls", sheet = 1, skip = 7)
 head(data)
 income<- income_unclean %>% mutate(Area_name= gsub(", ..$", "", Area_name), Area_name)%>%subset(select=c("FIPStxt","Median_Household_Income_2015","Unemployment_rate_2015"))%>%dplyr::rename(FIPSCode=FIPStxt)
 
@@ -96,7 +101,7 @@ income<- income_unclean %>% mutate(Area_name= gsub(", ..$", "", Area_name), Area
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Downloading the USCountyUrbanForest data (time downlaoded: 3)
+Downloading the USCountyUrbanForest data 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -295,7 +300,7 @@ library(readxl)
 
 fileLocations <- vector(mode="character", length=length(AllStates$stateNames))
 for(i in 1:length(AllStates$stateNames)){
-  destination <- paste("/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/AllStates", AllStates$stateNames[i], ".xls", sep = "")
+  destination <- paste("~/Downloads/stats133data/AllStates", AllStates$stateNames[i], ".xls", sep = "")
   #"/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/AllStates"
   #file must be handled locally during preprocessing.
   download.file(AllStates$downloadLinks[i], destfile = destination, mode = "wb" )
@@ -310,7 +315,7 @@ View(AllStates)
 
 Load the filepaths if you're using the downloaded files
 ```{r}
-AllStates$fileLocations <- paste("/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/AllStates", AllStates$stateNames, ".xls", sep = "")
+AllStates$fileLocations <- paste("~/Downloads/stats133data/AllStates/", AllStates$stateNames, ".xls", sep = "")
 AllStates
 ```
 
@@ -355,19 +360,68 @@ tree_data<-df_full[, -grep("State|Name", colnames(df_full))]
 tree_data<-rename(tree_data, FIPSCode=FIPS)
 ```
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Joining all datatables 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ```{r}
 all_data=NULL
-all_data<-every_county%>%left_join(edu_data, by ='FIPSCode')
-all_data<-all_data%>%full_join(income, by='FIPSCode')
-all_data<-all_data%>%full_join(poll_county, by= 'FIPSCode')
-all_data<-all_data%>%full_join(tree_data, by='FIPSCode')
+
 #library(xlsx)
-write.csv(all_data, "/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/all_data.csv")
+#write.csv(all_data, "/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/all_data.csv")
 #"/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/all_data.xlsx"
-View(all_data)
+all_data<-plyr::join_all(list(every_county, edu_data, income, poll_county, tree_data), by='FIPSCode', type='full')
+
+all_data_narrow<-all_data%>% gather(key=EducationLevel, value=PercentOfAdults, LessThanHS:Bachelors)
 ```
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Scatterplots
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```{r}
+# use ggplot to make a scatter plot of education versus TREE DATA
+
+#all_data_narrow_tree<-all_data_narrow%>%gather(key=TreeType, value=TreeValue, TreeCanopy,AvailGreenSpace, TreeCanopyCover)
+edu_treecanop_plot<-all_data_narrow%>%
+  ggplot(aes(x=PercentOfAdults, y=TreeCanopy))+
+  geom_point(aes(color=EducationLevel))
+edu_treecanop_plot
+
+edu_green_plot<-all_data_narrow%>%
+  ggplot(aes(x=PercentOfAdults, y=AvailGreenSpace))+
+  geom_point(aes(color=EducationLevel))
+edu_green_plot
+
+```
+
+```{r}
+#use ggplot to plot edication data versus income data
+edu_inc_plot<-all_data_narrow%>%
+  ggplot(aes(x=PercentOfAdults, y=Median_Household_Income_2015))+
+  geom_point(aes(color=EducationLevel))+
+  facet_grid(EducationLevel~.)
+                        
+edu_inc_plot
+```
+
+```{r}
+
+#use ggplot to graph education versus pollution
+edu_poll_graph<-all_data_narrow%>%
+  ggplot(aes(x=PercentOfAdults, y=Value))+
+  geom_point(aes(color=EducationLevel))+
+  facet_grid(EducationLevel~.)
+
+edu_poll_graph  
+```
+
+```{r}
+#Linear Regerssion Time......
+library(statisticalModeling)
+library(rpart)
+library(rpart.plot)
+library(stats)
+library(mosaicData)
+
+
+```
