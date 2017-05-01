@@ -32,14 +32,22 @@ library(readxl)
 library(mosaic)
 library(readr)
 
+#Using temporary files
 
-download.file("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762", destfile = "C:\\Users\\Katrlyn\\Downloads\\edu.xls", mode = "wb" )
+#Download xls file
+url <- "https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762"
+tmp <- tempfile(fileext=".xls")
+download.file(url, destfile=tmp, mode="wb")
 
-edu_data_unclean <- read_excel("C:\\Users\\Katrlyn\\Downloads\\edu.xls", sheet = 1, skip = 4)
+#Old method: download locally
+# download.file("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762", destfile = "C:\\Users\\Katrlyn\\Downloads\\edu.xls", mode = "wb" )
+
+edu_data_unclean <- read_excel(tmp, sheet = 1, skip = 4)
+#edu_data_unclean <- read_excel("C:\\Users\\Katrlyn\\Downloads\\edu.xls", sheet = 1, skip = 4) #Local download 
 edu_data<-edu_data_unclean[, grep("2011|FIPS Code", colnames(edu_data_unclean))]
 edu_data<-edu_data[, grep("Percent|FIPS Code", colnames(edu_data))]
 edu_data<-edu_data%>%dplyr::rename(FIPSCode=`FIPS Code`)
- 
+
 ```
 
 
