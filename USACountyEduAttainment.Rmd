@@ -44,8 +44,8 @@ download.file(url, destfile=tmp, mode="wb")
 
 edu_data_unclean <- read_excel(tmp, sheet = 1, skip = 4)
 #edu_data_unclean <- read_excel("C:\\Users\\Katrlyn\\Downloads\\edu.xls", sheet = 1, skip = 4) #Local download 
-edu_data<-edu_data_unclean[, grep("2011|FIPS Code", colnames(edu_data_unclean))]
-edu_data<-edu_data[, grep("Percent|FIPS Code", colnames(edu_data))]
+edu_data<-edu_data_unclean[, grep("2011|FIPS Code|2013 Urban", colnames(edu_data_unclean))]
+edu_data<-edu_data[, grep("Percent|FIPS Code|2013 Urban", colnames(edu_data))]
 edu_data<-edu_data%>%dplyr::rename(FIPSCode=`FIPS Code`)
 
 ```
