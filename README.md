@@ -42,11 +42,8 @@
 
 **CountyReferenceTable.RMD** -- All USA county names, states, and FIPS codes.
  * *Source: https://www.census.gov/geo/reference/codes/cou.html*
-
-**Excel function to download excel files** (Katelyn if time)
- * zip file capablity
  
-#To-do
+# To-do
 * Put arsenic data in clean and join (Vanessa)
 * Leaflet layer control (Katelyn)
 * Various scatterplots 
@@ -57,7 +54,4 @@
 * Leflet maps of all variables (Anisha)
 * Regression on one plot (Vanessa)
 * Kana please send csv of arsenic data to vanessa 
- 
-**Plotting in leaflet** (Katelyn)
- * Add list of best spatial visualization tutorials on google gocs (DONE)
- * 
+
