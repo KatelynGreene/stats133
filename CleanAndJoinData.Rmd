@@ -528,7 +528,11 @@ tree_data <- GetTreeData()
 
 all_data<-plyr::join_all(list(every_county, edu_data, income_data, poll_data, tree_data), by='FIPSCode', type='full')
 
-all_data_narrow<-all_data%>% gather(key=EducationLevel, value=PercentOfAdults, LessThanHS:Bachelors)
+all_data_narrow<-all_data %>% 
+  gather(key=EducationLevel, value=PercentOfAdults, LessThanHS:Bachelors) %>%
+  mutate(bach_HS = Bachelors/HSDiploma) %>%
+  mutate(coll_HS = (SomeCollege + Bachelors)/(LessThanHS + HSDiploma))
+
 
 head(all_data)
 head(all_data_narrow)
@@ -580,10 +584,22 @@ edu_poll_graph
 #Linear Regerssion Time......
 library(statisticalModeling)
 library(rpart)
+#install.packages("rpart.plot")
 library(rpart.plot)
 library(stats)
 library(mosaicData)
 
+all_data_test <- all_data %>%
+  mutate(bach_HS = Bachelors/HSDiploma) %>%
+  mutate(coll_HS = (SomeCollege + Bachelors)/(LessThanHS + HSDiploma))
+
+
+income_edu_plot<-all_data_test %>%
+  ggplot(aes(coll_HS, Income)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+lm(coll_HS~Pollution  + Income, data=all_data_test) %>% summary()
 
 ```
 
