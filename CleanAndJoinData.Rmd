@@ -596,7 +596,9 @@ colnames(small_data) <- c("FIPSCode", "UrbanInfluence2013", "HouseholdIncome2015
 # Merge spatial df with air quality data.
 counties <- geo_join(countyShapefile, small_data, "GEOID", "FIPSCode", how = "left")
 
+```
 
+```{r}
 # Format popup data for leaflet map.
 popup_dat1 <- paste(sep = "<br/>",
   "<b>County: </b>", 
@@ -610,6 +612,12 @@ popup_dat2 <- paste(sep = "<br/>",
   "<b>Value: </b>", 
   counties$UrbanInfluence2013)
 
+popup_dat3 <- paste(sep = "<br/>",
+  "<b>County: </b>", 
+  counties$NAME, 
+  "<b>Value: </b>", 
+  counties$HouseholdIncome2015)
+
 
 #Let leaflet calculate the colors and labels for you 
 pal1 <- colorNumeric(
@@ -622,7 +630,10 @@ pal2 <- colorNumeric(
   domain = counties$UrbanInfluence2013
 )
 
-
+pal3 <- colorNumeric(
+  palette =  "YlGnBu",
+  domain = counties$HouseholdIncome2015
+)
 
 # Render final map in leaflet.
 
@@ -638,10 +649,13 @@ map %>%
   addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
     fillColor = ~pal2(UrbanInfluence2013), fillOpacity = 1, popup = popup_dat2, 
     highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE), group = "UrbanInfluenceCodes") %>% 
+  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
+    fillColor = ~pal3(HouseholdIncome2015), fillOpacity = 1, popup = popup_dat3, 
+    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE), group = "HouseholdIncome2015") %>% 
   
   # Layers control
   addLayersControl(
-    baseGroups = c("Pollution", "UrbanInfluenceCodes"),
+    baseGroups = c("Pollution", "UrbanInfluenceCodes","HouseholdIncome"),
     options = layersControlOptions(collapsed = FALSE)
   ) 
 
