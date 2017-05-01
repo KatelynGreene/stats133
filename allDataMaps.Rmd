@@ -1,0 +1,96 @@
+---
+title: "allDataMaps"
+author: ""
+date: ""
+output: 
+  html_document:
+    fig_height: 3
+    fig_width: 5
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+library(readr)
+library(rgdal)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
+Need to have all_data in your workspace, get it from CleanAndJoinData
+```{r}
+#"/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/all_data.csv"
+#fileLocation <- "/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/all_data.csv"
+
+#all_data <- read.csv(file=fileLocation,head=TRUE,sep=",")
+#View(all_data)
+```
+
+```{r}
+mapLocation <- "/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/cb_2016_us_county_500k"
+# Download county shape file from Tiger.
+# https://www.census.gov/geo/maps-data/data/cbf/cbf_counties.html
+us.map <- readOGR(dsn = location, layer = "cb_2016_us_county_500k", stringsAsFactors = FALSE)
+
+# Other paths:
+# "C:\\Users\\kagex\\stats133Project\\cb_2016_us_county_500k"
+# "/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/cb_2016_us_county_500k"
+```
+
+
+
+Clean county shapefile 
+```{r}
+# Remove Alaska(2), Hawaii(15), Puerto Rico (72), Guam (66), Virgin Islands (78), American Samoa (60)
+#  Mariana Islands (69), Micronesia (64), Marshall Islands (68), Palau (70), Minor Islands (74)
+#all <- all_data
+us.map <- us.map[!us.map$STATEFP %in% c("02", "15", "72", "66", "78", "60", "69",
+                                        "64", "68", "70", "74"),]
+# Make sure other outling islands are removed.
+us.map <- us.map[!us.map$STATEFP %in% c("81", "84", "86", "87", "89", "71", "76",
+                                        "95", "79"),]
+#View(us.map)
+# Merge spatial df with air quality data.
+#counties <- merge(us.map, all_data, by.x=c("GEOID"), by.y =c("FIPSCode") )
+
+#Leftoin isn't used because cannot left join this data! 
+#leafmap <- us.map %>% left_join(county_dat, by = c("GEOID"))
+```
+
+#graph TreeCanopy
+```{r}
+View(all)
+counties <- merge(us.map, all, by.x=c("GEOID"), by.y =c("FIPSCode"))
+# Format popup data for leaflet map.
+popup_dat <- paste(sep = "<br/>",
+  "<b>County: </b>", 
+  counties$NAME, 
+  "<b>Value: </b>", 
+  counties$TreeCanopy)
+
+#Let leaflet calculate the colors and labels for you 
+pal <- colorNumeric(
+  palette =  "YlGnBu",
+  domain = counties$TreeCanopy
+)
+
+
+# Render final map in leaflet.
+
+map <- leaflet(counties) %>% addTiles()
+
+map %>% 
+  #Stroke indicates outline presence
+  #smoothFactor: how much to simplify the polyline on each zoom level (more means better performance and less accurate representation)
+  addPolygons(stroke = TRUE, color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1, 
+    fillColor = ~pal(TreeCanopy), fillOpacity = 1, popup = popup_dat, 
+    highlight = highlightOptions(color = "#666", weight = 3, bringToFront = TRUE)) %>%
+  addLegend("bottomright", pal = pal, values = ~airqlty,
+    title = "Airquality (2010)",
+    labFormat = labelFormat(suffix = "Units"), na.label = "county data missing",
+    opacity = 1)
+```
+
+

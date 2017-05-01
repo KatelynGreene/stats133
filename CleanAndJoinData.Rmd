@@ -19,6 +19,8 @@ library(tidyr)
 library(dplyr)
 library(stringi)
 library(XML)
+library(rvest)
+library(rgdal)
 ```
 *Source file* 
 ```{r, results='asis', echo=FALSE}
@@ -32,6 +34,7 @@ Downloading the USACountyEduAttainment data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```{r}
 #download/wrangle the USACountyEduAttainment data
+
 download.file("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762", destfile = "~/Downloads/stats133data/edu.xls", mode = "wb" )
 #"/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/edu.xls"
 edu_data_unclean <- read_excel("~/Downloads/stats133data/edu.xls", sheet = 1, skip = 4)
@@ -39,12 +42,33 @@ edu_data<-edu_data_unclean[, grep("2011|FIPS Code|2013 Urban", colnames(edu_data
 edu_data<-edu_data[, grep("Percent|FIPS Code|2013 Urban", colnames(edu_data))]
 colnames(edu_data)<-c('FIPSCode', 'UrbanCode', 'LessThanHS', 'HSDiploma', 'SomeCollege','Bachelors')
 #/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/edu.xls
+
+GetEduData <- function(){
+  
+  #Download and read data
+  url <- "https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762"
+  tmp <- tempfile(fileext=".xls")
+  download.file(url, destfile=tmp, mode="wb")
+  edu_data_unclean <- read_excel(tmp, sheet = 1, skip = 4)
+  
+  unlink(tmp)
+  
+  #Wrangle and select variables
+  edu_data<-edu_data_unclean[, grep("2011|FIPS Code|2013 Urban", colnames(edu_data_unclean))]
+  edu_data<-edu_data[, grep("Percent|FIPS Code|2013 Urban", colnames(edu_data))]
+  edu_data<-edu_data%>%dplyr::rename(FIPSCode=`FIPS Code`)
+  
+  return(edu_data)
+}
+
+
 ```
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Downloading the PollutionPerCounty data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```{r}
+
 #dowload/wrangle the PollutionPerCounty data
 poll_county_unclean<-read.csv("https://data.cdc.gov/api/views/cjae-szjv/rows.csv?accessType=DOWNLOAD")
 
@@ -61,6 +85,27 @@ poll_county<-poll_county_unclean %>%
   subset(select=-c(ReportYear))
 poll_county$FIPSCode<-stri_pad_left(poll_county$FIPSCode, 5, "0")
 
+GetPollutionData <- function(){
+  #dowload/wrangle the PollutionPerCounty data
+  poll_county_unclean<-read.csv("https://data.cdc.gov/api/views/cjae-szjv/rows.csv?accessType=DOWNLOAD")
+  poll_county<-poll_county_unclean %>%
+    filter(MeasureType=='Average')%>%
+    group_by(ReportYear)%>%
+    arrange(CountyName)%>%
+    arrange(StateName)%>%
+    dplyr::rename(FIPSCode=CountyFips)%>%
+    subset(select=c(FIPSCode, ReportYear, Value, Unit))%>%
+    mutate(FIPSCode=gsub("46113","46102", FIPSCode))%>%
+    filter(ReportYear==2010)%>%
+    subset(select=-c(ReportYear))
+  poll_county$FIPSCode<-stri_pad_left(poll_county$FIPSCode, 5, "0")  
+  
+  return(poll_county)
+}
+
+
+
+
 ```
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -68,6 +113,7 @@ Downloading the CountyReferenceTable data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ```{r}
+
 #download/clean CountyReferenceTable data
 every_us_county <- 
   "https://en.wikipedia.org/wiki/List_of_United_States_counties_and_county_equivalents" %>%
@@ -81,6 +127,30 @@ every_county<-every_us_county2%>%
 every_county$FIPSCode<-stri_pad_left(every_county$FIPSCode, 5, "0")
 every_county<-mutate(every_county,StateFips=substr(every_county$FIPSCode,1,2))
 #View(every_county)
+
+
+GetCountyReference <- function(){
+  
+  #Webscrape/clean CountyReferenceTable data
+  every_us_county <- 
+    "https://en.wikipedia.org/wiki/List_of_United_States_counties_and_county_equivalents" %>%
+    read_html() %>%
+    html_nodes(xpath = '//*[@id="mw-content-text"]/table') %>%
+    html_table(fill=TRUE)
+  every_us_county2<-every_us_county[[2]]
+  every_county<-every_us_county2%>%
+    dplyr::rename(FIPSCode=INCITS, County=`County or equivalent`, State=`State or district`)%>%
+    subset(select=c( `FIPSCode`, `County`, `State`))
+  every_county$FIPSCode<-stri_pad_left(every_county$FIPSCode, 5, "0")
+  every_county<-mutate(every_county,StateFips=substr(every_county$FIPSCode,1,2))
+  View(every_county)
+  
+  return(every_county)
+
+}
+
+
+
 ```
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -88,13 +158,33 @@ Downloading the USACountyIncomeEmploy data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ```{r}
-#download/clean USACountyIncomeEmploy data
+
 
 download.file("https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Unemployment.xls?v=42762", destfile = "~/Downloads/stats133data/income.xls", mode = "wb" )
 #"/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/income.xls"
 income_unclean <- read_excel("~/Downloads/stats133data/income.xls", sheet = 1, skip = 7)
 head(data)
 income<- income_unclean %>% mutate(Area_name= gsub(", ..$", "", Area_name), Area_name)%>%subset(select=c("FIPStxt","Median_Household_Income_2015","Unemployment_rate_2015"))%>%dplyr::rename(FIPSCode=FIPStxt)
+
+GetIncomeData <- function(){
+  
+  #download/clean USACountyIncomeEmploy data
+  url <- "https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Unemployment.xls?v=42762"
+  tmp <- tempfile(fileext=".xls")
+  download.file(url, destfile=tmp, mode="wb")
+    
+  income_unclean <- read_excel(tmp, sheet = 1, skip = 7)
+  
+  unlink(tmp)
+  
+  income <- income_unclean %>% 
+    mutate(Area_name= gsub(", ..$", "", Area_name), Area_name)%>%
+    subset(select=c("FIPStxt","Median_Household_Income_2015","Unemployment_rate_2015"))%>%
+    dplyr::rename(FIPSCode=FIPStxt)
+  
+  return(income)
+}
+
 
 ```
 
@@ -106,62 +196,95 @@ Downloading the USCountyUrbanForest data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
+The purpose of this document is to extract urban forest from all the counties in the U.S.
+
+
+#' Scrapes the excel download link for each state in the U.S.
+#' Source: https://www.nrs.fs.fed.us/data/urban/
+#'
+#' @param x A number
+#' @param y A number
+#' @return The sum of \code{x} and \code{y}
+
 ```{r}
-URL <- "https://www.nrs.fs.fed.us/data/urban/"
-txt <- getURLContent(URL)
-doc <- htmlParse(txt)
+#' Scrapes the excel download link for each state in the U.S.
+#'
+#' @return A data frame containing variables: stateNames and downloadLinks (Excel file download links)
 
-#Scrape the county name
-stateNames <- xpathSApply(doc, '//ul/li/a/strong', xmlValue)
+Webscrape <- function(){
+  
+  #----------------------------------------------
+  #Scrape the link to each state from the US data
+  #----------------------------------------------
 
-#****NOTE: Missing Alaska and Hawaii*******
-stateLinks <- xpathSApply(doc, '//ul[@class="state_list"]/li/a/@href')
-baseURL <- "https://www.nrs.fs.fed.us"
-stateLinks <- paste(baseURL,as.character(stateLinks),sep="")
+  library(XML)
+  library(RCurl)
+  library(readxl)
+  
+  URL <- "https://www.nrs.fs.fed.us/data/urban/"
+  txt <- getURLContent(URL)
+  doc <- htmlParse(txt)
+  
+  #Scrape the state name
+  stateNames <- xpathSApply(doc, '//ul/li/a/strong', xmlValue)
+  
+  #Scrape the state link
+  stateLinks <- xpathSApply(doc, '//ul[@class="state_list"]/li/a/@href')
+  baseURL <- "https://www.nrs.fs.fed.us"
+  stateLinks <- paste(baseURL,as.character(stateLinks),sep="")
+  
+  #Data Frame of StateName and stateLink
+  AllStates <- data.frame(stateNames, stateLinks, stringsAsFactors = FALSE)
 
-#Data Frame of StateName and stateLink
-AllStates <- data.frame(stateNames, stateLinks, stringsAsFactors = FALSE)
-AllStates 
-
-AllStates[46, "stateNames"] <- "District of Columbia"
-AllStates
-```
-
-Extracts the excel file download link for each state
-```{r}
-downloadLinks <- vector(mode="character", length=length(AllStates$stateNames))
-
-for (i in 1:length(stateLinks)){
-  stateURL<- stateLinks[i]
-  stateTxt <- getURLContent(stateURL)
-  stateDoc <- htmlParse(stateTxt)
-  downloadLink <- xpathSApply(stateDoc, '//ol[@id="data_options"]/li/a/@href')
-
-  #The HTML source code is poor so need to use grepl to extract .xls from Xpath results
-  length(downloadLink)
-  for (j in 1:length(downloadLink)){
-     if (grepl(".xls", downloadLink[j])){
-      downloadLinks[i] <- downloadLink[j]
-      break 
+  #Fix naming conventions standard Washington DC --> District of Columbia
+  AllStates$stateNames[AllStates$stateNames == "Washington, D.C"] <- "District of Columbia"
+  
+  #-------------------------------------------------------
+  #Scrape the state xls file download link from each state page
+  #-------------------------------------------------------
+  
+  downloadLinks <- vector(mode="character", length=length(AllStates$stateNames))
+  
+  for (i in 1:length(stateLinks)){
+    stateURL<- stateLinks[i]
+    stateTxt <- getURLContent(stateURL)
+    stateDoc <- htmlParse(stateTxt)
+    downloadLink <- xpathSApply(stateDoc, '//ol[@id="data_options"]/li/a/@href')
+  
+    #The HTML source code is poor so need to use grepl to extract .xls from Xpath results
+    length(downloadLink)
+    for (j in 1:length(downloadLink)){
+       if (grepl(".xls", downloadLink[j])){
+        downloadLinks[i] <- downloadLink[j]
+        break 
+      }
     }
   }
+  
+  # Add to dataframe
+  AllStates$downloadLinks <- downloadLinks
+  
+  # Return only the relevant part of the database
+  AllStates <- AllStates %>% select(stateNames, downloadLinks)
+  
+  return(AllStates)
 }
 
-AllStates$downloadLinks <- downloadLinks
-
-AllStates$downloadLinks
- 
 ```
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Downloading and loading Excel files (Method 1: Using Tempfiles)
+Downloading and loading Excel files 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 All the support functions:
 
-Function that returns a dataframe with the base FIPS info from the 2010 census (with Oglala update maybe)
 ```{r}
+#' Creates a reference dataframe that maps county name to FIPS code based on the 2010 census, with naming updates up to 2015.
+
+#' @param state (optional) to restrict FIPS codes to one state
+#' @return A data frame containing variables: State, CountyName, and FIPS (FIPS code)
 
 FIPS_fun <- function(state = NA){
   #Note: colClasses = "character" helps keep the leading 0s
@@ -174,45 +297,53 @@ FIPS_fun <- function(state = NA){
   
   #Merge state and county into one FIPS code
   FIPS_base <- df %>% mutate(FIPS = paste(StateFIPS, CountyFIPS, sep = ""))
-  #iew(FIPS_base)
+  
+  #Delete Shannon County (It changed to Oglala Lakota)
+  FIPS_base <- FIPS_base %>% filter(FIPS != "46113")
   
   #return FIPS codes of the state passed in
   if(!is.na(state)){
-    df <- FIPS_base %>% subset(State == state) %>% select(State, CountyName, FIPS)
-    return(df)
+    FIPS_base <- FIPS_base %>% subset(State == state) %>% select(State, CountyName, FIPS)
+    return(FIPS_base)
   }else{return(FIPS_base)}
   
-  #Minimal dataframe to facilitate joins
-  #FIPS_base_compact <- FIPS_base %>% select(c(State, CountyName, FIPS))
 }
 
 ```
 
 
-Function that extracts data from an excel file relating to the Tree canopy Covering (m2/person), Available green space (ha), and Tree canopy cover in developped regions (%) for each county in the state. This data, along with the County name and the FIPS code is returned as a data frame.
-
 ```{r}
-extractStateData <- function(tmp, stateAbbrev){
+#' Extracts data from an excel file relating to the:
+#' Tree canopy (m2/person), Available green space (ha), and Tree canopy cover in developped regions (%) 
+#' for each county in the state. This data, along with the county name and the FIPS code is returned as a data frame.
+
+#' @param file Location of the state .xls file
+#' @return A data frame containing variables: State, CountyName, FIPS (FIPS code), TreeCanopy, AvailGreenSpace, and TreeCanopyCover
+
+ExtractStateData <- function(file, stateAbbrev){
   
-  #Read-in relevant sheets (7 and 10)
-  #Known bug: NC 7th sheet is actually sheet 8....grrrr.
+  # ---------------------------------------------
+  # Read-in relevant sheets from the excel files
+  # ---------------------------------------------
+  # Known bugs: NC 7th sheet is actually sheet 8.
   # Solution: sheet = string instead of sheet = integer when reading the excel file.
+  # Known Bug: DC has fewer sheets.
+  # Solution: various fixes changing DC to District of Columbia and reading sheet 5 & 8 instead. 
   
-  #Known Bug: DC messes lots of things up due to sheet differences, naming, etc.
-  # Solution: various fixes changing DC to District of Columbia and reading sheet 5 & 8 instead. Start at line 4 in sheet 8 because of the random space
-  
-  # tmp = "C:\\Users\\Katrlyn\\stats133Project\\AllStates\\Louisiana.xls"
-  # stateAbbrev = "LA"
+  #tmp = "C:\\Users\\kagex\\stats133Project\\AllStates\\Illinois.xls"
+  #stateAbbrev = "IL"
   
   if(stateAbbrev == "DC"){
-    xl_7 <- read_excel(tmp, sheet = "5", skip = 3)
-    xl_10 <- read_excel(tmp, sheet = "8", skip = 4) 
+    xl_7 <- read_excel(file, sheet = "5", skip = 3)
+    xl_10 <- read_excel(file, sheet = "8", skip = 4) 
   }else{
-    xl_7 <- read_excel(tmp, sheet = "7", skip = 3)
-    xl_10 <- read_excel(tmp, sheet = "10", skip = 3)
+    xl_7 <- read_excel(file, sheet = "7", skip = 3)
+    xl_10 <- read_excel(file, sheet = "10", skip = 3)
   }
   
-  #Clean and select relevant variables
+  # -----------------------------------
+  # Clean and select relevant variables
+  # -----------------------------------
   
   xl_7 <- xl_7 %>% select(c(`X__1`, `m2/person__1`, `Available green space (ha)`))
   #Units: Tree canopy Covering (m2/person), Available green space (ha)
@@ -229,74 +360,87 @@ extractStateData <- function(tmp, stateAbbrev){
   joined <- full_join(xl_7, xl_10, by = "CountyName")
   #get ride of statewide summary row
   joined_clean <- joined %>% subset(CountyName != "Statewide")
+  
   #Add column of state Abbreviations to assist debugging later
-  joined_clean$StateAbb <- rep(stateAbbrev, times = length(joined_clean$CountyName))
+  #joined_clean$StateAbb <- rep(stateAbbrev, times = length(joined_clean$CountyName))
   
+  # ------------------
+  # Naming Corrections:
+  # -----------------
 
-  #Add FIPS codes
-  #Moved to main code to prevent looping error
-  #stateAbbrev <- state.abb[match(AllStates$stateNames[1],state.name)]
-  
-  #Corrections:
-  
-  #Fix Washington DC Error. Must be called District of Columbia to find FIPS code
+  # 1) Washington DC must be called District of Columbia to find FIPS code
+  # 2) La Salle county in IL changed to LaSalle County in 2001 
+  # 3) Clifton Forge city is no longer a county as of 2001
+  # 4) Shannon County, SD changed to Oglala Dakota in 2015
   if(stateAbbrev == "DC"){
-    joined_clean[1, "CountyName"] <- "District of Columbia"
-  } #else if(stateAbbrev == "LA"){
-  #   joined_clean[28,"CountyName"] <- "LaSalle Parish"
-  # }
-  
-  FIPS_base <- FIPS_fun(state = stateAbbrev)
-  
-  final_df <- full_join(joined_clean, FIPS_base, by = "CountyName")
-  #View(final_df)
-  return(final_df)
-
-}
-
-#names(df)[names(df) == 'old.var.name'] <- 'new.var.name'
-  
-```
-
-
-Main Code:
-
-
-Downloading and processing each state to extract all counties. 
-
-THIS CODE IS NOT READY -- STILL DEBUGGING USING LOCAL XLS FILES
-```{r, eval=FALSE}
-for(i in 1:1){ #:length(AllStates$downloadLinks)){
-  #Download xls file
-  url <- AllStates$downloadLinks[31]
-  tmp <- tempfile(fileext=".xls")
-  download.file(url,destfile=tmp, mode="wb")
-  
-  stateAbbrev <- state.abb[match(AllStates$stateNames[31],state.name)]
-  state_df <- extractStateData(tmp, stateAbbrev)
-  
-  if(i == 1){
-    df_base <- state_df
-    #View(df_base)
-  }else if( i == 2){
-    df_full <- rbind(df_base, state_df)
-    #View(df_full)
-  }else{
-    df_full <- rbind(df_full, state_df)
-    #View(df_full)
+    #joined_clean[1, "CountyName"] <- "District of Columbia"
+    joined_clean$CountyName[joined_clean$CountyName == "Washington, D.C."] <- "District of Columbia"
+  }else if(stateAbbrev == "IL"){
+    #joined_clean[49,"CountyName"] <- "LaSalle County"
+    joined_clean$CountyName[joined_clean$CountyName == "La Salle County"] <- "LaSalle County"
+  }else if(stateAbbrev == "VA"){
+    joined_clean <- joined_clean %>% filter(CountyName != "Clifton Forge city")
+  }else if(stateAbbrev == "SD"){
+    joined_clean$CountyName[joined_clean$CountyName == "Shannon County"] <- "Oglala Lakota County"
   }
-  unlink(tmp)
   
+  # Add FIPS codes to data
+  FIPS_base <- FIPS_fun(state = stateAbbrev)
+  final_df <- full_join(joined_clean, FIPS_base, by = "CountyName")
+  
+  return(final_df)
 }
-
-View(df_full)
-
 
 ```
 
 To keep from wasting time redownloading files, use this code to download once and use your local files. 
 ```{r, eval=FALSE}
-library(readxl)
+#' Downloads excel files to a local directory for later extraction and cleaning. 
+#' 
+#' @param AllStates data frame that contains stateNames and downloadLinks
+#' @return Data frame with stateNames, downloadLinks, and fileLocations 
+
+DownloadLocally <- function(AllStates){
+  
+  library(readxl)
+  
+  #Stores locations for future file reading
+  fileLocations <- vector(mode="character", length=length(AllStates$stateNames))
+  
+  #Download file for each state
+  for(i in 1:length(AllStates$stateNames)){
+    destination <- paste("C:\\Users\\Katrlyn\\stats133Project\\AllStates\\", AllStates$stateNames[i], ".xls", sep = "")
+    
+    download.file(AllStates$downloadLinks[i], destfile = destination, mode = "wb" )
+    
+    fileLocations[i] <- destination
+  }
+  
+  AllStates$fileLocations <- fileLocations
+  return(AllStates)
+  
+}
+
+```
+
+Load the filepaths if you're using the downloaded files
+```{r}
+#' Loads the locations of all the excel files stored in a local directory for later extraction and cleaning. 
+#' 
+#' @param AllStates data frame that contains stateNames and downloadLinks
+#' @return Data frame with stateNames, downloadLinks, and fileLocations 
+LoadFilepaths <- function(AllStates){
+  AllStates$fileLocations <- paste("C:\\Users\\Katrlyn\\stats133Project\\AllStates\\", AllStates$stateNames, ".xls", sep = "")
+  return(AllStates)
+}
+
+```
+
+------------------------------------------------------
+Main code (Method 1: Download all the files locally)
+------------------------------------------------------
+```{r}
+
 
 fileLocations <- vector(mode="character", length=length(AllStates$stateNames))
 for(i in 1:length(AllStates$stateNames)){
@@ -304,14 +448,62 @@ for(i in 1:length(AllStates$stateNames)){
   #"/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/AllStates"
   #file must be handled locally during preprocessing.
   download.file(AllStates$downloadLinks[i], destfile = destination, mode = "wb" )
+
+GetTreeData <- function(){
+  #Webscrape the data links from the USDA Forest Service
+  #The original data source is: https://www.nrs.fs.fed.us/data/urban/ 
   
-  fileLocations[i] <- destination
+  AllStates <- Webscrape()
+  
+  #Download all the xls files locally for data processing
+  #AllStates <- DownloadLocally(AllStates)
+  AllStates <- LoadFilepaths(AllStates) #You will need to load this every time if you're working from local files
+>>>>>>> 37018db2623a58164ccb187b062c16974079a58b
+  
+  #Extract urban forestry for each state in the United States
+  for(i in 1:length(AllStates$downloadLinks)){
+    print(AllStates$stateNames[i])
+    #Get the current state postal abbreviation 
+    if(AllStates$stateNames[i] == "District of Columbia"){
+      stateAbbrev <- "DC"
+    }else{
+      stateAbbrev <- state.abb[match(AllStates$stateNames[i],state.name)]
+    }
+    
+    #Extract the variables Tree canopy Covering (m2/person), 
+    #Available green space (ha), and Tree canopy cover in developped regions (%) for the current state
+    state_df <- ExtractStateData(AllStates$fileLocations[i], stateAbbrev)
+    
+    #Build a data frame of all the states
+    if(i == 1){
+      df_base <- state_df
+    }else if( i == 2){
+      df_full <- rbind(df_base, state_df)
+    }else{
+      df_full <- rbind(df_full, state_df)
+    }
+    #unlink(tmp)
+    
+  }
+  
+  View(df_full)
+  
+  #Things that need fixing still
+  df <- df_full %>% subset(is.na(FIPS) | is.na(TreeCanopy))
+  df
+  
+  #-------------------------------------------------------------------------------------------
+  ###### MY CODE  SO THAT I CAN JOIN THE TREE DATA TO MY OTHER DATA FOR THE SCATTERPLOTS######
+  #-------------------------------------------------------------------------------------------
+  tree_data<-df_full[, -grep("State|Name", colnames(df_full))]
+  tree_data<-rename(tree_data, FIPSCode=FIPS)
+  
+  return(tree_data)
 }
 
-AllStates$fileLocations <- fileLocations
 
-View(AllStates)
 ```
+
 
 Load the filepaths if you're using the downloaded files
 ```{r}
@@ -319,33 +511,47 @@ AllStates$fileLocations <- paste("~/Downloads/stats133data/AllStates/", AllState
 AllStates
 ```
 
-Main code (assuming you downloaded all the files)
-```{r}
+------------------------------------------------------
+Main code (Method 2: Download via temporary files)
+------------------------------------------------------
+
+
+```{r, eval=FALSE}
+#Webscrape the data links from the USDA Forest Service
+#The original data source is: https://www.nrs.fs.fed.us/data/urban/ 
+
+AllStates <- Webscrape()
+
+#Download via temp files (no local storage on hard drive )
 
 for(i in 1:length(AllStates$downloadLinks)){
+  #Download xls file
+  url <- AllStates$downloadLinks[i]
+  tmp <- tempfile(fileext=".xls")
+  download.file(url,destfile=tmp, mode="wb")
+  
+  #Extract urban forestry for each state in the United States
   print(AllStates$stateNames[i])
-  print(AllStates$fileLocations[i])
+  #Get the current state postal abbreviation 
   if(AllStates$stateNames[i] == "District of Columbia"){
     stateAbbrev <- "DC"
   }else{
     stateAbbrev <- state.abb[match(AllStates$stateNames[i],state.name)]
   }
   
-  print(paste("Start", stateAbbrev))
-  state_df <- extractStateData(AllStates$fileLocations[i], stateAbbrev)
+  #Extract the variables Tree canopy Covering (m2/person), Available green space (ha), and Tree canopy cover in developped regions (%) for the current state
+  state_df <- ExtractStateData(tmp, stateAbbrev)
   
+  #Build a data frame of all the states
   if(i == 1){
     df_base <- state_df
-    #View(df_base)
   }else if( i == 2){
     df_full <- rbind(df_base, state_df)
-    #View(df_full)
   }else{
     df_full <- rbind(df_full, state_df)
-    #View(df_full)
   }
-  #unlink(tmp)
-  
+  unlink(tmp)
+
 }
 
 View(df_full)
@@ -353,12 +559,9 @@ View(df_full)
 #Things that need fixing still
 df <- df_full %>% subset(is.na(FIPS) | is.na(TreeCanopy))
 df
-
-
-###### MY CODE  SO THAT I CAN JOIN THE TREE DATA TO MY OTHER DATA FOR THE SCATTERPLOTS######
-tree_data<-df_full[, -grep("State|Name", colnames(df_full))]
-tree_data<-rename(tree_data, FIPSCode=FIPS)
 ```
+
+
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Joining all datatables 
@@ -425,3 +628,146 @@ library(mosaicData)
 
 
 ```
+
+
+```{r}
+every_county <- GetCountyReference()
+
+edu_data <- GetEduData()
+income_data <- GetIncomeData()
+poll_data <- GetPollutionData()
+tree_data <- GetTreeData()
+
+all_data<-every_county%>%left_join(edu_data, by ='FIPSCode')
+all_data<-all_data%>%full_join(income_data, by='FIPSCode')
+all_data<-all_data%>%full_join(poll_data, by= 'FIPSCode')
+all_data<-all_data%>%full_join(tree_data, by='FIPSCode')
+
+head(all_data)
+
+#library(xlsx)
+#write.csv(all_data, "/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/all_data.csv")
+#"/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/all_data.xlsx"
+#View(all_data)
+```
+
+Original code before I modified it:
+```{r, eval=FALSE}
+all_data=NULL
+
+all_data<-every_county%>%left_join(edu_data, by ='FIPSCode')
+all_data<-all_data%>%full_join(income, by='FIPSCode')
+all_data<-all_data%>%full_join(poll_county, by= 'FIPSCode')
+all_data<-all_data%>%full_join(tree_data, by='FIPSCode')
+#library(xlsx)
+#write.csv(all_data, "/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/all_data.csv")
+#"/Users/anishakumar/Documents/Stats 133/RStudio Files/Stats133Project/all_data.xlsx"
+#View(all_data)
+
+
+head(all_data)
+summary(all_data)
+```
+
+
+-------------------
+Visualization
+-------------------
+
+```{r}
+
+GetCountyShapefile <- function(){
+  
+  # Download county shape file from Tiger.
+  # https://www.census.gov/geo/maps-data/data/cbf/cbf_counties.html
+  #location <- "C:\\Users\\Katrlyn\\stats133Project\\cb_2016_us_county_500k"
+  #us.map <- readOGR(dsn = location, layer = "cb_2016_us_county_500k", stringsAsFactors = FALSE)
+  
+  # Other Download method
+  library(tigris)
+  # Download county shape file from US Census using streamlined TIGRIS package. 
+  #cb = TRUE indicates that we're choosing simplified cartographic boundaries
+  us.map <- tigris::counties(cb = TRUE, year = 2015)
+  
+  # Clean county shapefile 
+  
+  # Remove Alaska(2), Hawaii(15), Puerto Rico (72), Guam (66), Virgin Islands (78), American Samoa (60)
+  # Mariana Islands (69), Micronesia (64), Marshall Islands (68), Palau (70), Minor Islands (74)
+  us.map <- us.map[!us.map$STATEFP %in% c("02", "15", "72", "66", "78", "60", "69",
+                                          "64", "68", "70", "74"),]
+  # Make sure other outling islands are removed.
+  us.map <- us.map[!us.map$STATEFP %in% c("81", "84", "86", "87", "89", "71", "76",
+                                          "95", "79"),]
+
+  return(us.map)  
+}
+```
+
+Playing with pollution
+```{r}
+library(sp)
+library(rgeos)
+library(rgdal)
+library(maptools)
+library(dplyr)
+library(leaflet)
+library(scales)
+countyShapefile <- GetCountyShapefile()
+
+small_data <- all_data %>% 
+  select(FIPSCode, Value)
+
+colnames(small_data) <- c("GEOID", "Pollution")
+
+head(small_data)
+
+small_data[duplicated(small_data),]
+
+nrow(small_data)
+nrow(unique(small_data))
+# Merge spatial df with air quality data.
+#counties <- merge(countyShapefile, small_data, by=c("GEOID"))
+
+counties <- geo_join(countyShapefile, small_data, "GEOID", "GEOID", how = "left")
+
+
+#Leftoin isn't used because cannot left join this data! 
+#leafmap <- us.map %>% left_join(county_dat, by = c("GEOID"))
+
+# Format popup data for leaflet map.
+popup_dat <- paste(sep = "<br/>",
+  "<b>County: </b>", 
+  counties$NAME, 
+  "<b>Value: </b>", 
+  counties$Pollution)
+
+
+#pal <- colorQuantile("YlOrRd", NULL, n = 9)  #Manual color bins
+
+#Let leaflet calculate the colors and labels for you 
+pal <- colorNumeric(
+  palette =  "YlGnBu",
+  domain = counties$Pollution
+)
+
+
+# Render final map in leaflet.
+
+map <- leaflet(counties) %>% addTiles()
+
+map %>% 
+  #Stroke indicates outline presence
+  #smoothFactor: how much to simplify the polyline on each zoom level (more means better performance and less accurate representation)
+  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
+    fillColor = ~pal(Pollution), fillOpacity = 1, popup = popup_dat, 
+    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE)) %>%
+  addLegend("bottomright", pal = pal, values = ~Pollution,
+    title = "Airquality (2010)",
+    labFormat = labelFormat(suffix = "Units"), na.label = "county data missing",
+    opacity = 1)
+```
+
+
+
+
+
