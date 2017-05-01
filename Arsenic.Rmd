@@ -252,6 +252,7 @@ all_data_test %>%
   ggplot(aes(coll_HS, Median_Household_Income_2015)) +
   geom_point() +
   geom_smooth(method = "lm")
+
 ```
 
 ## Visualizing arsenic data
