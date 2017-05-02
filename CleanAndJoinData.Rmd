@@ -50,7 +50,7 @@ GetEduData <- function(){
   edu_data<-edu_data[, grep("Percent|FIPS Code|2013 Urban", colnames(edu_data))]
   edu_data<-edu_data%>%dplyr::rename(FIPSCode=`FIPS Code`)
   colnames(edu_data)<-c('FIPSCode', 'UrbanCode', 'LessThanHS', 'HSDiploma', 'SomeCollege','Bachelors')
-  
+  edu_data<-edu_data%>%mutate(coll_HS = (SomeCollege + Bachelors)/(LessThanHS + HSDiploma))%>%filter(coll_HS<5)
   return(edu_data)
 }
 
@@ -111,7 +111,7 @@ GetCountyReference <- function(){
     subset(select=c( `FIPSCode`, `County`, `State`))
   every_county$FIPSCode<-stri_pad_left(every_county$FIPSCode, 5, "0")
   every_county<-mutate(every_county,StateFips=substr(every_county$FIPSCode,1,2))
-  View(every_county)
+  #View(every_county)
   
   return(every_county)
 
@@ -373,7 +373,7 @@ DownloadLocally <- function(AllStates){
   
   #Download file for each state
   for(i in 1:length(AllStates$stateNames)){
-    destination <- paste("/Users/anishakumar/Documents/Stats133/RStudioFiles/Stats133Project/AllStates/", AllStates$stateNames[i], ".xls", sep = "")
+    destination <- paste("~/Downloads/stats133data/AllStates/", AllStates$stateNames[i], ".xls", sep = "")
     
     download.file(AllStates$downloadLinks[i], destfile = destination, mode = "wb" )
     
@@ -394,7 +394,7 @@ Load the filepaths if you're using the downloaded files
 #' @param AllStates data frame that contains stateNames and downloadLinks
 #' @return Data frame with stateNames, downloadLinks, and fileLocations 
 LoadFilepaths <- function(AllStates){
-  AllStates$fileLocations <- paste("/Users/anishakumar/Documents/Stats133/RStudioFiles/Stats133Project/AllStates/", AllStates$stateNames, ".xls", sep = "")
+  AllStates$fileLocations <- paste("~/Downloads/stats133data/AllStates/", AllStates$stateNames, ".xls", sep = "")
   return(AllStates)
 }
 
@@ -451,7 +451,7 @@ GetTreeData <- function(){
   ###### MY CODE  SO THAT I CAN JOIN THE TREE DATA TO MY OTHER DATA FOR THE SCATTERPLOTS######
   #-------------------------------------------------------------------------------------------
   tree_data<-df_full[, -grep("State|Name", colnames(df_full))]
-  tree_data<-rename(tree_data, FIPSCode=FIPS)
+  tree_data<-tree_data%>%rename(FIPSCode=FIPS)%>%filter(TreeCanopyCover<.55)
   
   return(tree_data)
 }
@@ -527,8 +527,8 @@ poll_data <- GetPollutionData()
 tree_data <- GetTreeData()
 
 
-all_data<-plyr::join_all(list(every_county, edu_data, income_data, poll_data, tree_data), by='FIPSCode', type='full')%>%
-  mutate(coll_HS = (SomeCollege + Bachelors)/(LessThanHS + HSDiploma))
+all_data<-plyr::join_all(list(every_county, edu_data, income_data, poll_data, tree_data), by='FIPSCode', type='full')
+all_data<-na.omit(all_data)
 
 
 head(all_data)
@@ -544,35 +544,33 @@ Scatterplots
 # use ggplot to make a scatter plot of education versus TREE DATA
 
 #all_data_narrow_tree<-all_data_narrow%>%gather(key=TreeType, value=TreeValue, TreeCanopy,AvailGreenSpace, TreeCanopyCover)
-edu_treecanop_plot<-all_data_narrow%>%
-  ggplot(aes(x=PercentOfAdults, y=TreeCanopy))+
-  geom_point(aes(color=EducationLevel))
-edu_treecanop_plot
+edu_treecanop_plot<-all_data%>%
+  ggplot(aes(x=TreeCanopyCover, y=coll_HS))+
+  geom_point(aes(color=IncomeQuartile))+
+  facet_grid(.~IncomeQuartile)
 
-edu_green_plot<-all_data_narrow%>%
-  ggplot(aes(x=PercentOfAdults, y=AvailGreenSpace))+
-  geom_point(aes(color=EducationLevel))
-edu_green_plot
+edu_treecanop_plot
 
 ```
 
 ```{r eval = FALSE}
 #use ggplot to plot edication data versus income data
-edu_inc_plot<-all_data_narrow%>%
-  ggplot(aes(x=PercentOfAdults, y=Income))+
-  geom_point(aes(color=EducationLevel))+
-  facet_grid(EducationLevel~.)
-View(all_data_narrow)
-edu_inc_plot
+#edu_inc_plot<-all_dataw%>%
+  #ggplot(aes(x=PercentOfAdults, y=Income))+
+  #geom_point(aes(color=EducationLevel))+
+  #facet_grid(EducationLevel~.)
+#View(all_data_narrow)
+#edu_inc_plot
 ```
 
 ```{r eval = FALSE}
 
 #use ggplot to graph education versus pollution
-edu_poll_graph<-all_data_narrow%>%
-  ggplot(aes(x=PercentOfAdults, y=Pollution))+
-  geom_point(aes(color=EducationLevel))+
-  facet_grid(EducationLevel~.)
+edu_poll_graph<-all_data%>%
+  filter(StateFips!=02)%>%
+  ggplot(aes(x=Pollution, y=coll_HS))+
+  geom_point(aes(color=IncomeQuartile))+
+  facet_grid(.~IncomeQuartile)
 
 edu_poll_graph  
 ```
