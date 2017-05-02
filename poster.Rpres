@@ -12,16 +12,18 @@ Does environmental quality such as air pollution, water pollution, and tree cove
 
 ## Data Sources  
 - Education & income: USDA Economic Research Services  
-- Air quality (particulat matter): Centers for Diseas Control and Prevention  
+- Air quality: Centers for Diseas Control and Prevention
+- Tree cover: USDA Forest Service
 
 ## Key Variables  
-- Education: Education attainment level in adults, ratio of above high school education and high school completion or below.  
+- Education: Education attainment level in adults, ratio of above high school education and high school completion or below (2015)
 - Income: Median houseshold income (2015)
-- Air quality: concentration of particulate matter
+- Air quality: Concentration of particulate matter 2.5
+- Tree cover: Percent area tree cover
 
 ## Methoods
-From classs: tidyr, dplyr, reading html, for loops for downloading and compiling data, linear regression, ggplot
-OUtside class: readxl, spatial data, leaflet interactive map
+From classs: tidyr, dplyr, reading html, for loops for downloading and compiling data, linear regression, ggplot   
+Outside class: readxl, spatial data, leaflet interactive map
 
 
 Slide With Code
