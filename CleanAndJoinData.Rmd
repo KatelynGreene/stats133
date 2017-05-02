@@ -584,36 +584,9 @@ library(rpart.plot)
 library(stats)
 library(mosaicData)
 
+lm_poll<-lm(coll_HS~Pollution  + Income, data=all_data) %>% summary()
 
-income_edu_plot<-all_data %>%
-  ggplot(aes(coll_HS, Income)) +
-  geom_point() +
-  geom_smooth(method = "lm")
-
-lm(coll_HS~Pollution  + Income, data=all_data) %>% summary()
-
+lm(coll_HS~TreeCanopyCover +Income, data=all_data)%>% summary()
 ```
-
-
-
-Convert income into its quartiles
-```{r}
-#all_data$quartile <- ntile(all_data$Income, 4)  
-View(all_data)
-pollutionVRatioQuartiles<-all_data%>%
-  filter(!is.na(Income)) %>%
-  ggplot(aes(x=Pollution, y=coll_HS))+
-  geom_point(aes(color=IncomeQuartile))+
-  facet_grid(IncomeQuartile~.)
-#View(all_data_narrow)
-pollutionVRatioQuartiles 
-#education is ratio of higher education to high school or less 
-
-```
-
-
-
-
-
 
 
