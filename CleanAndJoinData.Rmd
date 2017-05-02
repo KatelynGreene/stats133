@@ -584,9 +584,22 @@ library(rpart.plot)
 library(stats)
 library(mosaicData)
 
-lm_poll<-lm(coll_HS~Pollution  + Income, data=all_data) %>% summary()
+#Tree reg
+et1<-lm(coll_HS~TreeCanopyCover, data=all_data)
+et2<-lm(coll_HS~TreeCanopyCover +Income, data=all_data)
+stargazer::stargazer(et1, et2, type="text",
+ dep.var.labels=c("Ratio of People with Higher Education to Lower Education"),
+ covariate.labels=c("Tree Canopy Cover","Median Income"), out="tree_edu.txt")
 
-lm(coll_HS~TreeCanopyCover +Income, data=all_data)%>% summary()
+#pollution regressions
+
+
+ep1<-lm(coll_HS~Pollution, data=all_data) 
+ep2<-lm(coll_HS~Pollution+Income, data=all_data) 
+
+stargazer::stargazer(ep1, ep2, type="text",
+ dep.var.labels=c("Ratio of People with Higher Education to Lower Education"),
+ covariate.labels=c("Particulate Matter","Median Income"), out="polution_edu.txt")
 ```
 
 
