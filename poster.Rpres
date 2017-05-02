@@ -1,26 +1,28 @@
-Environment & Education
+Environmental Quality & Education
 ========================================================
 author: Senioritis
 date: 
 autosize: true
 
-Environmental Quality v, Education
+
 ========================================================
 
-# Question 
+## Question 
+Does environmental quality such as air pollution, water pollution, and tree cover have a relationship with education levels for US counties?
 
-# Data Sources  
-- Education, income, unemployment: USDA Economic Research Services  
+## Data Sources  
+- Education & income: USDA Economic Research Services  
 - Air quality (particulat matter): Centers for Diseas Control and Prevention  
 
-# Key Variables  
-- Education: Education attainment level in adults 
+## Key Variables  
+- Education: Education attainment level in adults, ratio of above high school education and high school completion or below.  
+- Income: Median houseshold income (2015)
+- Air quality: concentration of particulate matter
 
-# Methoods
+## Methoods
+From classs: tidyr, dplyr, reading html, for loops for downloading and compiling data, linear regression, ggplot
+OUtside class: readxl, spatial data, leaflet interactive map
 
-- Bullet 1
-- Bullet 2
-- Bullet 3
 
 Slide With Code
 ========================================================
