@@ -180,7 +180,7 @@ pollution_map <- map %>%
   #Stroke indicates outline presence
   #smoothFactor: how much to simplify the polyline on each zoom level (more means better performance and less accurate representation)
   addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
-    fillColor = ~pal1(Pollution), fillOpacity = 1, popup = popup_dat1, 
+    fillColor = ~pal(Pollution), fillOpacity = 1, popup = popup_dat, 
     highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE), group = "Pollution") %>%
   addLegend("bottomright", pal = pal, values = ~Pollution,
     title = "Pollution Data",
@@ -188,6 +188,9 @@ pollution_map <- map %>%
     opacity = 1) 
 
 pollution_map
+
+library(htmlwidgets)
+saveWidget(pollution_map, file="pollution_map.html", selfcontained = FALSE)
 ```
 
 ---------------------
@@ -338,10 +341,13 @@ treeCanopyDevelopped <- map %>%
     highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE)) %>%
   addLegend("bottomright", pal = pal, values = ~TreeCanopyCover,
     title = "Tree canopy cover in developped regions",
-    labFormat = labelFormat(suffix = "%"), na.label = "county data missing",
+    labFormat = labelFormat(suffix = "%"), na.label = ">0.55%",
     opacity = 1)
 
 treeCanopyDevelopped
+
+library(htmlwidgets)
+saveWidget(treeCanopyDevelopped, file="treeCanopyDevelopped", selfcontained = FALSE)
 ```
 
 -----------------------
@@ -383,21 +389,21 @@ pal <- colorNumeric(
 
 map <- leaflet(counties) %>% addTiles()
 
-treeCanopyDevelopped <- map %>% 
+education <- map %>% 
   #Stroke indicates outline presence
   #smoothFactor: how much to simplify the polyline on each zoom level (more means better performance and less accurate representation)
   addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
     fillColor = ~pal(coll_HS), fillOpacity = 1, popup = popup_dat, 
     highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE)) %>%
   addLegend("bottomright", pal = pal, values = ~coll_HS,
-    title = "Ratio of higher education to lower education attainment",
-    labFormat = labelFormat(), na.label = "county data missing",
+    title = "Ratio of higher education to<br>lower education attainment",
+    labFormat = labelFormat(), na.label = ">5%",
     opacity = 1)
 
-treeCanopyDevelopped
+education
 
 library(htmlwidgets)
-saveWidget(treeCanopyDevelopped, file="treeCanopyDevelopped.html", selfcontained = FALSE)
+saveWidget(education, file="education.html", selfcontained = FALSE)
 ```
 
 #Playing with Layer Control
