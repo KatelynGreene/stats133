@@ -350,6 +350,18 @@ Education
 
 ```{r}
 
+
+
+countyShapefile <- GetCountyShapefile()
+
+small_data <- all_data %>% 
+  select(FIPSCode, coll_HS) %>% 
+  filter(coll_HS < 5)
+
+# Merge spatial df with air quality data.
+counties <- geo_join(countyShapefile, small_data, "GEOID", "FIPSCode", how = "left")
+
+
 # Format popup data for leaflet map.
 popup_dat <- paste(sep = "<br/>",
   "<b>County: </b>", 
@@ -383,6 +395,9 @@ treeCanopyDevelopped <- map %>%
     opacity = 1)
 
 treeCanopyDevelopped
+
+library(htmlwidgets)
+saveWidget(treeCanopyDevelopped, file="treeCanopyDevelopped.html", selfcontained = FALSE)
 ```
 
 #Playing with Layer Control
