@@ -1,6 +1,7 @@
 ---
 title: "Untitled"
 output: slidy_presentation
+background-color: blue
 ---
 
 ```{r setup, include=FALSE}
@@ -8,29 +9,28 @@ knitr::opts_chunk$set(echo = FALSE)
 ```
 
 #### Question 
-Does environmental quality such as air pollution, water pollution, and tree cover have a relationship with education levels for US counties?
+Does environmental quality such as air pollution and tree cover have a relationship with education levels for US counties?
 
-##### Data Sources  
-- Education & income: USDA Economic Research Services  
+#### Data Sources  
+- Education & Income: USDA Economic Research Services  
 - Air quality: Centers for Diseas Control and Prevention
 - Tree cover: USDA Forest Service
 
 #### Key Variables  
-- Education: Education attainment level in adults, ratio of above high school education and high school completion or below (2015)
-- Income: Median houseshold income (2015)
-- Air quality: Concentration of particulate matter 2.5
-- Tree cover: Percent area tree cover
+- Education: Education attainment level in adults, ratio of % higher education to % high school completion or below (2015)
+- Income: Median household income (2015)
+- Air quality: Concentration of particulate matter 2.5 (2010)
+- Tree cover: Percent area tree cover (2010)
 
-##### Methoods
-From classs: tidyr, dplyr, reading html, for loops for downloading and compiling data, linear regression, ggplot   
-Outside class: readxl, spatial data, leaflet interactive map
+#### Methods
+From class: tidyr, dplyr, webscraping html, for loops for downloading and compiling data, linear regression, ggplot, functions, joins, regex data cleaning   
+Outside class: reading excel files, spatial data, leaflet interactive maps, tigris
 
 
 # Slide with R Output
 
-```{r cars, echo = TRUE}
-summary(cars)
-```
+
+
 
 ## Slide with Plot
 
