@@ -333,21 +333,21 @@ pal <- colorNumeric(
 
 map <- leaflet(counties) %>% addTiles()
 
-treeCanopyDevelopped <- map %>% 
+treeCanopyDeveloped <- map %>% 
   #Stroke indicates outline presence
   #smoothFactor: how much to simplify the polyline on each zoom level (more means better performance and less accurate representation)
   addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
     fillColor = ~pal(TreeCanopyCover), fillOpacity = 1, popup = popup_dat, 
     highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE)) %>%
   addLegend("bottomright", pal = pal, values = ~TreeCanopyCover,
-    title = "Tree canopy cover in developped regions",
+    title = "Tree canopy cover in developed regions",
     labFormat = labelFormat(suffix = "%"), na.label = ">0.55%",
     opacity = 1)
 
 treeCanopyDevelopped
 
 library(htmlwidgets)
-saveWidget(treeCanopyDevelopped, file="treeCanopyDevelopped", selfcontained = FALSE)
+saveWidget(treeCanopyDeveloped, file="treeCanopyDeveloped.html", selfcontained = FALSE)
 ```
 
 -----------------------
