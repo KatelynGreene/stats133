@@ -180,7 +180,7 @@ names(arsenic_df) <- c("fips","arsenic")
 ```
 
 
-## Combine with education data
+## Combine with education & income data
 
 ```{r}
 GetEduData <- function(){
@@ -220,48 +220,61 @@ GetIncomeData <- function(){
     subset(select=c("FIPStxt","Median_Household_Income_2015","Unemployment_rate_2015"))%>%
     dplyr::rename(FIPSCode=FIPStxt)
   
+  colnames(income) <- c("FIPSCode", "Income", "Unemployment")
+  income$IncomeQuartile <- ntile(income$Income, 4) 
+  
   return(income)
 }
 
 income <- GetIncomeData()
 
-all_data <- arsenic_df %>%
-  left_join(income, by = c("fips" = "FIPSCode")) %>%
-  left_join(edu_data, by = c("fips" = "FIPSCode"))
+GetPollutionData <- function(){
+  #dowload/wrangle the PollutionPerCounty data
+  poll_county_unclean<-read.csv("https://data.cdc.gov/api/views/cjae-szjv/rows.csv?accessType=DOWNLOAD")
+  poll_county<-poll_county_unclean %>%
+    filter(MeasureType=='Average')%>%
+    group_by(ReportYear)%>%
+    arrange(CountyName)%>%
+    arrange(StateName)%>%
+    filter(MeasureId==296)%>%
+    dplyr::rename(FIPSCode=CountyFips)%>%
+    subset(select=c(FIPSCode, ReportYear, Value, Unit))%>%
+    mutate(FIPSCode=gsub("46113","46102", FIPSCode))%>%
+    filter(ReportYear==2010)%>%
+    subset(select=-c(ReportYear))
+  poll_county$FIPSCode<-stri_pad_left(poll_county$FIPSCode, 5, "0")  
+  
+  colnames(poll_county) <- c("FIPSCode", "Pollution", "Unit")
+  
+  return(poll_county)
+}
+ pollution <- GetPollutionData
 
 
-all_data_test <- arsenic_df %>%
+all_data_arsenic <- arsenic_df %>%
   left_join(income, by = c("fips" = "FIPSCode")) %>%
-  left_join(edu_data, by = c("fips" = "FIPSCode"))
+  left_join(edu_data, by = c("fips" = "FIPSCode")) %>%
+  mutate(coll_HS = (SomeCollege + Bachelors)/(LessThanHS + HSDiploma))
+
+all_data_arsenic$coll_HS[all_data_arsenic$coll_HS >= 5] <- NA
+all_data_arsenic$arsenic[all_data_arsenic$arsenic > 100] <- NA
+  
+
 ```
 
 ## Testing different manipulations of variables
 ```{r}
-all_data_test <- all_data_test %>%
-  mutate(bach_HS = Bachelors/HSDiploma) %>%
-  mutate(coll_HS = (SomeCollege + Bachelors)/(LessThanHS + HSDiploma))
-all_data_test$arsenic[all_data_test$arsenic > 100] <- NA
-
-
-all_data_test %>%
-  ggplot(aes(arsenic, bach_HS)) +
+all_data_arsenic %>%
+  ggplot(aes(arsenic, coll_HS)) +
   geom_point() +
-  geom_smooth(method = "lm")
+  geom_smooth(method = "lm") +
+  facet_grid( ~ IncomeQuartile)
+
+summary(lm(data = all_data_test, coll_HS ~ arsenic))
 
 all_data_test %>%
   ggplot(aes(coll_HS, Median_Household_Income_2015)) +
   geom_point() +
   geom_smooth(method = "lm")
-
-```
-
-## Visualizing arsenic data
-
-```{r}
-all_data_test %>%
-  ggplot(aes(log(arsenic), log(bach_HS))) +
-  geom_point() +
-  geom_smooth(method = "lm")
-
 
 ```
