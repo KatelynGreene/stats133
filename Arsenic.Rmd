@@ -259,7 +259,6 @@ all_data_arsenic <- arsenic_df %>%
 all_data_arsenic$coll_HS[all_data_arsenic$coll_HS >= 5] <- NA
 all_data_arsenic$arsenic[all_data_arsenic$arsenic > 100] <- NA
   
-
 ```
 
 ## Testing different manipulations of variables
