@@ -1,0 +1,37 @@
+Environment & Education
+========================================================
+author: Senioritis
+date: 
+autosize: true
+
+Environmental Quality v, Education
+========================================================
+
+# Question 
+
+# Data Sources  
+- Education, income, unemployment: USDA Economic Research Services  
+- Air quality (particulat matter): Centers for Diseas Control and Prevention  
+
+# Key Variables  
+- Education: Education attainment level in adults 
+
+# Methoods
+
+- Bullet 1
+- Bullet 2
+- Bullet 3
+
+Slide With Code
+========================================================
+
+```{r}
+summary(cars)
+```
+
+Slide With Plot
+========================================================
+
+```{r, echo=FALSE}
+plot(cars)
+```
