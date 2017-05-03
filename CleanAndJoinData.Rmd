@@ -150,8 +150,8 @@ GetIncomeData <- function(){
   income$IncomeQuartile[income$IncomeQuartile == 3] <- "$47k - 54k"
   income$IncomeQuartile[income$IncomeQuartile == 4] <- "> $54k"
   income$IncomeQuartile <- base::as.factor(income$IncomeQuartile)
-  income$IncomeQuartile = factor(income$IncomeQuartile, levels(income$IncomeQuartile) [c(3,1,2,4)])
-  
+  #income$IncomeQuartile = factor(income$IncomeQuartile, levels(income$IncomeQuartile) [c(3,1,2,4)]) #FOR PC
+  income$IncomeQuartile <- factor(income$IncomeQuartile, levels = c("< $40k","$40k - 47k","$47k - 54k","> $54k")) #FOR MAC 
   return(income)
 }
 
@@ -399,6 +399,7 @@ Load the filepaths if you're using the downloaded files
 #' 
 #' @param AllStates data frame that contains stateNames and downloadLinks
 #' @return Data frame with stateNames, downloadLinks, and fileLocations 
+<<<<<<< Updated upstream
 LoadFilepaths <- function(AllStates, userName){
   if(userName == "K"){
     AllStates$fileLocations <- paste("C:\\Users\\kanay\\Documents\\R\\stat133\\AllStates\\", AllStates$stateNames, ".xls", sep = "")
@@ -412,6 +413,10 @@ LoadFilepaths <- function(AllStates, userName){
     AllStates$fileLocations <- paste("C:\\Users\\Katrlyn\\stats133Project\\AllStates\\", AllStates$stateNames, ".xls", sep = "")
   }
   
+=======
+LoadFilepaths <- function(AllStates){
+  AllStates$fileLocations <- paste("/Users/anishakumar/Documents/Stats133/RStudioFiles/Stats133Project/AllStates/", AllStates$stateNames, ".xls", sep = "")
+>>>>>>> Stashed changes
   return(AllStates)
 }
 
@@ -534,11 +539,15 @@ Joining all datatables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ```{r}
+<<<<<<< Updated upstream
 #-------USER--------
 # READ BELOW BEFORE RUNNING
 #--------------------
 #Put the first initial of your first name.
 userName = "v"
+=======
+
+>>>>>>> Stashed changes
 
 all_data=NULL
 
