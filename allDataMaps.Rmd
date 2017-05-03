@@ -351,7 +351,62 @@ saveWidget(treeCanopyDeveloped, file="treeCanopyDeveloped.html", selfcontained =
 ```
 
 -----------------------
-Education 
+Education (Bachelors map)
+-----------------------
+
+```{r}
+
+#countyShapefile <- GetCountyShapefile()
+
+small_data <- all_data %>% 
+  select(FIPSCode, Bachelors)
+
+# Merge spatial df with air quality data.
+counties <- geo_join(countyShapefile, small_data, "GEOID", "FIPSCode", how = "left")
+
+
+# Format popup data for leaflet map.
+popup_dat <- paste(sep = "<br/>",
+  "<b>County: </b>", 
+  counties$NAME, 
+  "<b>Value: </b>", 
+  counties$Bachelors)
+
+
+#pal <- colorQuantile("YlOrRd", NULL, n = 9)  #Manual color bins
+
+#Let leaflet calculate the colors and labels for you 
+pal <- colorNumeric(
+  palette =  "YlGnBu",
+  domain = counties$Bachelors
+)
+
+
+# Render final map in leaflet.
+
+map <- leaflet(counties) %>% addTiles()
+
+education <- map %>% 
+  #Stroke indicates outline presence
+  #smoothFactor: how much to simplify the polyline on each zoom level (more means better performance and less accurate representation)
+  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
+    fillColor = ~pal(Bachelors), fillOpacity = 1, popup = popup_dat, 
+    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE)) %>%
+  addLegend("bottomright", pal = pal, values = ~Bachelors,
+    title = "Population with<br>Bachelor's degree<br>or higher",
+    labFormat = labelFormat(suffix = "%"), na.label = "county missing data",
+    opacity = 1)
+
+education
+
+library(htmlwidgets)
+saveWidget(education, file="educationBachelors.html", selfcontained = FALSE)
+```
+
+
+
+-----------------------
+Education (Ratio)
 -----------------------
 
 ```{r}
