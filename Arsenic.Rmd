@@ -259,22 +259,19 @@ GetPollutionData <- function(){
 }
  pollution <- GetPollutionData()
 
-
-all_data_arsenic <- arsenic_df %>%
-  left_join(income, by = c("fips" = "FIPSCode")) %>%
-  left_join(edu_data, by = c("fips" = "FIPSCode")) %>%
-  left_join(pollution, by=c("fips" = "FIPSCode")) %>%
-  mutate(coll_HS = (SomeCollege + Bachelors)/(LessThanHS + HSDiploma))
+ 
+all_data_arsenic <- all_data %>%
+  left_join(arsenic_df, by = c("FIPSCode" = "fips"))
 
 all_data_arsenic$coll_HS[all_data_arsenic$coll_HS >= 5] <- NA
 all_data_arsenic$arsenic[all_data_arsenic$arsenic > 100] <- NA
   
 ```
 
-## Testing different manipulations of variables
+## Boxplots for air pollution, arsenic, and tree cover
 ```{r}
 
-all_data_arsenic %>%
+air_edu_boxplot <- all_data_arsenic %>%
   ggplot(aes(Pollution, Bachelors)) +
   #geom_point() +
   geom_boxplot(aes(color = IncomeQuartile)) +
@@ -285,16 +282,29 @@ all_data_arsenic %>%
   theme_bw()
 
 
-all_data_arsenic %>%
+as_edu_boxplot <- all_data_arsenic %>%
   ggplot(aes(arsenic, Bachelors)) +
   #geom_point() +
   geom_boxplot(aes(color = IncomeQuartile)) +
   scale_color_manual(values = c("#6baed6","#4292c6","#2171b5","#084594")) +
   geom_smooth(method = "lm") +
   facet_grid( ~ IncomeQuartile) +
-  labs(x="Concentration of PM 2.5 (ug/m^3)", y="% Adults with Bachelor's Degrees") +
+  labs(x="Concentration of Arsenic (ug/L)", y="% Adults with Bachelor's Degrees") +
   theme_bw()
 
+tree_edu_boxplot <- all_data_arsenic %>%
+  ggplot(aes(TreeCanopyCover, Bachelors)) +
+  geom_boxplot(aes(color = IncomeQuartile)) +
+  geom_point(aes(color = IncomeQuartile), alpha = 0.5) +
+  scale_color_manual(values = c("#6baed6","#4292c6","#2171b5","#084594")) +
+  geom_smooth(method = "lm") +
+  facet_grid( ~ IncomeQuartile) +
+  labs(x="% Tree Canopy Cover", y="% Adults with Bachelor's Degrees") +
+  theme_bw()
+
+air_edu_boxplot
+as_edu_boxplot
+tree_edu_boxplot
 
 
 ```
