@@ -42,12 +42,12 @@
 
 **CountyReferenceTable.RMD** -- All USA county names, states, and FIPS codes.
  * *Source: https://www.census.gov/geo/reference/codes/cou.html*
- 
+ s
 # To-do
 * Put arsenic data in clean and join (Vanessa)
 * Leaflet layer control (Katelyn)
 * Various scatterplots 
- * Edu vs income (Vanessa)
+ * Edu vs income (Vanessa)s
  * edu vs airquality (Vanessa)
  * edu vs arsenic (Kana)
  * edu vs foresty (Katelyn/Vanessa)
@@ -61,5 +61,5 @@ Katelyn:
 
 Kana: C:\\Users\\kanay\\Documents\\R\\stat133\\AllStates\\
 
-Anisha: 
+Anisha: /Users/anishakumar/Documents/Stats133/RStudioFiles/Stats133Project/AllStates/
 

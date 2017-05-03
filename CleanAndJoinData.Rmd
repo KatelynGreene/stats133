@@ -399,8 +399,19 @@ Load the filepaths if you're using the downloaded files
 #' 
 #' @param AllStates data frame that contains stateNames and downloadLinks
 #' @return Data frame with stateNames, downloadLinks, and fileLocations 
-LoadFilepaths <- function(AllStates){
-  AllStates$fileLocations <- paste("~/Downloads/stats133data/AllStates/", AllStates$stateNames, ".xls", sep = "")
+LoadFilepaths <- function(AllStates, userName){
+  if(userName == "K"){
+    AllStates$fileLocations <- paste("C:\\Users\\kanay\\Documents\\R\\stat133\\AllStates\\", AllStates$stateNames, ".xls", sep = "")
+  }else if(userName == "V"){
+    AllStates$fileLocations <- paste("~/Downloads/stats133data/AllStates/", AllStates$stateNames, ".xls", sep = "")
+  }else if(userName == "A") {
+    AllStates$fileLocations <- paste("/Users/anishakumar/Documents/Stats133/RStudioFiles/Stats133Project/AllStates/", AllStates$stateNames, ".xls", sep = "")
+  }else if(userName == "KS"){
+    AllStates$fileLocations <- paste("C:\\Users\\kagex\\stats133Project\\AllStates\\", AllStates$stateNames, ".xls", sep = "")
+  }else{
+    AllStates$fileLocations <- paste("C:\\Users\\Katrlyn\\stats133Project\\AllStates\\", AllStates$stateNames, ".xls", sep = "")
+  }
+  
   return(AllStates)
 }
 
@@ -411,7 +422,7 @@ Main code (Method 1: Download all the files locally)
 ------------------------------------------------------
 ```{r}
 
-GetTreeData <- function(){
+GetTreeData <- function(userName){
   #Webscrape the data links from the USDA Forest Service
   #The original data source is: https://www.nrs.fs.fed.us/data/urban/ 
   
@@ -419,7 +430,7 @@ GetTreeData <- function(){
   
   #Download all the xls files locally for data processing
   #AllStates <- DownloadLocally(AllStates)
-  AllStates <- LoadFilepaths(AllStates) #You will need to load this every time if you're working from local files
+  AllStates <- LoadFilepaths(AllStates, userName) #You will need to load this every time if you're working from local files
   
   #Extract urban forestry for each state in the United States
   for(i in 1:length(AllStates$downloadLinks)){
@@ -523,7 +534,11 @@ Joining all datatables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ```{r}
-LoadFilepaths()
+#-------USER--------
+# READ BELOW BEFORE RUNNING
+#--------------------
+#Put the first initial of your first name.
+userName = "v"
 
 all_data=NULL
 
@@ -532,7 +547,7 @@ every_county <- GetCountyReference()
 edu_data <- GetEduData()
 income_data <- GetIncomeData()
 poll_data <- GetPollutionData()
-tree_data <- GetTreeData()
+tree_data <- GetTreeData(userName)
 
 
 all_data<-plyr::join_all(list(every_county, edu_data, income_data, poll_data, tree_data), by='FIPSCode', type='full')
