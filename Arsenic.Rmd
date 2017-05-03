@@ -221,12 +221,18 @@ GetIncomeData <- function(){
     dplyr::rename(FIPSCode=FIPStxt)
   
   colnames(income) <- c("FIPSCode", "Income", "Unemployment")
-  income$IncomeQuartile <- ntile(income$Income, 4) 
-  
+  income$IncomeQuartile <- ntile(income$Income, 4)
+  income$IncomeQuartile[income$IncomeQuartile == 1] <- "< $40k"
+  income$IncomeQuartile[income$IncomeQuartile == 2] <- "$40k - 47k"
+  income$IncomeQuartile[income$IncomeQuartile == 3] <- "$47k - 54k"
+  income$IncomeQuartile[income$IncomeQuartile == 4] <- "> $54k"
+  income$IncomeQuartile <- base::as.factor(income$IncomeQuartile)
+  income$IncomeQuartile = factor(income$IncomeQuartile, levels(income$IncomeQuartile) [c(3,1,2,4)])
   return(income)
 }
 
 income <- GetIncomeData()
+
 
 GetPollutionData <- function(){
   #dowload/wrangle the PollutionPerCounty data
@@ -248,12 +254,13 @@ GetPollutionData <- function(){
   
   return(poll_county)
 }
- pollution <- GetPollutionData
+ pollution <- GetPollutionData()
 
 
 all_data_arsenic <- arsenic_df %>%
   left_join(income, by = c("fips" = "FIPSCode")) %>%
   left_join(edu_data, by = c("fips" = "FIPSCode")) %>%
+  left_join(pollution, by=c("fips" = "FIPSCode")) %>%
   mutate(coll_HS = (SomeCollege + Bachelors)/(LessThanHS + HSDiploma))
 
 all_data_arsenic$coll_HS[all_data_arsenic$coll_HS >= 5] <- NA
@@ -264,16 +271,16 @@ all_data_arsenic$arsenic[all_data_arsenic$arsenic > 100] <- NA
 ## Testing different manipulations of variables
 ```{r}
 all_data_arsenic %>%
-  ggplot(aes(arsenic, coll_HS)) +
-  geom_point() +
+  ggplot(aes(Pollution, Bachelors)) +
+  #geom_point() +
+  geom_boxplot(aes(color = IncomeQuartile)) +
+  scale_color_brewer(palette = "Blues") +
   geom_smooth(method = "lm") +
-  facet_grid( ~ IncomeQuartile)
+  facet_grid( ~ IncomeQuartile) +
+  theme_bw()
 
 summary(lm(data = all_data_test, coll_HS ~ arsenic))
 
-all_data_test %>%
-  ggplot(aes(coll_HS, Median_Household_Income_2015)) +
-  geom_point() +
-  geom_smooth(method = "lm")
+
 
 ```
