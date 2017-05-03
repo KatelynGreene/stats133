@@ -533,6 +533,8 @@ all_data<-na.omit(all_data)
 
 head(all_data)
 
+#save(all_data, file="all_data.RData")
+
 ```
 
 
