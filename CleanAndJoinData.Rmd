@@ -398,6 +398,8 @@ LoadFilepaths <- function(AllStates){
   return(AllStates)
 }
 
+#C:\\Users\\kagex\\stats133Project\\AllStates\\
+
 ```
 
 ------------------------------------------------------
@@ -530,7 +532,7 @@ tree_data <- GetTreeData()
 all_data<-plyr::join_all(list(every_county, edu_data, income_data, poll_data, tree_data), by='FIPSCode', type='full')
 
 #Comment out this line if you want to generate leaflet plots. Dropping na's will cause loss of data for other varibales.
-all_data<-na.omit(all_data)
+#all_data<-na.omit(all_data)
 
 
 head(all_data)
