@@ -72,12 +72,21 @@ Visualization Prep
 
 countyShapefile <- GetCountyShapefile()
 
-small_data <- all_data %>% 
-  select(FIPSCode, UrbanCode, Income,Unemployment, Pollution, TreeCanopy, AvailGreenSpace, TreeCanopyCover, coll_HS)
+load("all_data.RData")
 
+small_data <- all_data %>% 
+  select(FIPSCode, StateFips, UrbanCode, Income,Unemployment, Pollution, TreeCanopy, AvailGreenSpace, TreeCanopyCover, coll_HS)
+
+#Only map California
+small_data <- small_data %>% 
+  subset(StateFips == "06")
+
+counties <- geo_join(countyShapefile, small_data, "GEOID", "FIPSCode", how = "inner")
+
+#Map all coutnies in the USA
 
 # Merge spatial df with air quality data.
-counties <- geo_join(countyShapefile, small_data, "GEOID", "FIPSCode", how = "left")
+#counties <- geo_join(countyShapefile, small_data, "GEOID", "FIPSCode", how = "left")
 
 ```
 
@@ -86,6 +95,8 @@ counties <- geo_join(countyShapefile, small_data, "GEOID", "FIPSCode", how = "le
 Income
 ----------
 ```{r}
+
+#Only map california
 
 # Format popup data for leaflet map.
 popup_dat <- paste(sep = "<br/>",
