@@ -143,6 +143,9 @@ idw_raster <- raster(idw)
 avgArsenic <- extract(idw_raster, us.map, fun = mean, sp=TRUE)
 ## convert results to data frame for data manipulation
 avgArsenic_df <- as.data.frame(avgArsenic)
+save(avgArsenic_df, file = "avgArsenic_df.RData")
+
+load("avgArsenic_df.RData")
 
 ## join arsenic info to county_map using identital fips for easy plotting
 county_map_As <- left_join(county_map, avgArsenic_df, by = c("id" = "GEOID"))
@@ -270,16 +273,27 @@ all_data_arsenic$arsenic[all_data_arsenic$arsenic > 100] <- NA
 
 ## Testing different manipulations of variables
 ```{r}
+
 all_data_arsenic %>%
   ggplot(aes(Pollution, Bachelors)) +
   #geom_point() +
   geom_boxplot(aes(color = IncomeQuartile)) +
-  scale_color_brewer(palette = "Blues") +
+  scale_color_manual(values = c("#6baed6","#4292c6","#2171b5","#084594")) +
   geom_smooth(method = "lm") +
   facet_grid( ~ IncomeQuartile) +
+  labs(x="Concentration of PM 2.5 (ug/m^3)", y="% Adults with Bachelor's Degrees") +
   theme_bw()
 
-summary(lm(data = all_data_test, coll_HS ~ arsenic))
+
+all_data_arsenic %>%
+  ggplot(aes(arsenic, Bachelors)) +
+  #geom_point() +
+  geom_boxplot(aes(color = IncomeQuartile)) +
+  scale_color_manual(values = c("#6baed6","#4292c6","#2171b5","#084594")) +
+  geom_smooth(method = "lm") +
+  facet_grid( ~ IncomeQuartile) +
+  labs(x="Concentration of PM 2.5 (ug/m^3)", y="% Adults with Bachelor's Degrees") +
+  theme_bw()
 
 
 
