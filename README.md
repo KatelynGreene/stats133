@@ -55,3 +55,11 @@
 * Regression on one plot (Vanessa)
 * Kana please send csv of arsenic data to vanessa 
 
+
+
+Katelyn:
+
+Kana: C:\\Users\\kanay\\Documents\\R\\stat133\\AllStates\\
+
+Anisha: 
+
