@@ -79,7 +79,7 @@ small_data <- all_data %>%
 
 #Only map California
 small_data <- small_data %>% 
-  subset(StateFips == "06")
+  subset(StateFips == "06"|StateFips == "08")
 
 counties <- geo_join(countyShapefile, small_data, "GEOID", "FIPSCode", how = "inner")
 
