@@ -144,7 +144,13 @@ GetIncomeData <- function(){
     dplyr::rename(FIPSCode=FIPStxt)
   
   colnames(income) <- c("FIPSCode", "Income", "Unemployment")
-  income$IncomeQuartile <- ntile(income$Income, 4) 
+  income$IncomeQuartile <- ntile(income$Income, 4)
+  income$IncomeQuartile[income$IncomeQuartile == 1] <- "< $40k"
+  income$IncomeQuartile[income$IncomeQuartile == 2] <- "$40k - 47k"
+  income$IncomeQuartile[income$IncomeQuartile == 3] <- "$47k - 54k"
+  income$IncomeQuartile[income$IncomeQuartile == 4] <- "> $54k"
+  income$IncomeQuartile <- base::as.factor(income$IncomeQuartile)
+  income$IncomeQuartile = factor(income$IncomeQuartile, levels(income$IncomeQuartile) [c(3,1,2,4)])
   
   return(income)
 }
