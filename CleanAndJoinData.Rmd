@@ -523,6 +523,8 @@ Joining all datatables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ```{r}
+LoadFilepaths()
+
 all_data=NULL
 
 every_county <- GetCountyReference()
