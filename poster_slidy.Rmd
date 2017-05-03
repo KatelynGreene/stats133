@@ -25,7 +25,7 @@ Does environmental quality such as air pollution and tree cover have a relations
 #### Methods
 From class: tidyr, dplyr, webscraping html, for loops for downloading and compiling data, linear regression, ggplot, functions, joins, regex data cleaning   
 Outside class: reading excel files, spatial data, leaflet interactive maps, tigris package, spatial interpolation, choropleth maps
-
+ 
 
 # Slide with R Output
 
