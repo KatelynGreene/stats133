@@ -51,10 +51,6 @@
  * edu vs arsenic (Kana)
  * edu vs foresty (Katelyn/Vanessa)
 
-* Regression on one plot (Vanessa)
-
-
-
 
 * Change variable types in all_data that needs to be factors rather than character or number: State, UrbanCode
 * GRouping into rural, urban, metro --> anisha
@@ -62,15 +58,10 @@
 * Leaflets & urban codes ---> Katelyn /Anisha
 * Commenting --> Everyone 
 * Geographic sorting --> Anisha
-* DCounty reference and Pollution 
 
 
-*Note that the source of the County reference table does not refer to a live table anymore (404 error at US Census site)
-
-
-Katelyn:
-
-Kana: C:\\Users\\kanay\\Documents\\R\\stat133\\AllStates\\
-
-Anisha: /Users/anishakumar/Documents/Stats133/RStudioFiles/Stats133Project/AllStates/
-
+* Note that the source of the County reference table does not refer to a live table anymore (404 error at US Census site)
+* Filter out outlier values?
+  tree_data<-tree_data%>%rename(FIPSCode=FIPS)%>%filter(TreeCanopyCover<.55)
+*USACountyEduAttainment
+  * Should the variables include all the variables besides bachelors?

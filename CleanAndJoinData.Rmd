@@ -534,7 +534,7 @@ tree_data <- GetTreeData(userName)
 
 #Join all data to prepare for visualization
 all_data2<-plyr::join_all(list(every_county, edu_data, income_data, poll_data, tree_data), by='FIPSCode', type='full')
-all_data<-na.omit(all_data) #COMMENT THIS OUT FOR LEAFLET MAPS
+all_data<-na.omit(all_data) #COMMENT THIS OUT FOR LEAFLET MAPS (na's must be kept for these)
 
 head(all_data)
 
