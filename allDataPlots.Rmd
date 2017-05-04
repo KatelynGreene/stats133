@@ -114,7 +114,7 @@ bach_vs_tree_lm <- all_data %>%
   geom_smooth(method = "lm") +
   facet_grid(. ~ UrbanRank) +
   labs(x="% Tree Canopy Cover", y="% Adults with Bachelor's Degrees") +
-  theme_bw()
+  theme_bw() 
 
 bach_vs_tree_lm 
 
