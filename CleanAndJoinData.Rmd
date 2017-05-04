@@ -40,41 +40,32 @@ includeSourceDocuments()
 Downloading the USACountyEduAttainment data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```{r}
-#' @Variables of interest: UrbanRank (Anisha is currently  making it) and Bachelors (%) 
+#' Scrapes the excel download link for US County Education Attainment
+#' Source: "https://www.ers.usda.gov/data-products/county-level-data-sets/county-level-data-sets-download-data.aspx"
+#' (Educational attainment for the U.S., States, and counties, 1970-2015)
+#' @Variables: UrbanRank (2013 Rural-Urban Continuum Code)(Anisha is currently making it) and Bachelors (%) 
 #' @Year 2013 Rural-Urban Continuum Codes, 2011-2015 Education Attainment
 
-#' Scrapes the excel download link for US County Education Attainment
-#' Source: "https://www.ers.usda.gov/data-products/county-level-data-sets/county-level-data-sets-download-data.aspx" and click Educational attainment for the U.S., States, and counties, 1970-2015
-#'
-#' @return The edu_data that contains the FIPSCode, UrbanCode (2013 Rural-Urban Continuum Code), LessThanHS (%), HSDiploma (%), Bachelors (%), UrbanRank. 
+#' @return The data frame that contains the FIPSCode, UrbanCode (2013 Rural-Urban Continuum Code), LessThanHS (%), HSDiploma (%), Bachelors (%), UrbanRank. 
 
 GetEduData <- function(){
-  
-  #Use downoload link to read the data
   url <- "https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762"
   #tmp is a temporary file in which the data from the excel sheet is stored 
   tmp <- tempfile(fileext=".xls")
   download.file(url, destfile=tmp, mode="wb")
   #read data from sheet 1 beginning at row 5
   edu_data_unclean <- read_excel(tmp, sheet = 1, skip = 4)
-  
-  #Get rid of the temporary file tmp
   unlink(tmp)
-  
-  #Wrangle and select variables
   
   #Choose the columns from edu_data_clean that has FIPS Code, 2013 Rural-Urban Continuum Code and any columns that have information from 2011
   edu_data<-edu_data_unclean[, grep("2011|FIPS Code|2013 Rural", colnames(edu_data_unclean))] 
-  
   #Choose columns from edu_data taht has FIPSCode, 2013 Rural-Urban Continuum Code and Percent
   edu_data<-edu_data[, grep("Percent|FIPS Code|2013 Rural", colnames(edu_data))]
-  
   #Rename FIPS Code column to FIPSCode
   edu_data<-edu_data%>%dplyr::rename(FIPSCode=`FIPS Code`)
-  
   #Rename the columns so that they are cleaner 
   colnames(edu_data)<-c('FIPSCode', 'UrbanCode', 'LessThanHS', 'HSDiploma', 'SomeCollege','Bachelors')
-  
+  return(edu_data)
 }
 
 
@@ -147,36 +138,30 @@ Downloading the USACountyIncomeEmploy data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ```{r}
-#' @Variables of interest: Income and IncomeQuartile
-#' @Year 2015
-
 #' Scrapes the excel download link for US Income
-#' Source: https://www.ers.usda.gov/data-products/county-level-data-sets/county-level-data-sets-download-data.aspx and click Unemployment and median household income for the U.S., States, and counties, 2007-15
-#'
-#' @return The income dataframe that contains FIPSCode, Income, Unemployment and IncomeQuartile 
+#' Source: https://www.ers.usda.gov/data-products/county-level-data-sets/county-level-data-sets-download-data.aspx
+#' (Unemployment and median household income for the U.S., States, and counties, 2007-15)
+#' @Year: 2015
+#' @Variables: Household median income and Uemployment rate
+
+#' @return dataframe that contains FIPSCode, Income, Unemployment and IncomeQuartile 
 
 GetIncomeData <- function(){
   
-  #download the data from the URL
   url <- "https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Unemployment.xls?v=42762"
-  #temporarily store the file
   tmp <- tempfile(fileext=".xls")
   download.file(url, destfile=tmp, mode="wb")
-  
   income_unclean <- read_excel(tmp, sheet = 1, skip = 7)
-  
-  #remove the temporary file
   unlink(tmp)
   
   #remove any non-alphanumeric characters
   income <- income_unclean %>% 
     mutate(Area_name= gsub(", ..$", "", Area_name), Area_name)%>% #remove any non-alphanumeric characters
-    subset(select=c("FIPStxt","Median_Household_Income_2015","Unemployment_rate_2015"))%>% #select for desired variables
-    dplyr::rename(FIPSCode=FIPStxt) #Rename FIPStxt so that it is FIPSCode
-  
+    subset(select=c("FIPStxt","Median_Household_Income_2015","Unemployment_rate_2015"))%>% 
+    dplyr::rename(FIPSCode=FIPStxt) 
   #Rename the column names 
   colnames(income) <- c("FIPSCode", "Income", "Unemployment")
-  
+
   #Make a column called IncomeQuartile that separates incomes into 4 quartiles
   income$IncomeQuartile <- ntile(income$Income, 4) 
   
@@ -406,6 +391,7 @@ Download Tree Data  (Method 1: Download all the files locally)
 ```{r}
 #' Scrapes the download link for each state's forestry data and then extracts forestry data for each county.
 #' Source: https://www.nrs.fs.fed.us/data/urban/
+#' @Year: 2010
 #' @Variables: Tree canopy (m2/person), Available green space (ha), and Tree canopy cover in developped regions (%) 
 #' for each county in the state. This data, along with the county name and the FIPS code is returned as a data frame.
 #'
@@ -471,9 +457,10 @@ Download Tree Data (Method 2: Download via temporary files)
 ```{r, eval=FALSE}
 #' Scrapes the download link for each state's forestry data and then extracts forestry data for each county.
 #' Source: https://www.nrs.fs.fed.us/data/urban/
+#' @Year: 2010
 #' @Variables: Tree canopy (m2/person), Available green space (ha), and Tree canopy cover in developped regions (%) 
 #' for each county in the state. This data, along with the county name and the FIPS code is returned as a data frame.
-#'
+#' 
 #' @return A data frame containing county name, FIPS code, tree canopy per person, available green space, and 
 #' tree canopy cover in developped areas.
 
