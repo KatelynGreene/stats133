@@ -68,7 +68,7 @@ GetEduData <- function(userName){
   if(userName == "K"){
     path <- "C:\\Users\\kanay\\Documents\\R\\stat133\\AllStates\\"
   }else if(userName == "V"){
-    path <- "~/Downloads/stats133data/AllStates/"
+    path <- "~/Downloads/stats133data"
   }else if(userName == "A") {
     path <- "/Users/anishakumar/Documents/Stats133/RStudioFiles/Stats133Project/AllStates/"
   }else if(userName == "KS"){
@@ -208,7 +208,7 @@ GetIncomeData <- function(userName){
   if(userName == "K"){
     path <- "C:\\Users\\kanay\\Documents\\R\\stat133\\AllStates\\"
   }else if(userName == "V"){
-    path <- "~/Downloads/stats133data/AllStates/"
+    path <- "~/Downloads/stats133data"
   }else if(userName == "A") {
     path <- "/Users/anishakumar/Documents/Stats133/RStudioFiles/Stats133Project/AllStates/"
   }else if(userName == "KS"){
@@ -247,13 +247,11 @@ GetIncomeData <- function(userName){
 
 ```
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Downloading the USCountyUrbanForest data 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 
 The purpose of this document is to extract urban forest from all the counties in the U.S.
@@ -606,7 +604,7 @@ tree_data <- GetTreeData(userName)
 
 #Join all data to prepare for visualization
 all_data<-plyr::join_all(list(every_county, edu_data, income_data, poll_data, tree_data), by='FIPSCode', type='full')
-all_data<-na.omit(all_data)
+
 
 head(all_data)
 
