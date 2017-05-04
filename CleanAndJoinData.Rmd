@@ -75,6 +75,22 @@ GetEduData <- function(){
   #Rename the columns so that they are cleaner 
   colnames(edu_data)<-c('FIPSCode', 'UrbanCode', 'LessThanHS', 'HSDiploma', 'SomeCollege','Bachelors')
   
+  edu_data$UrbanRank <- ""
+  
+  #The for loop classifies the UrbanCode (Rural-Urban Continuum Code). 1-3 is metropolitan, 4-7 is urban and 8 - 11 is rural. s
+  for (i in 1:nrow(edu_data)){
+     if (is.na(edu_data$UrbanCode[i])){
+       edu_data$UrbanRank[i] <- NA
+      } else if (edu_data$UrbanCode[i] <= 3){
+        edu_data$UrbanRank[i] <- "Metropolitan"
+      } else if (edu_data$UrbanCode[i] <= 7){
+        edu_data$UrbanRank[i] <- "Urban"
+      } else {
+        edu_data$UrbanRank[i] <- "Rural"
+      }
+  }
+
+  return(edu_data)
 }
 
 
