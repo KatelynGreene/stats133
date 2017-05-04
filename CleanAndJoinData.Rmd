@@ -68,8 +68,6 @@ GetEduData <- function(){
   #Rename the columns so that they are cleaner 
   colnames(edu_data)<-c('FIPSCode', 'UrbanCode', 'LessThanHS', 'HSDiploma', 'SomeCollege','Bachelors')
   
-  #edu_data<-edu_data%>%mutate(coll_HS = (SomeCollege + Bachelors)/(LessThanHS + HSDiploma))%>%filter(coll_HS<5)
-  
 }
 
 
@@ -144,26 +142,41 @@ Downloading the USACountyIncomeEmploy data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ```{r}
+#' @Variables of interest: Income and IncomeQuartile
+#' @Year 2015
+
+#' Scrapes the excel download link for US Income
+#' Source: https://www.ers.usda.gov/data-products/county-level-data-sets/county-level-data-sets-download-data.aspx and click Unemployment and median household income for the U.S., States, and counties, 2007-15
+#'
+#' @return The income dataframe that contains FIPSCode, Income, Unemployment and IncomeQuartile 
 
 GetIncomeData <- function(){
   
-  #download/clean USACountyIncomeEmploy data
+  #download the data from the URL
   url <- "https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Unemployment.xls?v=42762"
+  #temporarily store the file
   tmp <- tempfile(fileext=".xls")
   download.file(url, destfile=tmp, mode="wb")
-    
+  
   income_unclean <- read_excel(tmp, sheet = 1, skip = 7)
   
+  #remove the temporary file
   unlink(tmp)
   
+  #remove any non-alphanumeric characters
   income <- income_unclean %>% 
-    mutate(Area_name= gsub(", ..$", "", Area_name), Area_name)%>%
-    subset(select=c("FIPStxt","Median_Household_Income_2015","Unemployment_rate_2015"))%>%
-    dplyr::rename(FIPSCode=FIPStxt)
+    mutate(Area_name= gsub(", ..$", "", Area_name), Area_name)%>% #remove any non-alphanumeric characters
+    subset(select=c("FIPStxt","Median_Household_Income_2015","Unemployment_rate_2015"))%>% #select for desired variables
+    dplyr::rename(FIPSCode=FIPStxt) #Rename FIPStxt so that it is FIPSCode
   
+  #Rename the column names 
   colnames(income) <- c("FIPSCode", "Income", "Unemployment")
-  income$IncomeQuartile <- ntile(income$Income, 4)
-  income$IncomeQuartile[income$IncomeQuartile == 1] <- "< $40k"
+  
+  #Make a column called IncomeQuartile that separates incomes into 4 quartiles
+  income$IncomeQuartile <- ntile(income$Income, 4) 
+  
+  #Name the income levels 
+  income$IncomeQuartile[income$IncomeQuartile == 1] <- "< $40k" 
   income$IncomeQuartile[income$IncomeQuartile == 2] <- "$40k - 47k"
   income$IncomeQuartile[income$IncomeQuartile == 3] <- "$47k - 54k"
   income$IncomeQuartile[income$IncomeQuartile == 4] <- "> $54k"
