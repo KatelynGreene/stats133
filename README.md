@@ -64,6 +64,10 @@
 * Geographic sorting --> Anisha
 * DCounty reference and Pollution 
 
+
+*Note that the source of the County reference table does not refer to a live table anymore (404 error at US Census site)
+
+
 Katelyn:
 
 Kana: C:\\Users\\kanay\\Documents\\R\\stat133\\AllStates\\

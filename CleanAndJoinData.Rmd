@@ -66,7 +66,7 @@ GetEduData <- function(){
 ```
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Downloading the PollutionPerCounty data
+Downloading the Pollution per County data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ```{r}
@@ -77,8 +77,8 @@ Downloading the PollutionPerCounty data
 #' @Year: 2010
 #'
 #' @return data frame containing air quality for each county in the united states
+
 GetPollutionData <- function(){
-  #dowload/wrangle the PollutionPerCounty data
   poll_county_unclean<-read.csv("https://data.cdc.gov/api/views/cjae-szjv/rows.csv?accessType=DOWNLOAD")
   poll_county<-poll_county_unclean %>%
     filter(MeasureType=='Average')%>%
@@ -88,32 +88,30 @@ GetPollutionData <- function(){
     filter(MeasureId==296)%>%
     dplyr::rename(FIPSCode=CountyFips)%>%
     subset(select=c(FIPSCode, ReportYear, Value))%>%
+    #Fix Shannon County change to Oglala County SD
     mutate(FIPSCode=gsub("46113","46102", FIPSCode))%>%
     filter(ReportYear==2010)%>%
     subset(select=-c(ReportYear))
   poll_county$FIPSCode<-stri_pad_left(poll_county$FIPSCode, 5, "0")  
-  
   colnames(poll_county) <- c("FIPSCode", "Pollution")
-  
   return(poll_county)
 }
-
-
-
-
 ```
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Downloading the CountyReferenceTable data
+Downloading the County Reference Table data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ```{r}
-
-#download/clean CountyReferenceTable data
+#' Webscrapes and wrangles a table of every US county and its corresponding FIPS code and state name. 
+#' Source: https://en.wikipedia.org/wiki/List_of_United_States_counties_and_county_equivalents
+#' @Variables: FIPS code, County, State
+#' @Year: 2014
+#'
+#' @return data frame containing every county name and its 
+#' corresponding county FIPS code, state FIPS code, and state name.
 
 GetCountyReference <- function(){
-  
-  #Webscrape/clean CountyReferenceTable data
   every_us_county <- 
     "https://en.wikipedia.org/wiki/List_of_United_States_counties_and_county_equivalents" %>%
     read_html() %>%
@@ -125,14 +123,8 @@ GetCountyReference <- function(){
     subset(select=c( `FIPSCode`, `County`, `State`))
   every_county$FIPSCode<-stri_pad_left(every_county$FIPSCode, 5, "0")
   every_county<-mutate(every_county,StateFips=substr(every_county$FIPSCode,1,2))
-  #View(every_county)
-  
   return(every_county)
-
 }
-
-
-
 ```
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
