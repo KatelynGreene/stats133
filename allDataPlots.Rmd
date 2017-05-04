@@ -91,79 +91,42 @@ stargazer::stargazer(ep1, ep2, type="text",
 
 ## Boxplots for air pollution, arsenic, and tree cover (Kana)
 ```{r}
-load("all_data.RData")
-air_edu_boxplot <- all_data %>%
+#load("all_data.RData")
+#head(all_data)
+
+bach_vs_pollution_lm <- all_data %>%
+  na.omit() %>%
   ggplot(aes(Pollution, Bachelors)) +
-  geom_point(aes(color = UrbanCode), alpha = 0.3, size = 2) +
-  geom_boxplot(aes(color = UrbanCode), size = 1) +
-  #scale_color_manual(values = c("#6baed6","#4292c6","#2171b5","#084594")) +
-  #geom_smooth(method = "lm") +
-  #facet_grid( ~ IncomeQuartile) +
-  facet_grid(~ UrbanCode) +
-  labs(x="Concentration of PM 2.5 (ug/m^3)", y="% Adults with Bachelor's Degrees") +
-  theme_bw()
-  
-  air2_edu_boxplot <- all_data %>%
-  ggplot(aes(Pollution, Bachelors)) +
-  #geom_boxplot(size = 1) +
   geom_point(aes(color = UrbanRank), alpha = 0.3, size = 2) +
-  #scale_color_manual(values = c("#6baed6","#4292c6","#2171b5","#084594")) +
+   scale_color_manual(values = c("#6baed6","#4292c6","#2171b5")) +
   geom_smooth(method = "lm") +
-  #facet_grid( ~ IncomeQuartile) +
   facet_grid(~ UrbanRank) +
   labs(x="Concentration of PM 2.5 (ug/m^3)", y="% Adults with Bachelor's Degrees") +
   theme_bw()
 
-  air2_edu_boxplot
-#as_edu_boxplot <- all_data_arsenic %>%
-#  ggplot(aes(arsenic, Bachelors)) +
-#  geom_boxplot(aes(color = IncomeQuartile), size = 1) +
-#  geom_point(aes(color = IncomeQuartile), alpha = 0.3, size = 2) +
-#  scale_color_manual(values = c("#6baed6","#4292c6","#2171b5","#084594")) +
-#  geom_smooth(method = "lm") +
-#  facet_grid( ~ IncomeQuartile) +
-#  labs(x="Concentration of Arsenic (ug/L)", y="% Adults with Bachelor's Degrees") +
-#  theme_bw()
+bach_vs_pollution_lm
 
-tree_edu_boxplot <- all_data %>%
+bach_vs_tree_lm <- all_data %>% 
+  na.omit() %>%
   ggplot(aes(TreeCanopyCover, Bachelors)) +
- # geom_boxplot(aes(color = IncomeQuartile),size = 1) +
   geom_point(aes(color = UrbanRank), alpha = 0.3, size = 2) +
-  scale_color_manual(values = c("#6baed6","#4292c6","#2171b5","#084594")) +
+  scale_color_manual(values = c("#6baed6","#4292c6","#2171b5")) +
   geom_smooth(method = "lm") +
   facet_grid(. ~ UrbanRank) +
   labs(x="% Tree Canopy Cover", y="% Adults with Bachelor's Degrees") +
   theme_bw()
 
-air_edu_boxplot
-#as_edu_boxplot
-tree_edu_boxplot
+bach_vs_tree_lm 
 
-tree_edu_urban_boxplot <- all_data %>%
-  ggplot(aes(TreeCanopyCover, Bachelors)) +
-  #geom_boxplot(aes(color = UrbanRank),size = 1) +
-  geom_point(aes(color = UrbanRank), alpha = 0.3, size = 2) +
-  #scale_color_manual(values = c("#6baed6","#4292c6","#2171b5")) +
-  geom_smooth(method = "lm") +
-  facet_grid(UrbanRank ~ IncomeQuartile) +
-  labs(x="% Tree Canopy Cover", y="% Adults with Bachelor's Degrees") +
-  theme_bw()
+#Used in the blox plot 
+#all_data_UrbanRank <- all_data %>% 
+#  select(UrbanRank, LessThanHS, HSDiploma, SomeCollege, Bachelors) %>%
+#  gather(key= Education, value = Percent, `LessThanHS`, `HSDiploma`, `SomeCollege`, `Bachelors`) %>%
+#  group_by(UrbanRank, Education) %>%
+#  summarise(average = mean(Percent))
 
-tree_edu_urban_boxplot
-
-all_data_eduNarrow <- all_data %>% 
-  select(UrbanRank, LessThanHS, HSDiploma, SomeCollege, Bachelors) %>%
-  gather(key= Education, value = Percent, `LessThanHS`, `HSDiploma`, `SomeCollege`, `Bachelors`) 
-#head(all_data_eduNarrow)
-
-all_data_UrbanRank <- all_data %>%
-  select(UrbanRank, LessThanHS, HSDiploma, SomeCollege, Bachelors) %>%
-  gather(key= Education, value = Percent, `LessThanHS`, `HSDiploma`, `SomeCollege`, `Bachelors`) %>%
-  group_by(UrbanRank, Education) %>%
-  summarise(average = mean(Percent))
-View(all_data_UrbanRank)
-
-all_data_UrbanRank %>% ggplot( aes(x = UrbanRank, y = average, fill = Education)) + 
-    geom_bar(stat = "identity")
+#Makes useless stacked bar plot
+#all_data_UrbanRank %>% ggplot( aes(x = UrbanRank, y = average, fill = Education)) + 
+#    geom_bar(stat = "identity")
 
 ```
