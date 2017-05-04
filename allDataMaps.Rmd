@@ -72,21 +72,21 @@ Visualization Prep
 
 countyShapefile <- GetCountyShapefile()
 
-load("all_data.RData")
+# load("all_data.RData")
 
 small_data <- all_data %>% 
-  select(FIPSCode, StateFips, UrbanCode, Income,Unemployment, Pollution, TreeCanopy, AvailGreenSpace, TreeCanopyCover, coll_HS)
+  select(FIPSCode, StateFips, UrbanCode, UrbanRank, Income,Unemployment, Pollution, TreeCanopy, AvailGreenSpace, TreeCanopyCover)
 
 #Only map California
-small_data <- small_data %>% 
-  subset(StateFips == "06"|StateFips == "08")
-
-counties <- geo_join(countyShapefile, small_data, "GEOID", "FIPSCode", how = "inner")
+# small_data <- small_data %>% 
+#   subset(StateFips == "06"|StateFips == "08")
+# 
+# counties <- geo_join(countyShapefile, small_data, "GEOID", "FIPSCode", how = "inner")
 
 #Map all coutnies in the USA
 
-# Merge spatial df with air quality data.
-#counties <- geo_join(countyShapefile, small_data, "GEOID", "FIPSCode", how = "left")
+#Merge spatial df with air quality data.
+counties <- geo_join(countyShapefile, small_data, "GEOID", "FIPSCode", how = "left")
 
 ```
 
@@ -362,6 +362,63 @@ saveWidget(treeCanopyDeveloped, file="treeCanopyDeveloped.html", selfcontained =
 ```
 
 -----------------------
+UrbanRank
+-----------------------
+
+```{r}
+
+#countyShapefile <- GetCountyShapefile()
+
+small_data <- all_data %>% 
+  select(FIPSCode, Bachelors, UrbanRank, UrbanCode)
+
+# Merge spatial df with air quality data.
+counties <- geo_join(countyShapefile, small_data, "GEOID", "FIPSCode", how = "left")
+
+
+# Format popup data for leaflet map.
+popup_dat <- paste(sep = "<br/>",
+  "<b>County: </b>", 
+  counties$NAME, 
+  "<b>Value: </b>", 
+  counties$UrbanCode)
+
+
+#pal <- colorQuantile("YlOrRd", NULL, n = 9)  #Manual color bins
+
+#Let leaflet calculate the colors and labels for you 
+# pal <- colorNumeric(
+#   palette =  "YlGnBu",
+#   domain = counties$Bachelors
+# )
+pal<- colorFactor(
+  palette = "YlGnBu", levels = factor(counties$UrbanRank, levels =c("Metropolitan", "Urban", "Rural", ordered = TRUE))
+)
+
+
+# Render final map in leaflet.
+
+map <- leaflet(counties) %>% addTiles()
+
+urbanrank <- map %>% 
+  #Stroke indicates outline presence
+  #smoothFactor: how much to simplify the polyline on each zoom level (more means better performance and less accurate representation)
+  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
+    fillColor = ~pal(UrbanRank), fillOpacity = 1, popup = popup_dat, 
+    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE)) %>%
+  addLegend("bottomright", pal = pal, values = ~UrbanRank,
+    title = "Population with<br>Bachelor's degree<br>or higher",
+    labFormat = labelFormat(), na.label = "county missing data",
+    opacity = 1)
+
+urbanrank
+
+library(htmlwidgets)
+saveWidget(urbanrank, file="urbanrank.html", selfcontained = FALSE)
+```
+
+
+-----------------------
 Education (Bachelors map)
 -----------------------
 
@@ -413,7 +470,6 @@ education
 library(htmlwidgets)
 saveWidget(education, file="educationBachelors.html", selfcontained = FALSE)
 ```
-
 
 
 -----------------------

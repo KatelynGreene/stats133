@@ -604,7 +604,11 @@ tree_data <- GetTreeData(userName)
 
 #Join all data to prepare for visualization
 all_data<-plyr::join_all(list(every_county, edu_data, income_data, poll_data, tree_data), by='FIPSCode', type='full')
+<<<<<<< Updated upstream
 
+=======
+#all_data<-na.omit(all_data)
+>>>>>>> Stashed changes
 
 head(all_data)
 
