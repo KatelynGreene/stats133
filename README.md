@@ -53,7 +53,8 @@
  * edu vs foresty (Katelyn/Vanessa)
 * Leflet maps of all variables (Anisha)
 * Regression on one plot (Vanessa)
-* Kana please send csv of arsenic data to vanessa 
+* Kana please send csv of arsenic data to vanessa  
+* Change variable types in all_data that needs to be factors rather than character or number: State, StateFips, UrbanCode
 
 
 
