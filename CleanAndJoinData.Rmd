@@ -68,7 +68,7 @@ GetEduData <- function(){
   #Rename the columns so that they are cleaner 
   colnames(edu_data)<-c('FIPSCode', 'UrbanCode', 'LessThanHS', 'HSDiploma', 'SomeCollege','Bachelors')
   
-  edu_data<-edu_data%>%mutate(coll_HS = (SomeCollege + Bachelors)/(LessThanHS + HSDiploma))%>%filter(coll_HS<5)
+  #edu_data<-edu_data%>%mutate(coll_HS = (SomeCollege + Bachelors)/(LessThanHS + HSDiploma))%>%filter(coll_HS<5)
   
 }
 
