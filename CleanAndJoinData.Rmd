@@ -1,6 +1,6 @@
 ---
-title: "JoinAllTables"
-author: "Vanessa"
+title: "Acquiring All Data"
+author: "Team Senioritis"
 date: ""
 output: 
   html_document:
@@ -44,13 +44,12 @@ Downloading the USACountyEduAttainment data
 #' Source: "https://www.ers.usda.gov/data-products/county-level-data-sets/county-level-data-sets-download-data.aspx"
 #' (Educational attainment for the U.S., States, and counties, 1970-2015)
 #' @Variables: UrbanRank (2013 Rural-Urban Continuum Code)(Anisha is currently making it) and Bachelors (%) 
-#' @Year 2013 Rural-Urban Continuum Codes, 2011-2015 Education Attainment
+#' @Year: 2013 Rural-Urban Continuum Codes, 2011-2015 Education Attainment
 
 #' @return The data frame that contains the FIPSCode, UrbanCode (2013 Rural-Urban Continuum Code), LessThanHS (%), HSDiploma (%), Bachelors (%), UrbanRank. 
 
 GetEduData <- function(){
   url <- "https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762"
-  #tmp is a temporary file in which the data from the excel sheet is stored 
   tmp <- tempfile(fileext=".xls")
   download.file(url, destfile=tmp, mode="wb")
   #read data from sheet 1 beginning at row 5
@@ -153,7 +152,6 @@ GetIncomeData <- function(){
   download.file(url, destfile=tmp, mode="wb")
   income_unclean <- read_excel(tmp, sheet = 1, skip = 7)
   unlink(tmp)
-  
   #remove any non-alphanumeric characters
   income <- income_unclean %>% 
     mutate(Area_name= gsub(", ..$", "", Area_name), Area_name)%>% #remove any non-alphanumeric characters
@@ -161,10 +159,8 @@ GetIncomeData <- function(){
     dplyr::rename(FIPSCode=FIPStxt) 
   #Rename the column names 
   colnames(income) <- c("FIPSCode", "Income", "Unemployment")
-
   #Make a column called IncomeQuartile that separates incomes into 4 quartiles
   income$IncomeQuartile <- ntile(income$Income, 4) 
-  
   #Name the income levels 
   income$IncomeQuartile[income$IncomeQuartile == 1] <- "< $40k" 
   income$IncomeQuartile[income$IncomeQuartile == 2] <- "$40k - 47k"
@@ -399,11 +395,7 @@ Download Tree Data  (Method 1: Download all the files locally)
 #' tree canopy cover in developped areas.
 
 GetTreeData <- function(userName){
-  #Webscrape the data links from the USDA Forest Service
-  #The original data source is: https://www.nrs.fs.fed.us/data/urban/ 
-  
   AllStates <- Webscrape()
-  
   #Download all the xls files locally for data processing
   #AllStates <- DownloadLocally(AllStates)
   AllStates <- LoadFilepaths(AllStates, userName) #You will need to load this every time if you're working from local files
@@ -431,7 +423,6 @@ GetTreeData <- function(userName){
       df_full <- rbind(df_full, state_df)
     }
   }
-  
   #Things that need fixing still
   df <- df_full %>% subset(is.na(FIPS) | is.na(TreeCanopy))
   df
@@ -454,7 +445,7 @@ Download Tree Data (Method 2: Download via temporary files)
 ------------------------------------------------------
 
 
-```{r, eval=FALSE}
+```{r}
 #' Scrapes the download link for each state's forestry data and then extracts forestry data for each county.
 #' Source: https://www.nrs.fs.fed.us/data/urban/
 #' @Year: 2010
@@ -525,7 +516,7 @@ Main Code: Acquire and Join all data
 # READ BELOW BEFORE RUNNING
 #--------------------
 #Put the first initial of your first name.
-userName = "A"
+userName = "KK"
 
 all_data=NULL
 
@@ -538,9 +529,12 @@ income_data <- GetIncomeData()
 poll_data <- GetPollutionData()
 tree_data <- GetTreeData(userName)
 
+#Testing the tree_data temp file method --> Everything works as of 5/3
+#tree_data2 <- GetTreeDataTEMP() 
+
 #Join all data to prepare for visualization
-all_data<-plyr::join_all(list(every_county, edu_data, income_data, poll_data, tree_data), by='FIPSCode', type='full')
-all_data<-na.omit(all_data)
+all_data2<-plyr::join_all(list(every_county, edu_data, income_data, poll_data, tree_data), by='FIPSCode', type='full')
+all_data<-na.omit(all_data) #COMMENT THIS OUT FOR LEAFLET MAPS
 
 head(all_data)
 
