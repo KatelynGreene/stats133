@@ -46,8 +46,9 @@ GetEduData <- function(){
   unlink(tmp)
   
   #Wrangle and select variables
-  edu_data<-edu_data_unclean[, grep("2011|FIPS Code|2013 Urban", colnames(edu_data_unclean))]
-  edu_data<-edu_data[, grep("Percent|FIPS Code|2013 Urban", colnames(edu_data))]
+  #2013 Rural Urban Continuum code
+  edu_data<-edu_data_unclean[, grep("2011|FIPS Code|2013 Rural", colnames(edu_data_unclean))]
+  edu_data<-edu_data[, grep("Percent|FIPS Code|2013 Rural", colnames(edu_data))]
   edu_data<-edu_data%>%dplyr::rename(FIPSCode=`FIPS Code`)
   colnames(edu_data)<-c('FIPSCode', 'UrbanCode', 'LessThanHS', 'HSDiploma', 'SomeCollege','Bachelors')
   edu_data<-edu_data%>%mutate(coll_HS = (SomeCollege + Bachelors)/(LessThanHS + HSDiploma))%>%filter(coll_HS<5)
