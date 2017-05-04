@@ -70,7 +70,7 @@ GetEduData <- function(userName){
   }else if(userName == "V"){
     path <- "~/Downloads/stats133data"
   }else if(userName == "A") {
-    path <- "/Users/anishakumar/Documents/Stats133/RStudioFiles/Stats133Project/AllStates/"
+    path <- "/Users/anishakumar/Documents/Stats133/RStudioFiles/Stats133Project/edu.xls"
   }else if(userName == "KS"){
     path <- "C:\\Users\\kagex\\Downloads\\edu.xls"
   }else{
@@ -210,7 +210,7 @@ GetIncomeData <- function(userName){
   }else if(userName == "V"){
     path <- "~/Downloads/stats133data"
   }else if(userName == "A") {
-    path <- "/Users/anishakumar/Documents/Stats133/RStudioFiles/Stats133Project/AllStates/"
+    path <- "/Users/anishakumar/Documents/Stats133/RStudioFiles/Stats133Project/income.xls"
   }else if(userName == "KS"){
     path <- "C:\\Users\\kagex\\Downloads\\income.xls"
   }else{
@@ -589,7 +589,7 @@ Main Code: Acquire and Join all data
 # READ BELOW BEFORE RUNNING
 #--------------------
 #Put the first initial of your first name.
-userName = "KS"
+userName = "A"
 
 all_data=NULL
 
