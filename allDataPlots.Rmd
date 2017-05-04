@@ -128,5 +128,16 @@ air_edu_boxplot
 #as_edu_boxplot
 tree_edu_boxplot
 
+tree_edu_urban_boxplot <- all_data %>%
+  ggplot(aes(TreeCanopyCover, Bachelors)) +
+  #geom_boxplot(aes(color = UrbanRank),size = 1) +
+  geom_point(aes(color = UrbanRank), alpha = 0.3, size = 2) +
+  #scale_color_manual(values = c("#6baed6","#4292c6","#2171b5")) +
+  geom_smooth(method = "lm") +
+  facet_grid(UrbanRank ~ IncomeQuartile) +
+  labs(x="% Tree Canopy Cover", y="% Adults with Bachelor's Degrees") +
+  theme_bw()
+
+tree_edu_urban_boxplot
 
 ```
