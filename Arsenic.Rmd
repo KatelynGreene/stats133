@@ -273,8 +273,8 @@ all_data_arsenic$arsenic[all_data_arsenic$arsenic > 100] <- NA
 
 air_edu_boxplot <- all_data_arsenic %>%
   ggplot(aes(Pollution, Bachelors)) +
-  #geom_point() +
-  geom_boxplot(aes(color = IncomeQuartile)) +
+  geom_boxplot(aes(color = IncomeQuartile), size = 1) +
+  geom_point(aes(color = IncomeQuartile), alpha = 0.3, size = 2) +
   scale_color_manual(values = c("#6baed6","#4292c6","#2171b5","#084594")) +
   geom_smooth(method = "lm") +
   facet_grid( ~ IncomeQuartile) +
@@ -284,8 +284,8 @@ air_edu_boxplot <- all_data_arsenic %>%
 
 as_edu_boxplot <- all_data_arsenic %>%
   ggplot(aes(arsenic, Bachelors)) +
-  #geom_point() +
-  geom_boxplot(aes(color = IncomeQuartile)) +
+  geom_boxplot(aes(color = IncomeQuartile), size = 1) +
+  geom_point(aes(color = IncomeQuartile), alpha = 0.3, size = 2) +
   scale_color_manual(values = c("#6baed6","#4292c6","#2171b5","#084594")) +
   geom_smooth(method = "lm") +
   facet_grid( ~ IncomeQuartile) +
@@ -294,8 +294,8 @@ as_edu_boxplot <- all_data_arsenic %>%
 
 tree_edu_boxplot <- all_data_arsenic %>%
   ggplot(aes(TreeCanopyCover, Bachelors)) +
-  geom_boxplot(aes(color = IncomeQuartile)) +
-  geom_point(aes(color = IncomeQuartile), alpha = 0.5) +
+  geom_boxplot(aes(color = IncomeQuartile),size = 1) +
+  geom_point(aes(color = IncomeQuartile), alpha = 0.3, size = 2) +
   scale_color_manual(values = c("#6baed6","#4292c6","#2171b5","#084594")) +
   geom_smooth(method = "lm") +
   facet_grid( ~ IncomeQuartile) +
