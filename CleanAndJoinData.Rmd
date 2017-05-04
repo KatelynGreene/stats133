@@ -29,6 +29,13 @@ includeSourceDocuments()
 <!-- Don't edit the material above this line -->
 
 
+#' Scrapes the excel download link for each state in the U.S.
+#' Source: https://www.nrs.fs.fed.us/data/urban/
+#'
+#' @param x A number
+#' @param y A number
+#' @return The sum of \code{x} and \code{y}
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Downloading the USACountyEduAttainment data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -61,9 +68,15 @@ GetEduData <- function(){
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Downloading the PollutionPerCounty data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 ```{r}
-
-
+#' Downloads and wrangles pollution data in the form of air quality measurements from the EPA. 
+#' Source: https://data.cdc.gov/dataset/Air-Quality-Measures-on-the-National-Environmental/cjae-szjv
+#' @Variables: Annual average ambient concentrations of PM2.5 in micrograms per cubic meter 
+#' (based on seasonal averages and daily measurement)
+#' @Year: 2010
+#'
+#' @return data frame containing air quality for each county in the united states
 GetPollutionData <- function(){
   #dowload/wrangle the PollutionPerCounty data
   poll_county_unclean<-read.csv("https://data.cdc.gov/api/views/cjae-szjv/rows.csv?accessType=DOWNLOAD")
@@ -74,13 +87,13 @@ GetPollutionData <- function(){
     arrange(StateName)%>%
     filter(MeasureId==296)%>%
     dplyr::rename(FIPSCode=CountyFips)%>%
-    subset(select=c(FIPSCode, ReportYear, Value, Unit))%>%
+    subset(select=c(FIPSCode, ReportYear, Value))%>%
     mutate(FIPSCode=gsub("46113","46102", FIPSCode))%>%
     filter(ReportYear==2010)%>%
     subset(select=-c(ReportYear))
   poll_county$FIPSCode<-stri_pad_left(poll_county$FIPSCode, 5, "0")  
   
-  colnames(poll_county) <- c("FIPSCode", "Pollution", "Unit")
+  colnames(poll_county) <- c("FIPSCode", "Pollution")
   
   return(poll_county)
 }
@@ -171,12 +184,6 @@ Downloading the USCountyUrbanForest data
 The purpose of this document is to extract urban forest from all the counties in the U.S.
 
 
-#' Scrapes the excel download link for each state in the U.S.
-#' Source: https://www.nrs.fs.fed.us/data/urban/
-#'
-#' @param x A number
-#' @param y A number
-#' @return The sum of \code{x} and \code{y}
 
 ```{r}
 #' Scrapes the excel download link for each state in the U.S.
