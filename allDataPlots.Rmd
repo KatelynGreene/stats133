@@ -1,0 +1,87 @@
+---
+title: "All Plots"
+author: ""
+date: ""
+output:  
+  html_document:
+    fig_height: 3
+    fig_width: 5
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
+
+Run CleanAndJoinData.RMD first to ensure all_data data frame is in your local environment.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Scatterplots
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```{r eval = FALSE}
+# use ggplot to make a scatter plot of education versus TREE DATA
+
+#all_data_narrow_tree<-all_data_narrow%>%gather(key=TreeType, value=TreeValue, TreeCanopy,AvailGreenSpace, TreeCanopyCover)
+edu_treecanop_plot<-all_data%>%
+  ggplot(aes(x=TreeCanopyCover, y=coll_HS))+
+  geom_point(aes(color=IncomeQuartile))+
+  facet_grid(.~IncomeQuartile)
+
+edu_treecanop_plot
+
+```
+
+```{r eval = FALSE}
+#use ggplot to plot edication data versus income data
+#edu_inc_plot<-all_dataw%>%
+  #ggplot(aes(x=PercentOfAdults, y=Income))+
+  #geom_point(aes(color=EducationLevel))+
+  #facet_grid(EducationLevel~.)
+#View(all_data_narrow)
+#edu_inc_plot
+```
+
+```{r eval = FALSE}
+
+#use ggplot to graph education versus pollution
+edu_poll_graph<-all_data%>%
+  filter(StateFips!=02)%>%
+  ggplot(aes(x=Pollution, y=coll_HS))+
+  geom_point(aes(color=IncomeQuartile))+
+  facet_grid(.~IncomeQuartile)
+
+edu_poll_graph  
+```
+
+```{r eval = FALSE}
+#Linear Regerssion Time......
+library(statisticalModeling)
+library(rpart)
+#install.packages("rpart.plot")
+library(rpart.plot)
+library(stats)
+library(mosaicData)
+
+#Tree reg
+et1<-lm(coll_HS~TreeCanopyCover, data=all_data)
+et2<-lm(coll_HS~TreeCanopyCover +Income, data=all_data)
+stargazer::stargazer(et1, et2, type="text",
+ dep.var.labels=c("Ratio of People with Higher Education to Lower Education"),
+ covariate.labels=c("Tree Canopy Cover","Median Income"), out="tree_edu.txt")
+
+#pollution regressions
+
+
+ep1<-lm(coll_HS~Pollution, data=all_data) 
+ep2<-lm(coll_HS~Pollution+Income, data=all_data) 
+
+stargazer::stargazer(ep1, ep2, type="text",
+ dep.var.labels=c("Ratio of People with Higher Education to Lower Education"),
+ covariate.labels=c("Particulate Matter","Median Income"), out="polution_edu.txt")
+```
+
