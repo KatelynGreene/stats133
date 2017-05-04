@@ -24,11 +24,13 @@ Run CleanAndJoinData.RMD first to ensure all_data data frame is in your local en
 Scatterplots
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```{r eval = FALSE}
-# use ggplot to make a scatter plot of education versus TREE DATA
 
-#all_data_narrow_tree<-all_data_narrow%>%gather(key=TreeType, value=TreeValue, TreeCanopy,AvailGreenSpace, TreeCanopyCover)
+#' Graphs the percentage of people with a bachelors vs. TreeCanopy and faceted by IncomeQuartile
+#'
+#' @return edu_treecanop_plot
+
 edu_treecanop_plot<-all_data%>%
-  ggplot(aes(x=TreeCanopyCover, y=coll_HS))+
+  ggplot(aes(x=TreeCanopyCover, y=Bachelor))+
   geom_point(aes(color=IncomeQuartile))+
   facet_grid(.~IncomeQuartile)
 
@@ -47,11 +49,13 @@ edu_treecanop_plot
 ```
 
 ```{r eval = FALSE}
+#' Graphs the percentage of people with a bachelors vs. Pollution (air particulate matter) and faceted by IncomeQuartile
+#'
+#' @return edu_poll_graph
 
-#use ggplot to graph education versus pollution
 edu_poll_graph<-all_data%>%
   filter(StateFips!=02)%>%
-  ggplot(aes(x=Pollution, y=coll_HS))+
+  ggplot(aes(x=Pollution, y=Bachelor))+
   geom_point(aes(color=IncomeQuartile))+
   facet_grid(.~IncomeQuartile)
 
