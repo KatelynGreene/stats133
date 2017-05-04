@@ -44,19 +44,24 @@
  * *Source: https://www.census.gov/geo/reference/codes/cou.html*
  s
 # To-do
-* Put arsenic data in clean and join (Vanessa)
 * Leaflet layer control (Katelyn)
 * Various scatterplots 
  * Edu vs income (Vanessa)s
  * edu vs airquality (Vanessa)
  * edu vs arsenic (Kana)
  * edu vs foresty (Katelyn/Vanessa)
-* Leflet maps of all variables (Anisha)
+
 * Regression on one plot (Vanessa)
-* Kana please send csv of arsenic data to vanessa  
-* Change variable types in all_data that needs to be factors rather than character or number: State, StateFips, UrbanCode
 
 
+
+
+* Change variable types in all_data that needs to be factors rather than character or number: State, UrbanCode
+* GRouping into rural, urban, metro --> anisha
+* Move plots to clean and join --> Kana
+* Leaflets & urban codes ---> Katelyn /Anisha
+* Commenting --> Everyone 
+* Geographic sorting --> Anisha
 
 Katelyn:
 
