@@ -62,6 +62,7 @@
 * Leaflets & urban codes ---> Katelyn /Anisha
 * Commenting --> Everyone 
 * Geographic sorting --> Anisha
+* DCounty reference and Pollution 
 
 Katelyn:
 
