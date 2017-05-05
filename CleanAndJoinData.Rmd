@@ -637,7 +637,7 @@ tree_data <- GetTreeData(userName)
 #Join all data to prepare for visualization
 all_data<-plyr::join_all(list(every_county, edu_data, income_data, poll_data, tree_data), by='FIPSCode', type='full')
 View(all_data)
-#all_data <- GetStateRegion(all_data)
+all_data <- GetStateRegion(all_data)
 #<<<<<<< Updated upstream
 
 #=======
