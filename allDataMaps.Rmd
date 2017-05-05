@@ -72,7 +72,7 @@ Visualization Prep
 
 countyShapefile <- GetCountyShapefile()
 
-# load("all_data.RData")
+load("all_data.RData")
 
 small_data <- all_data %>% 
   select(FIPSCode, StateFips, UrbanCode, UrbanRank, Income,Unemployment, Pollution, TreeCanopy, AvailGreenSpace, TreeCanopyCover)
@@ -132,7 +132,7 @@ income_map
 -------------------
 Unemployment rate
 ------------------
-```{r}
+```{r, eval=FALSE}
 
 # Format popup data for leaflet map.
 popup_dat <- paste(sep = "<br/>",
@@ -170,7 +170,7 @@ unemploy_map
 Pollution leaflet visualization
 --------------------------------
 
-```{r}
+```{r, eval=FALSE}
 # Format popup data for leaflet map.
 popup_dat <- paste(sep = "<br/>",
   "<b>County: </b>", 
@@ -208,7 +208,7 @@ saveWidget(pollution_map, file="pollution_map.html", selfcontained = FALSE)
 TreeCanopy per person
 ---------------------
 
-```{r}
+```{r, eval=FALSE}
 # Format popup data for leaflet map.
 popup_dat <- paste(sep = "<br/>",
   "<b>County: </b>", 
@@ -245,7 +245,7 @@ treeCanopy_map
 2013 Urban Influence Codes
 -----------------------------
 
-```{r}
+```{r, eval=FALSE}
 
 # Format popup data for leaflet map.
 popup_dat <- paste(sep = "<br/>",
@@ -283,7 +283,7 @@ map %>%
 ----------------
 AvailGreenSpace
 ----------------
-```{r}
+```{r, eval=FALSE}
 # Format popup data for leaflet map.
 popup_dat <- paste(sep = "<br/>",
   "<b>County: </b>", 
@@ -321,7 +321,7 @@ availGreenSpace
 -------------------
 Tree Canopy Cover in Developped regions
 -------------------
-```{r}
+```{r, eval=FALSE}
 
 # Format popup data for leaflet map.
 popup_dat <- paste(sep = "<br/>",
@@ -365,7 +365,7 @@ saveWidget(treeCanopyDeveloped, file="treeCanopyDeveloped.html", selfcontained =
 UrbanRank
 -----------------------
 
-```{r}
+```{r, eval=FALSE}
 
 #countyShapefile <- GetCountyShapefile()
 
@@ -422,7 +422,7 @@ saveWidget(urbanrank, file="urbanrank.html", selfcontained = FALSE)
 Education (Bachelors map)
 -----------------------
 
-```{r}
+```{r, eval=FALSE}
 
 #countyShapefile <- GetCountyShapefile()
 
@@ -476,7 +476,7 @@ saveWidget(education, file="educationBachelors.html", selfcontained = FALSE)
 Education (Ratio)
 -----------------------
 
-```{r}
+```{r, eval=FALSE}
 
 
 
@@ -530,7 +530,7 @@ saveWidget(education, file="education.html", selfcontained = FALSE)
 
 #Playing with Layer Control
 
-```{r}
+```{r, eval=FALSE}
 # Format popup data for leaflet map.
 popup_dat1 <- paste(sep = "<br/>",
   "<b>County: </b>", 
