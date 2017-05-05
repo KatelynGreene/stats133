@@ -413,7 +413,7 @@ ExtractStateData <- function(file, stateAbbrev){
 GetStateRegion <- function(all_data){
   all_data$Region <- ""
   for (i in 1:nrow(all_data)){
-    if (all_data$StateFips[i] %in% c(53, 16, 32, 06, 41 )){
+    if (all_data$StateFips[i] %in% c(53, 16, 32, 06, 41)){
       all_data$Region[i]<- "Pacific"
     } else if (all_data$StateFips[i] %in% c(35, 04, 49, 40 )){
       all_data$Region[i]<- "SouthWest"
@@ -428,6 +428,7 @@ GetStateRegion <- function(all_data){
     } else 
       all_data$Region[i] <- NA
   }
+  return(all_data)
 }
 
 ```
@@ -636,11 +637,13 @@ tree_data <- GetTreeData(userName)
 
 #Join all data to prepare for visualization
 all_data<-plyr::join_all(list(every_county, edu_data, income_data, poll_data, tree_data), by='FIPSCode', type='full')
-<<<<<<< Updated upstream
+View(all_data)
+#all_data <- GetStateRegion(all_data)
+#<<<<<<< Updated upstream
 
-=======
+#=======
 #all_data<-na.omit(all_data)
->>>>>>> Stashed changes
+#>>>>>>> Stashed changes
 
 head(all_data)
 
