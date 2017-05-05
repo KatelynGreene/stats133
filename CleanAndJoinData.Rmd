@@ -74,7 +74,7 @@ GetEduData <- function(userName){
   }else if(userName == "KS"){
     path <- "C:\\Users\\kagex\\Downloads\\edu.xls"
   }else{
-    path <- "C:\\Users\\Katrlyn\\stats133Project\\AllStates\\"
+    path <- "C:\\Users\\Katrlyn\\Downloads\\edu.xls"
   }
   edu_data_unclean <- read_excel(path, sheet = 1, skip = 4)
   
@@ -214,7 +214,7 @@ GetIncomeData <- function(userName){
   }else if(userName == "KS"){
     path <- "C:\\Users\\kagex\\Downloads\\income.xls"
   }else{
-    path <- "C:\\Users\\Katrlyn\\stats133Project\\AllStates\\"
+    path <- "C:\\Users\\Katrlyn\\Downloads\\income.xls"
   }
   
   #
@@ -620,7 +620,7 @@ Main Code: Acquire and Join all data
 # READ BELOW BEFORE RUNNING
 #--------------------
 #Put the first initial of your first name.
-userName = "A"
+userName = "KK"
 
 all_data=NULL
 
@@ -638,15 +638,13 @@ tree_data <- GetTreeData(userName)
 all_data<-plyr::join_all(list(every_county, edu_data, income_data, poll_data, tree_data), by='FIPSCode', type='full')
 View(all_data)
 all_data <- GetStateRegion(all_data)
-#<<<<<<< Updated upstream
 
-#=======
 #all_data<-na.omit(all_data)
-#>>>>>>> Stashed changes
+
 
 head(all_data)
 
-#save(all_data, file="all_data.RData")
+save(all_data, file="all_data.RData")
 
 ```
 
