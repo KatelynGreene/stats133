@@ -402,6 +402,37 @@ ExtractStateData <- function(file, stateAbbrev){
 
 ```
 
+```{r}
+#Pacific 53, 16, 32, 06, 41 
+#SouthWest  35, 04, 49, 40 
+#West 30, 38, 46, 49, 56, 08, 31, 20
+#SouthEast 05, 22, 01, 47, 28, 12, 37, 45, 21, 13
+#MidWest 19, 29, 26, 27, 17, 18, 55, 39
+#NorthEast 51, 54, 24, 44, 42, 36, 23, 33, 50, 25, 09, 34, 10, 11
+
+GetStateRegion <- function(all_data){
+  all_data$Region <- ""
+  for (i in 1:nrow(all_data)){
+    if (all_data$StateFips[i] %in% c(53, 16, 32, 06, 41 )){
+      all_data$Region[i]<- "Pacific"
+    } else if (all_data$StateFips[i] %in% c(35, 04, 49, 40 )){
+      all_data$Region[i]<- "SouthWest"
+    } else if (all_data$StateFips[i] %in% c(30, 38, 46, 49, 56, 08, 31, 20)){
+      all_data$Region[i] <- "West"
+    } else if (all_data$StateFips[i] %in% c(05, 22, 01, 47, 28, 12, 37, 45, 21, 13)){
+      all_data$Region[i] <- "SouthEast"
+    } else if (all_data$StateFips[i] %in% c(19, 29, 26, 27, 17, 18, 55, 39)){
+      all_data$Region[i] <- "MidWest"
+    } else if (all_data$StateFips[i] %in% c(51, 54, 24, 44, 42, 36, 23, 33, 50, 25, 09, 34, 10, 11)){
+      all_data$Region[i] <- "NorthEast"
+    } else 
+      all_data$Region[i] <- NA
+  }
+}
+
+```
+
+
 To keep from wasting time redownloading files, use this code to download once and use your local files. 
 ```{r, eval=FALSE}
 #' Downloads excel files to a local directory for later extraction and cleaning. Note that the user will need to 
@@ -601,6 +632,7 @@ edu_data <- GetEduData(userName)
 income_data <- GetIncomeData(userName)
 poll_data <- GetPollutionData()
 tree_data <- GetTreeData(userName)
+
 
 #Join all data to prepare for visualization
 all_data<-plyr::join_all(list(every_county, edu_data, income_data, poll_data, tree_data), by='FIPSCode', type='full')
