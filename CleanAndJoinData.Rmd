@@ -107,7 +107,7 @@ GetEduData <- function(userName){
         edu_data$UrbanRank[i] <- "Rural"
       }
   }
-edu_data$UrbanRank <- factor(edu_data$UrbanRank, levels = c("Rural", "Urban", "Metropolitan"))
+  edu_data$UrbanRank <- factor(edu_data$UrbanRank, levels = c("Rural", "Urban", "Metropolitan"))
   return(edu_data)
 }
 
@@ -601,6 +601,7 @@ GetStateRegion4 <- function(all_data){
     } else 
       all_data$Region[i] <- NA
   }
+  all_data$Region <- factor(all_data$Region, levels = c("West", "MidWest", "South", "NorthEast"))
   return(all_data)
 }
 
