@@ -119,30 +119,16 @@ bach_vs_tree_lm
 
 ```{r}
 
-Pacific_bach_vs_pollution_lm <- all_data %>%
-  na.omit() %>%
-  filter(Region == "Pacific") %>%
-  ggplot(aes(Pollution, Bachelors)) +
-  geom_point(aes(color = UrbanRank), alpha = 0.3, size = 2) +
-   scale_color_manual(values = c("#6baed6","#4292c6","#2171b5")) +
-  geom_smooth(method = "lm") +
-  facet_grid(~ UrbanRank) +
-  labs(x="Concentration of PM 2.5 (ug/m^3)", y="% Adults with Bachelor's Degrees") +
-  ggtitle("Pacific")+
-  theme_bw()
-
-Pacific_bach_vs_pollution_lm
-
 SW_bach_vs_pollution_lm <- all_data %>%
   na.omit() %>%
-  filter(Region == "SouthWest") %>%
+  filter(Region == "South") %>%
   ggplot(aes(Pollution, Bachelors)) +
   geom_point(aes(color = UrbanRank), alpha = 0.3, size = 2) +
    scale_color_manual(values = c("#6baed6","#4292c6","#2171b5")) +
   geom_smooth(method = "lm") +
   facet_grid(~ UrbanRank) +
   labs(x="Concentration of PM 2.5 (ug/m^3)", y="% Adults with Bachelor's Degrees") +
-  ggtitle("SouthWest")+
+  ggtitle("South")+
   theme_bw()
 
 SW_bach_vs_pollution_lm
@@ -163,14 +149,14 @@ W_bach_vs_pollution_lm
 
 SE_bach_vs_pollution_lm <- all_data %>%
   na.omit() %>%
-  filter(Region == "SouthEast") %>%
+  filter(Region == "NorthEast") %>%
   ggplot(aes(Pollution, Bachelors)) +
   geom_point(aes(color = UrbanRank), alpha = 0.3, size = 2) +
    scale_color_manual(values = c("#6baed6","#4292c6","#2171b5")) +
   geom_smooth(method = "lm") +
   facet_grid(~ UrbanRank) +
   labs(x="Concentration of PM 2.5 (ug/m^3)", y="% Adults with Bachelor's Degrees") +
-  ggtitle("SouthEast")+
+  ggtitle("NorthEast")+
   theme_bw()
 
 SE_bach_vs_pollution_lm
@@ -189,49 +175,28 @@ MW_bach_vs_pollution_lm <- all_data %>%
 
 MW_bach_vs_pollution_lm
 
-NE_bach_vs_pollution_lm <- all_data %>%
+all_bach_vs_pollution_lm <- all_data %>%
   na.omit() %>%
-  filter(Region == "NorthEast") %>%
-  ggplot(aes(Pollution, Bachelors)) +
-  geom_point(aes(color = UrbanRank), alpha = 0.3, size = 2) +
-   scale_color_manual(values = c("#6baed6","#4292c6","#2171b5")) +
-  geom_smooth(method = "lm") +
-  facet_grid(~ UrbanRank) +
-  labs(x="Concentration of PM 2.5 (ug/m^3)", y="% Adults with Bachelor's Degrees") +
- ggtitle("NorthEast")+
-  theme_bw()
+  ggplot(aes(Pollution, Bachelors))+
+  geom_point(aes(color = UrbanRank))+
+  geom_smooth(method = "lm")+
+  facet_grid(UrbanRank~Region)
 
-NE_bach_vs_pollution_lm
+all_bach_vs_pollution_lm
+
+all_bach_vs_pollution_lm2 <- all_data %>%
+  na.omit() %>%
+  ggplot(aes(Pollution, Bachelors))+
+  geom_point(aes(color = UrbanRank))+
+  geom_smooth(method = "lm")+
+  facet_grid(~Region)
+
+all_bach_vs_pollution_lm2
+
 
 ```
 ```{r}
-Pacific_bach_vs_tree_lm <- all_data %>%
-  na.omit() %>%
-  filter(Region == "Pacific") %>%
-  ggplot(aes(TreeCanopyCover, Bachelors)) +
-  geom_point(aes(color = UrbanRank), alpha = 0.3, size = 2) +
-   scale_color_manual(values = c("#6baed6","#4292c6","#2171b5")) +
-  geom_smooth(method = "lm") +
-  facet_grid(~ UrbanRank) +
-  labs(x="% Tree Canopy Cover", y="% Adults with Bachelor's Degrees") +
-  ggtitle("Pacific")+
-  theme_bw()
 
-Pacific_bach_vs_tree_lm
-
-SW_bach_vs_tree_lm <- all_data %>%
-  na.omit() %>%
-  filter(Region == "SouthWest") %>%
-  ggplot(aes(TreeCanopyCover, Bachelors)) +
-  geom_point(aes(color = UrbanRank), alpha = 0.3, size = 2) +
-   scale_color_manual(values = c("#6baed6","#4292c6","#2171b5")) +
-  geom_smooth(method = "lm") +
-  facet_grid(~ UrbanRank) +
-  labs(x="% Tree Canopy Cover", y="% Adults with Bachelor's Degrees") +
-  ggtitle("SouthWest")+
-  theme_bw()
-
-SW_bach_vs_tree_lm
 
 W_bach_vs_tree_lm <- all_data %>%
   na.omit() %>%
@@ -249,14 +214,14 @@ W_bach_vs_tree_lm
 
 SE_bach_vs_tree_lm <- all_data %>%
   na.omit() %>%
-  filter(Region == "SouthEast") %>%
+  filter(Region == "South") %>%
   ggplot(aes(TreeCanopyCover, Bachelors)) +
   geom_point(aes(color = UrbanRank), alpha = 0.3, size = 2) +
    scale_color_manual(values = c("#6baed6","#4292c6","#2171b5")) +
   geom_smooth(method = "lm") +
   facet_grid(~ UrbanRank) +
   labs(x="% Tree Canopy Cover", y="% Adults with Bachelor's Degrees") +
-  ggtitle("SouthEast")+
+  ggtitle("South")+
   theme_bw()
 
 SE_bach_vs_tree_lm
