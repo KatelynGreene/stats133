@@ -77,7 +77,7 @@ stargazer::stargazer(ep1, ep2, type="text",
 
 ## Boxplots for air pollution, arsenic, and tree cover (Kana)
 ```{r}
-#load("all_data.RData")
+load("all_data.RData")
 #head(all_data)
 
 bach_vs_pollution_lm <- all_data %>%
