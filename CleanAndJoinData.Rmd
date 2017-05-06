@@ -586,7 +586,25 @@ GetTreeDataTEMP <- function(){
 #MidWest 19, 29, 26, 27, 17, 18, 55, 39
 #NorthEast 51, 54, 24, 44, 42, 36, 23, 33, 50, 25, 09, 34, 10, 11
 
-GetStateRegion <- function(all_data){
+#West 53, 16, 32, 06, 41 
+GetStateRegion4 <- function(all_data){
+  all_data$Region <- ""
+  for (i in 1:nrow(all_data)){
+    if (all_data$StateFips[i] %in% c("53", "16", "32", "06", "41", "30", "56", "49", "08", "04", "35")){ #11
+      all_data$Region[i]<- "West"
+    } else if (all_data$StateFips[i] %in% c("38", "46", "31", "20", "29", "19", "27", "55", "17", "18", "39", "26")){ #12
+      all_data$Region[i]<- "MidWest"
+    } else if (all_data$StateFips[i] %in% c("40", "48", "22", "05", "28", "01", "12", "13", "47", "45", "37", "21", "51", "54", "24", "10", "11")){ #17
+      all_data$Region[i] <- "South"
+    } else if (all_data$StateFips[i] %in% c("42", "34", "36", "09", "44", "25", "50", "33", "23")){ #9
+      all_data$Region[i] <- "NorthEast"
+    } else 
+      all_data$Region[i] <- NA
+  }
+  return(all_data)
+}
+
+GetStateRegion6 <- function(all_data){
   all_data$Region <- ""
   for (i in 1:nrow(all_data)){
     if (all_data$StateFips[i] %in% c("53", "16", "32", "06", "41", "02")){
@@ -620,7 +638,7 @@ Main Code: Acquire and Join all data
 # READ BELOW BEFORE RUNNING
 #--------------------
 #Put the first initial of your first name.
-userName = "KK"
+userName = "A"
 
 all_data=NULL
 
@@ -637,7 +655,7 @@ tree_data <- GetTreeData(userName)
 #Join all data to prepare for visualization
 all_data<-plyr::join_all(list(every_county, edu_data, income_data, poll_data, tree_data), by='FIPSCode', type='full')
 View(all_data)
-all_data <- GetStateRegion(all_data)
+all_data <- GetStateRegion4(all_data)
 
 #all_data<-na.omit(all_data)
 
