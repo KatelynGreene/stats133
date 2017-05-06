@@ -27,9 +27,6 @@ library(scales)
 includeSourceDocuments()
 ```
 <!-- Don't edit the material above this line -->
-Need to have all_data in your workspace, get it from CleanAndJoinData
-
-
 
 -------------------
 Visualization
@@ -68,7 +65,7 @@ GetCountyShapefile <- function(){
 Visualization Prep
 -----------------
 
-```{r}
+```{r, echo=FALSE}
 
 countyShapefile <- GetCountyShapefile()
 
@@ -90,6 +87,43 @@ counties <- geo_join(countyShapefile, small_data, "GEOID", "FIPSCode", how = "le
 
 ```
 
+
+----------
+Arsenic
+----------
+```{r, eval=FALSE}
+
+# Format popup data for leaflet map.
+popup_dat <- paste(sep = "<br/>",
+  "<b>County: </b>", 
+  counties$NAME, 
+  "<b>Value: </b>", 
+  counties$Income)
+
+
+#pal <- colorQuantile("YlOrRd", NULL, n = 9)  #Manual color bins
+
+#Let leaflet calculate the colors and labels for you 
+pal <- colorNumeric(
+  palette =  "YlGnBu",
+  domain = counties$Income
+)
+
+
+# Render final map in leaflet.
+map <- leaflet(counties, width = "100%") %>% addTiles()
+
+income_map <- map %>% 
+  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
+    fillColor = ~pal(Income), fillOpacity = 1, popup = popup_dat, 
+    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE)) %>%
+  addLegend("bottomright", pal = pal, values = ~Income,
+    title = "Arsenic",
+    labFormat = labelFormat(prefix = "$"), na.label = "county data missing",
+    opacity = 1)
+
+income_map
+```
 
 ----------
 Income
