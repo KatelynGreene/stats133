@@ -29,10 +29,7 @@ library(ggplot2)
 includeSourceDocuments()
 ```
 
--------------------
-Arsenic and Visualization
--------------------
-```{r}
+```{r, echo=FALSE}
 #' Downloads and loads the county-level simplified geographic boundary shapefile from the US Census Shapefiles.
 #' Source: https://www.census.gov/geo/maps-data/data/cbf/cbf_counties.html
 #' @Year: 2015
@@ -56,10 +53,8 @@ GetCountyShapefile <- function(){
 
 ```
 
-------------------
-Visualization Prep
------------------
 ```{r, echo=FALSE}
+# Visualization Prep
 load("all_data.RData")
 load("arsenic_df.RData")
 
@@ -67,9 +62,8 @@ arsenic <- arsenic_df
 arsenic <- arsenic %>% dplyr::rename(FIPSCode=fips)
 ```
 
----------------------------------------
-Education (Bachelors map) Leaflet Plot
----------------------------------------
+# Education (Bachelor's or Higher) Leaflet Plot
+
 ```{r, echo=FALSE}
 
 countyShapefile <- GetCountyShapefile()
@@ -107,13 +101,13 @@ education_map <- map %>%
 
 education_map
 
-library(htmlwidgets)
-saveWidget(education_map, file="education_map.html", selfcontained = FALSE)
+# library(htmlwidgets)
+# saveWidget(education_map, file="education_map.html", selfcontained = FALSE)
 ```
 
-------------------------------------------------
-Air quality (Particulate matter) Leaflet Plot
-------------------------------------------------
+
+# Air Quality (Particulate Matter) Leaflet Plot
+
 ```{r, echo=FALSE}
 countyShapefile <- GetCountyShapefile()
 
@@ -142,7 +136,7 @@ map <- leaflet(counties, width="100%") %>% addTiles()
 pollution_map <- map %>% 
   addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
     fillColor = ~pal(Pollution), fillOpacity = 1, popup = popup_dat, 
-    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE), group = "Pollution") %>%
+    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE), group = "Particulate Matter") %>%
   addLegend("bottomright", pal = pal, values = ~Pollution,
     title = "Pollution Data",
     labFormat = labelFormat(suffix = "µg/m³"), na.label = "county data missing",
@@ -150,13 +144,13 @@ pollution_map <- map %>%
 
 pollution_map
 
-library(htmlwidgets)
-saveWidget(pollution_map, file="pollution_map.html", selfcontained = FALSE)
+# library(htmlwidgets)
+# saveWidget(pollution_map, file="pollution_map.html", selfcontained = FALSE)
 ```
 
------------------------------
-AvailGreenSpace Leaflet Plot
------------------------------
+
+# Available Greenspace Leaflet Plot
+
 ```{r, echo=FALSE}
 countyShapefile <- GetCountyShapefile()
 
@@ -194,13 +188,13 @@ availGreenSpace_map <- map %>%
 
 availGreenSpace_map
 
-library(htmlwidgets)
-saveWidget(availGreenSpace_map, file="availGreenSpace_map.html", selfcontained = FALSE)
+# library(htmlwidgets)
+# saveWidget(availGreenSpace_map, file="availGreenSpace_map.html", selfcontained = FALSE)
 ```
 
-----------------------------------------------------
-Tree Canopy Cover in Developped regions Leaflet Plot
-----------------------------------------------------
+
+# Tree Canopy Cover in Developed Regions Leaflet Plot
+
 ```{r, echo=FALSE}
 countyShapefile <- GetCountyShapefile()
 
@@ -234,62 +228,14 @@ treeCanopyDeveloped_map <- map %>%
     fillColor = ~pal(TreeCanopyCover), fillOpacity = 1, popup = popup_dat, 
     highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE)) %>%
   addLegend("bottomright", pal = pal, values = ~TreeCanopyCover,
-    title = "Tree canopy cover in developed regions",
+    title = "Tree canopy cover<br>in developed regions",
     labFormat = labelFormat(suffix = "%"), na.label = ">0.55%",
     opacity = 1)
 
 treeCanopyDeveloped_map
 
-library(htmlwidgets)
-saveWidget(treeCanopyDeveloped_map, file="treeCanopyDeveloped_map.html", selfcontained = FALSE)
-```
-
------------------
-Arsenic (ggplot)
------------------
-
-```{r, eval = FALSE, include=FALSE}
-
-#Get county geographic boundaries
-us.map <- GetCountyShapefile()
-
-#Converting shapefile to dataframe for visualization
-library(broom)
-county_map <- tidy(us.map, region="GEOID")
-
-# small_data <- all_data %>% 
-#   select(FIPSCode, arsenic)
-
-small_data <- arsenic
-
-#Merge spatial df with 
-counties <- left_join(county_map, arsenic, by = c("id" = "FIPSCode"))
-
-counties %>%
-  ggplot() +
-    #blank county map
-    geom_polygon(aes(x=long, y=lat, group=group), fill = "white", color="black", size=0.25) +
-    #Arsenic data
-    geom_polygon(aes(x=long, y=lat, group=group, fill = counties$arsenic_discrete), color="black", size=0.25) +
-    ggplot2::coord_map() +
-    scale_fill_brewer(palette = "RdYlGn", direction = -1)  +
-    labs(title="Arsenic Levels in drinking water (ug/L)") + 
-    theme_bw() +
-    theme(plot.title=element_text(hjust=0.5),
-          axis.line=element_blank(),
-          axis.text.x=element_blank(),
-          axis.text.y=element_blank(),
-          axis.ticks=element_blank(),
-          axis.title.x=element_blank(),
-          axis.title.y=element_blank(),
-          panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          panel.border = element_blank(),
-          panel.background = element_blank(),
-          legend.title=element_blank())
-
-
-
+# library(htmlwidgets)
+# saveWidget(treeCanopyDeveloped_map, file="treeCanopyDeveloped_map.html", selfcontained = FALSE)
 ```
 
 
