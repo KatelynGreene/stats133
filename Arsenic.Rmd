@@ -153,6 +153,8 @@ avgArsenic_df$arsenic_discrete[avgArsenic_df$var1.pred >= 20] <- "20+"
 avgArsenic_df$arsenic_discrete <- base::as.factor(avgArsenic_df$arsenic_discrete)
 avgArsenic_df$arsenic_discrete = factor(avgArsenic_df$arsenic_discrete, levels(avgArsenic_df$arsenic_discrete) [c(1,4,5,2,3)])
 
+avgArsenic_df$var1.pred[avgArsenic_df$var1.pred > 30] <- NA
+
 save(avgArsenic_df, file = "avgArsenic_df.RData")
 load("avgArsenic_df.RData")
 
@@ -186,7 +188,6 @@ county_map_As %>%
           legend.title=element_blank())
 
 county_map_As %>%
-  filter(var1.pred < 20) %>%
   ggplot() +
     #blank county map
     geom_polygon(aes(x=long, y=lat, group=group), fill = "white", color="black", size=0.25) +
