@@ -85,9 +85,9 @@ load("all_data.RData")
 bach_vs_pollution_lm <- all_data %>%
   na.omit() %>%
   ggplot(aes(Pollution, Bachelors)) +
-  geom_point(aes(color = UrbanRank), alpha = 0.3, size = 2) +
-   scale_color_manual(values = c("#6baed6","#4292c6","#2171b5")) +
-  geom_smooth(method = "lm") +
+  geom_point(aes(color = UrbanRank), alpha = 0.7, size = 2, show.legend = FALSE) +
+   scale_color_manual(values = c("#8dd3c7","#80b1d3","#bc80bd")) +
+  geom_smooth(method = "lm", fill = "black", col = "black") +
   facet_grid(~ UrbanRank) +
   labs(x="Concentration of PM 2.5 (ug/m^3)", y="% Adults with Bachelor's Degrees") +
   theme_bw()
@@ -97,9 +97,9 @@ bach_vs_pollution_lm
 bach_vs_tree_lm <- all_data %>% 
   na.omit() %>%
   ggplot(aes(TreeCanopyCover, Bachelors)) +
-  geom_point(aes(color = UrbanRank), alpha = 0.3, size = 2) +
-  scale_color_manual(values = c("#6baed6","#4292c6","#2171b5")) +
-  geom_smooth(method = "lm") +
+  geom_point(aes(color = UrbanRank), alpha = 0.7, size = 2, show.legend = FALSE) +
+  scale_color_manual(values = c("#8dd3c7","#80b1d3","#bc80bd")) +
+  geom_smooth(method = "lm",  fill = "black", col = "black") +
   facet_grid(. ~ UrbanRank) +
   labs(x="% Tree Canopy Cover", y="% Adults with Bachelor's Degrees") +
   theme_bw() 
@@ -110,11 +110,11 @@ bach_vs_green_lm <- all_data %>%
   na.omit() %>%
   filter(AvailGreenSpace < 10^6) %>%
   ggplot(aes(AvailGreenSpace, Bachelors)) +
-  geom_point(aes(color = UrbanRank), alpha = 0.3, size = 2) +
-  scale_color_manual(values = c("#6baed6","#4292c6","#2171b5")) +
-  geom_smooth(method = "lm") +
+  geom_point(aes(color = UrbanRank), alpha = 0.7, size = 2, show.legend = FALSE) +
+  scale_color_manual(values = c("#8dd3c7","#80b1d3","#bc80bd")) +
+  geom_smooth(method = "lm",  fill = "black", col = "black") +
   facet_grid(. ~ UrbanRank) +
-  labs(x="AvailGreenSpace", y="% Adults with Bachelor's Degrees") +
+  labs(x="Available Green Space", y="% Adults with Bachelor's Degrees") +
   theme_bw() 
 
 bach_vs_green_lm 
@@ -122,8 +122,9 @@ bach_vs_green_lm
 bach_vs_pollution_lm_income <- all_data %>%
   na.omit() %>%
   ggplot(aes(Pollution, Bachelors)) +
-  geom_point(aes(color = IncomeQuartile), alpha = 0.3, size = 2) +
-  geom_smooth(method = "lm") +
+  geom_point(aes(color = IncomeQuartile), alpha = 0.7, size = 2, show.legend = FALSE) +
+  scale_color_manual(values = c("#a1d99b","#41ab5d","#238b45","#005a32")) +
+  geom_smooth(method = "lm",  fill = "black", col = "black") +
   facet_grid(~ IncomeQuartile) +
   labs(x="Concentration of PM 2.5 (ug/m^3)", y="% Adults with Bachelor's Degrees") +
   theme_bw()
@@ -134,14 +135,26 @@ bach_vs_pollution_lm_income
 bach_vs_tree_lm_income <- all_data %>% 
   na.omit() %>%
   ggplot(aes(TreeCanopyCover, Bachelors)) +
-  geom_point(aes(color = IncomeQuartile), alpha = 0.3, size = 2) +
- # scale_color_manual(values = c("#6baed6","#4292c6","#2171b5")) +
-  geom_smooth(method = "lm") +
+  geom_point(aes(color = IncomeQuartile), alpha = 0.7, size = 2, show.legend = FALSE) +
+  scale_color_manual(values = c("#a1d99b","#41ab5d","#238b45","#005a32")) +
+  geom_smooth(method = "lm",  fill = "black", col = "black") +
   facet_grid(. ~ IncomeQuartile) +
   labs(x="% Tree Canopy Cover", y="% Adults with Bachelor's Degrees") +
   theme_bw() 
 
 bach_vs_tree_lm_income
+
+bach_vs_green_lm_income <- all_data %>% 
+  na.omit() %>%
+  ggplot(aes(AvailGreenSpace, Bachelors)) +
+  geom_point(aes(color = IncomeQuartile), alpha = 0.7, size = 2, show.legend = FALSE) +
+  scale_color_manual(values = c("#a1d99b","#41ab5d","#238b45","#005a32")) +
+  geom_smooth(method = "lm",  fill = "black", col = "black") +
+  facet_grid(. ~ IncomeQuartile) +
+  labs(x="Available Green Space", y="% Adults with Bachelor's Degrees") +
+  theme_bw() 
+
+bach_vs_green_lm_income
 #Used in the blox plot 
 #all_data_UrbanRank <- all_data %>% 
 #  select(UrbanRank, LessThanHS, HSDiploma, SomeCollege, Bachelors) %>%
@@ -161,8 +174,8 @@ SW_bach_vs_pollution_lm <- all_data %>%
   na.omit() %>%
   filter(Region == "South") %>%
   ggplot(aes(Pollution, Bachelors)) +
-  geom_point(aes(color = UrbanRank), alpha = 0.3, size = 2) +
-   scale_color_manual(values = c("#6baed6","#4292c6","#2171b5")) +
+  geom_point(aes(color = UrbanRank), alpha = 0.7, size = 2) +
+   scale_color_manual(values = c("8dd3c7","#80b1d3","#bc80bd")) +
   geom_smooth(method = "lm") +
   facet_grid(~ UrbanRank) +
   labs(x="Concentration of PM 2.5 (ug/m^3)", y="% Adults with Bachelor's Degrees") +
@@ -176,7 +189,7 @@ W_bach_vs_pollution_lm <- all_data %>%
   filter(Region == "West") %>%
   ggplot(aes(Pollution, Bachelors)) +
   geom_point(aes(color = UrbanRank), alpha = 0.3, size = 2) +
-   scale_color_manual(values = c("#6baed6","#4292c6","#2171b5")) +
+   scale_color_manual(values = c("8dd3c7","#80b1d3","#bc80bd")) +
   geom_smooth(method = "lm") +
   facet_grid(~ UrbanRank) +
   labs(x="Concentration of PM 2.5 (ug/m^3)", y="% Adults with Bachelor's Degrees") +
