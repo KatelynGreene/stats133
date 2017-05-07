@@ -20,6 +20,9 @@ library(maptools)
 library(dplyr)
 library(leaflet)
 library(scales)
+library(tigris)
+library(mapproj)
+library(ggplot2)
 ```
 *Source file* 
 ```{r, results='asis', echo=FALSE}
@@ -27,7 +30,7 @@ includeSourceDocuments()
 ```
 
 -------------------
-Visualization
+Arsenic and Visualization
 -------------------
 ```{r}
 #' Downloads and loads the county-level simplified geographic boundary shapefile from the US Census Shapefiles.
@@ -60,42 +63,51 @@ Visualization Prep
 load("all_data.RData")
 ```
 
-----------
-Arsenic
-----------
+-----------------
+Arsenic (ggplot)
+-----------------
+
 ```{r, eval=FALSE}
-countyShapefile <- GetCountyShapefile()
+
+#Get county geographic boundaries
+us.map <- GetCountyShapefile()
+
+#Converting shapefile to dataframe for visualization
+library(broom)
+county_map <- tidy(us.map, region="GEOID")
 
 small_data <- all_data %>% 
   select(FIPSCode, arsenic)
 
 #Merge spatial df with air quality data.
 counties <- geo_join(countyShapefile, small_data, "GEOID", "FIPSCode", how = "left")
-# Format popup data for leaflet map.
 
-popup_dat <- paste(sep = "<br/>",
-  "<b>County: </b>", 
-  counties$NAME, 
-  "<b>Value: </b>", 
-  counties$Income)
-#Let leaflet calculate the colors and labels for you 
-pal <- colorNumeric(
-  palette =  "YlGnBu",
-  domain = counties$Income
-)
-# Base map of county boundaries
-map <- leaflet(counties, width = "100%") %>% addTiles()
+county_map_As %>%
+  #filter(var1.pred < 30) %>%
+  ggplot() +
+    #blank county map
+    geom_polygon(aes(x=long, y=lat, group=group), fill = "white", color="black", size=0.25) +
+    #Arsenic data
+    geom_polygon(aes(x=long, y=lat, group=group, fill = arsenic_discrete), color="black", size=0.25) +
+    ggplot2::coord_map() +
+    scale_fill_brewer(palette = "RdYlGn", direction = -1)  +
+    labs(title="Arsenic levels in drinking water (ug/L)") + 
+    theme_bw() +
+    theme(plot.title=element_text(hjust=0.5),
+          axis.line=element_blank(),
+          axis.text.x=element_blank(),
+          axis.text.y=element_blank(),
+          axis.ticks=element_blank(),
+          axis.title.x=element_blank(),
+          axis.title.y=element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_blank(),
+          panel.background = element_blank(),
+          legend.title=element_blank())
 
-income_map <- map %>% 
-  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
-    fillColor = ~pal(Income), fillOpacity = 1, popup = popup_dat, 
-    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE)) %>%
-  addLegend("bottomright", pal = pal, values = ~Income,
-    title = "Arsenic",
-    labFormat = labelFormat(prefix = "$"), na.label = "county data missing",
-    opacity = 1)
+county_map_AS
 
-income_map
 ```
 
 ------------------------------------
