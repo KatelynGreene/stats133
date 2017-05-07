@@ -153,10 +153,12 @@ avgArsenic_df$arsenic_discrete[avgArsenic_df$var1.pred >= 20] <- "20+"
 avgArsenic_df$arsenic_discrete <- base::as.factor(avgArsenic_df$arsenic_discrete)
 avgArsenic_df$arsenic_discrete = factor(avgArsenic_df$arsenic_discrete, levels(avgArsenic_df$arsenic_discrete) [c(1,4,5,2,3)])
 
-avgArsenic_df$var1.pred[avgArsenic_df$var1.pred > 30] <- NA
+#avgArsenic_df$var1.pred[avgArsenic_df$var1.pred > 30] <- NA
 
 save(avgArsenic_df, file = "avgArsenic_df.RData")
 load("avgArsenic_df.RData")
+
+
 
 ## join arsenic info to county_map using identital fips for easy plotting
 county_map_As <- left_join(county_map, avgArsenic_df, by = c("id" = "GEOID"))
@@ -173,9 +175,10 @@ county_map_As %>%
     geom_polygon(aes(x=long, y=lat, group=group, fill = arsenic_discrete), color="black", size=0.25) +
     ggplot2::coord_map() +
     scale_fill_brewer(palette = "RdYlGn", direction = -1)  +
-    labs(title="Arsenic Levels") + 
+    labs(title="Arsenic levels in drinking water (ug/L)") + 
     theme_bw() +
-    theme(axis.line=element_blank(),
+    theme(plot.title=element_text(hjust=0.5),
+          axis.line=element_blank(),
           axis.text.x=element_blank(),
           axis.text.y=element_blank(),
           axis.ticks=element_blank(),
@@ -187,27 +190,28 @@ county_map_As %>%
           panel.background = element_blank(),
           legend.title=element_blank())
 
-county_map_As %>%
-  ggplot() +
-    #blank county map
-    geom_polygon(aes(x=long, y=lat, group=group), fill = "white", color="black", size=0.25) +
-    #Arsenic data
-    geom_polygon(aes(x=long, y=lat, group=group, fill = var1.pred), color="black", size=0.25) +
-    ggplot2::coord_map() +
-    scale_fill_gradientn(colors = c("green", "red"))  +
-    labs(title="Arsenic Levels") + 
-    theme_bw() +
-    theme(axis.line=element_blank(),
-          axis.text.x=element_blank(),
-          axis.text.y=element_blank(),
-          axis.ticks=element_blank(),
-          axis.title.x=element_blank(),
-          axis.title.y=element_blank(),
-          panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          panel.border = element_blank(),
-          panel.background = element_blank(),
-          legend.title=element_blank())
+#county_map_As %>%
+#  filter(arsenic <= 30) %>%
+#  ggplot() +
+#    #blank county map
+#   geom_polygon(aes(x=long, y=lat, group=group), fill = "white", color="black", size=0.25) +
+#    #Arsenic data
+#    geom_polygon(aes(x=long, y=lat, group=group, fill = var1.pred), color="black", size=0.25) +
+#    ggplot2::coord_map() +
+#    scale_fill_gradientn(colors = c("green", "red"))  +
+#    labs(title="Arsenic Levels") + 
+#    theme_bw() +
+#    theme(axis.line=element_blank(),
+#          axis.text.x=element_blank(),
+#          axis.text.y=element_blank(),
+#          axis.ticks=element_blank(),
+#          axis.title.x=element_blank(),
+#          axis.title.y=element_blank(),
+#          panel.grid.major = element_blank(),
+#          panel.grid.minor = element_blank(),
+#          panel.border = element_blank(),
+#          panel.background = element_blank(),
+#          legend.title=element_blank())
 
 ```
 
@@ -225,88 +229,17 @@ save(arsenic_df, file = "arsenic_df.RData")
 ## Combine with education & income data
 
 ```{r}
-GetEduData <- function(){
-  
-  #Download and read data
-  url <- "https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762"
-  tmp <- tempfile(fileext=".xls")
-  download.file(url, destfile=tmp, mode="wb")
-  edu_data_unclean <- read_excel(tmp, sheet = 1, skip = 4)
-  
-  unlink(tmp)
-  
-  #Wrangle and select variables
-  edu_data<-edu_data_unclean[, grep("2011|FIPS Code|2013 Urban", colnames(edu_data_unclean))]
-  edu_data<-edu_data[, grep("Percent|FIPS Code|2013 Urban", colnames(edu_data))]
-  edu_data<-edu_data%>%dplyr::rename(FIPSCode=`FIPS Code`)
-  colnames(edu_data)<-c('FIPSCode', 'UrbanCode', 'LessThanHS', 'HSDiploma', 'SomeCollege','Bachelors')
-  
-  return(edu_data)
-}
+load("all_data.RData")
+load("arsenic_df.RData")
 
-edu_data <- GetEduData()
-
-GetIncomeData <- function(){
-  
-  #download/clean USACountyIncomeEmploy data
-  url <- "https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Unemployment.xls?v=42762"
-  tmp <- tempfile(fileext=".xls")
-  download.file(url, destfile=tmp, mode="wb")
-    
-  income_unclean <- read_excel(tmp, sheet = 1, skip = 7)
-  
-  unlink(tmp)
-  
-  income <- income_unclean %>% 
-    mutate(Area_name= gsub(", ..$", "", Area_name), Area_name)%>%
-    subset(select=c("FIPStxt","Median_Household_Income_2015","Unemployment_rate_2015"))%>%
-    dplyr::rename(FIPSCode=FIPStxt)
-  
-  colnames(income) <- c("FIPSCode", "Income", "Unemployment")
-  income$IncomeQuartile <- ntile(income$Income, 4)
-  income$IncomeQuartile[income$IncomeQuartile == 1] <- "< $40k"
-  income$IncomeQuartile[income$IncomeQuartile == 2] <- "$40k - 47k"
-  income$IncomeQuartile[income$IncomeQuartile == 3] <- "$47k - 54k"
-  income$IncomeQuartile[income$IncomeQuartile == 4] <- "> $54k"
-  income$IncomeQuartile <- base::as.factor(income$IncomeQuartile)
-  income$IncomeQuartile = factor(income$IncomeQuartile, levels(income$IncomeQuartile) [c(3,1,2,4)])
-  return(income)
-}
-
-income <- GetIncomeData()
-
-
-GetPollutionData <- function(){
-  #dowload/wrangle the PollutionPerCounty data
-  poll_county_unclean<-read.csv("https://data.cdc.gov/api/views/cjae-szjv/rows.csv?accessType=DOWNLOAD")
-  poll_county<-poll_county_unclean %>%
-    filter(MeasureType=='Average')%>%
-    group_by(ReportYear)%>%
-    arrange(CountyName)%>%
-    arrange(StateName)%>%
-    filter(MeasureId==296)%>%
-    dplyr::rename(FIPSCode=CountyFips)%>%
-    subset(select=c(FIPSCode, ReportYear, Value, Unit))%>%
-    mutate(FIPSCode=gsub("46113","46102", FIPSCode))%>%
-    filter(ReportYear==2010)%>%
-    subset(select=-c(ReportYear))
-  poll_county$FIPSCode<-stri_pad_left(poll_county$FIPSCode, 5, "0")  
-  
-  colnames(poll_county) <- c("FIPSCode", "Pollution", "Unit")
-  
-  return(poll_county)
-}
- pollution <- GetPollutionData()
-
- 
 all_data_arsenic <- all_data %>%
   left_join(arsenic_df, by = c("FIPSCode" = "fips"))
 
-all_data_arsenic$coll_HS[all_data_arsenic$coll_HS >= 5] <- NA
-all_data_arsenic$arsenic[all_data_arsenic$arsenic > 100] <- NA
+
 all_data_arsenic$State <- as.factor(all_data_arsenic$State)
 all_data_arsenic$StateFips <- as.factor(all_data_arsenic$FIPSCode)
 all_data_arsenic$UrbanCode <- as.factor(all_data_arsenic$UrbanCode)
+all_data_arsenic$arsenic[all_data_arsenic$arsenic > 50] <- NA
   
 ```
 
@@ -348,6 +281,56 @@ tree_edu_boxplot <- all_data_arsenic %>%
 air_edu_boxplot
 as_edu_boxplot
 tree_edu_boxplot
+```
 
+## Linear regression and scatter plot for arsenic
+```{r}
+library(statisticalModeling)
+library(rpart)
+library(rpart.plot)
+library(stats)
+library(mosaicData)
+library(stargazer)
+
+#Arsenic reg
+ea1<-lm(Bachelors~arsenic, data=all_data_arsenic)
+ea2<-lm(Bachelors~arsenic +UrbanRank, data=all_data_arsenic)
+ea3<-lm(Bachelors~arsenic +Income, data=all_data_arsenic)
+stargazer::stargazer(ea1, ea2, ea3, type="text",
+ dep.var.labels=c("Percentage of Adults with Bachelor's Degrees"),
+ covariate.labels=c("Arsenic Level","Urban/Rural Classification","Median Income"), out="arsenic_edu.txt")
+
+#Arsenic plots
+bach_vs_arsenic_lm <- all_data_arsenic %>%
+  na.omit() %>%
+  ggplot(aes(arsenic, Bachelors)) +
+  geom_point(aes(color = UrbanRank), alpha = 0.3, size = 2) +
+  scale_color_manual(values = c("#6baed6","#4292c6","#2171b5")) +
+  geom_smooth(method = "lm") +
+  facet_grid(IncomeQuartile ~ UrbanRank) +
+  labs(x="Arsenic in Drinking Water (ug/L)", y="% Adults with Bachelor's Degrees") +
+  theme_bw()
+
+bach_vs_arsenic_lm
+
+```
+
+## Just some extra stuff
+```{r}
+all_data_arsenic %>%
+  na.omit() %>%
+  ggplot(aes(UrbanRank, Income)) +
+  geom_boxplot()
+
+summary(aov(Income ~ UrbanRank, data = all_data_arsenic))
+TukeyHSD(aov(Income ~ UrbanRank, data = all_data_arsenic))
+
+all_data_arsenic %>%
+  na.omit() %>%
+  ggplot(aes(UrbanRank, Bachelors)) +
+  geom_boxplot()
+
+summary(aov(Bachelors ~ UrbanRank, data = all_data_arsenic))
+TukeyHSD(aov(Bachelors ~ UrbanRank, data = all_data_arsenic))
 
 ```
