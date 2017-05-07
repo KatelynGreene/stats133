@@ -25,12 +25,10 @@ library(scales)
 ```{r, results='asis', echo=FALSE}
 includeSourceDocuments()
 ```
-<!-- Don't edit the material above this line -->
 
 -------------------
 Visualization
 -------------------
-
 ```{r}
 #' Downloads and loads the county-level simplified geographic boundary shapefile from the US Census Shapefiles.
 #' Source: https://www.census.gov/geo/maps-data/data/cbf/cbf_counties.html
@@ -54,10 +52,10 @@ GetCountyShapefile <- function(){
 }
 
 ```
+
 ------------------
 Visualization Prep
 -----------------
-
 ```{r, echo=FALSE}
 load("all_data.RData")
 ```
@@ -146,7 +144,6 @@ saveWidget(income_map, file="income_map.html", selfcontained = FALSE)
 ------------------------------------------------
 Air quality (Particulate matter) Leaflet Plot
 ------------------------------------------------
-
 ```{r, eval=FALSE}
 countyShapefile <- GetCountyShapefile()
 
@@ -190,7 +187,6 @@ saveWidget(pollution_map, file="pollution_map.html", selfcontained = FALSE)
 -------------------------------------
 TreeCanopy per person Leaflet Plot
 -------------------------------------
-
 ```{r, eval=FALSE}
 countyShapefile <- GetCountyShapefile()
 
@@ -235,7 +231,6 @@ saveWidget(treeCanopyPerson_map, file="treeCanopyPerson_map.html", selfcontained
 --------------------------------------------
 2013 Rural-Urban Continuum Code Leaflet Plot
 --------------------------------------------
-
 ```{r, eval=FALSE}
 countyShapefile <- GetCountyShapefile()
 
@@ -288,7 +283,6 @@ small_data <- all_data %>%
 # Merge spatial df with air quality data.
 counties <- geo_join(countyShapefile, small_data, "GEOID", "FIPSCode", how = "left")
 
-
 # Format popup data for leaflet map.
 popup_dat <- paste(sep = "<br/>",
   "<b>County: </b>", 
@@ -300,7 +294,6 @@ popup_dat <- paste(sep = "<br/>",
 pal<- colorFactor(
   palette = "YlGnBu", levels = factor(counties$UrbanRank, levels =c("Metropolitan", "Urban", "Rural", ordered = TRUE))
 )
-
 
 # Base map of county boundaries
 map <- leaflet(counties) %>% addTiles()
@@ -413,7 +406,6 @@ saveWidget(treeCanopyDeveloped_map, file="treeCanopyDeveloped_map.html", selfcon
 ---------------------------------------
 Education (Bachelors map) Leaflet Plot
 ---------------------------------------
-
 ```{r, eval=FALSE}
 
 countyShapefile <- GetCountyShapefile()
