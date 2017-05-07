@@ -62,7 +62,7 @@ arsenic <- arsenic_df
 arsenic <- arsenic %>% dplyr::rename(FIPSCode=fips)
 ```
 
-# Education (Bachelors map) Leaflet Plot
+# Education (Bachelor's or Higher) Leaflet Plot
 
 ```{r, echo=FALSE}
 
@@ -106,7 +106,7 @@ education_map
 ```
 
 
-# Air quality (Particulate matter) Leaflet Plot
+# Air Quality (Particulate Matter) Leaflet Plot
 
 ```{r, echo=FALSE}
 countyShapefile <- GetCountyShapefile()
@@ -136,7 +136,7 @@ map <- leaflet(counties, width="100%") %>% addTiles()
 pollution_map <- map %>% 
   addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
     fillColor = ~pal(Pollution), fillOpacity = 1, popup = popup_dat, 
-    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE), group = "Pollution") %>%
+    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE), group = "Particulate Matter") %>%
   addLegend("bottomright", pal = pal, values = ~Pollution,
     title = "Pollution Data",
     labFormat = labelFormat(suffix = "µg/m³"), na.label = "county data missing",
@@ -149,7 +149,7 @@ pollution_map
 ```
 
 
-# AvailGreenSpace Leaflet Plot
+# Available Greenspace Leaflet Plot
 
 ```{r, echo=FALSE}
 countyShapefile <- GetCountyShapefile()
@@ -193,7 +193,7 @@ availGreenSpace_map
 ```
 
 
-# Tree Canopy Cover in Developped regions Leaflet Plot
+# Tree Canopy Cover in Developed Regions Leaflet Plot
 
 ```{r, echo=FALSE}
 countyShapefile <- GetCountyShapefile()
