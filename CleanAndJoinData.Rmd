@@ -448,12 +448,10 @@ GetTreeData <- function(userName){
   df <- df_full %>% subset(is.na(FIPS) | is.na(TreeCanopy))
   df
   
-  #-------------------------------------------------------------------------------------------
-  ###### MY CODE  SO THAT I CAN JOIN THE TREE DATA TO MY OTHER DATA FOR THE SCATTERPLOTS######
-  #-------------------------------------------------------------------------------------------
+  #Drop everything except for the variables of interest and FIPS code
   tree_data<-df_full[, -grep("State|Name", colnames(df_full))]
-  #Filter out outlier values?
-  tree_data<-tree_data%>%rename(FIPSCode=FIPS)%>%filter(TreeCanopyCover<.55)
+  #name to faciliate later join
+  tree_data<-tree_data%>%rename(FIPSCode=FIPS)
   return(tree_data)
 }
 
@@ -511,8 +509,8 @@ GetTreeDataTEMP <- function(){
   
   #Drop everything except for the variables of interest and FIPS code
   tree_data<-df_full[, -grep("State|Name", colnames(df_full))]
-  #Filter out outlier values
-  tree_data<-tree_data%>%rename(FIPSCode=FIPS)%>%filter(TreeCanopyCover<.55)
+  #name to faciliate later join
+  tree_data<-tree_data%>%rename(FIPSCode=FIPS)
   return(tree_data)
 }
 
