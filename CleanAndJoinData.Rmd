@@ -40,11 +40,10 @@ includeSourceDocuments()
 Downloading the USACountyEduAttainment data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```{r}
-#' @Variables of interest: UrbanRank (Anisha is currently  making it) and Bachelors (%) 
-#' @Year 2013 Rural-Urban Continuum Codes, 2011-2015 Education Attainment
-
 #' Scrapes the excel download link for US County Education Attainment
 #' Source: "https://www.ers.usda.gov/data-products/county-level-data-sets/county-level-data-sets-download-data.aspx" and click Educational attainment for the U.S., States, and counties, 1970-2015
+#' @Variables of interest: Rural-Urban Continuum code and Bachelors (%) 
+#' @Year 2013 Rural-Urban Continuum Codes, 2011-2015 Education Attainment
 #'
 #' @return The edu_data that contains the FIPSCode, UrbanCode (2013 Rural-Urban Continuum Code), LessThanHS (%), HSDiploma (%), Bachelors (%), UrbanRank. 
 
@@ -60,26 +59,6 @@ GetEduData <- function(){
 
   #Get rid of the temporary file tmp
   unlink(tmp)
-  
-  #------------------
-  # Local Download (USDA down)
-  # ----------------
-  # ----------------
-  # if(userName == "K"){
-  #   path <- "C:\\Users\\kanay\\Documents\\R\\stat133\\AllStates\\"
-  # }else if(userName == "V"){
-  #   path <- "~/Downloads/stats133data"
-  # }else if(userName == "A") {
-  #   path <- "/Users/anishakumar/Documents/Stats133/RStudioFiles/Stats133Project/edu.xls"
-  # }else if(userName == "KS"){
-  #   path <- "C:\\Users\\kagex\\Downloads\\edu.xls"
-  # }else{
-  #   path <- "C:\\Users\\Katrlyn\\Downloads\\edu.xls"
-  # }
-  
-  
-  #edu_data_unclean <- read_excel(tmp, sheet = 1, skip = 4)
-  
   
   #Wrangle and select variables
   
@@ -97,7 +76,8 @@ GetEduData <- function(){
   
   edu_data$UrbanRank <- ""
   
-  #The for loop classifies the UrbanCode (Rural-Urban Continuum Code). 1-3 is metropolitan, 4-7 is urban and 8 - 11 is rural. s
+  #The for loop classifies the UrbanCode (Rural-Urban Continuum Code). 
+  #Code 1-3 is metropolitan, 4-7 is urban and 8 - 11 is rural.
   for (i in 1:nrow(edu_data)){
      if (is.na(edu_data$UrbanCode[i])){
        edu_data$UrbanRank[i] <- NA
@@ -183,53 +163,26 @@ Downloading the USACountyIncomeEmploy data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ```{r}
+#' Scrapes the excel download link for US Income
+#' Source: https://www.ers.usda.gov/data-products/county-level-data-sets/county-level-data-sets-download-data.aspx #' (Unemployment and median household income for the U.S., States, and counties, 2007-15)
 #' @Variables of interest: Income and IncomeQuartile
 #' @Year 2015
-
-#' Scrapes the excel download link for US Income
-#' Source: https://www.ers.usda.gov/data-products/county-level-data-sets/county-level-data-sets-download-data.aspx and click Unemployment and median household income for the U.S., States, and counties, 2007-15
 #'
 #' @return The income dataframe that contains FIPSCode, Income, Unemployment and IncomeQuartile 
 
 GetIncomeData <- function(){
-  # 
-  # #download the data from the URL
   url <- "https://www.ers.usda.gov/webdocs/DataFiles/48747/Unemployment.xls?v=42762"
-  #temporarily store the file
   tmp <- tempfile(fileext=".xls")
   download.file(url, destfile=tmp, mode="wb")
 
   income_unclean <- read_excel(tmp, sheet = 1, skip = 7)
-
-  #remove the temporary file
   unlink(tmp)
-  
-  #------------------
-  # Local Download (USDA down)
-  # ----------------
-  # if(userName == "K"){
-  #   path <- "C:\\Users\\kanay\\Documents\\R\\stat133\\AllStates\\"
-  # }else if(userName == "V"){
-  #   path <- "~/Downloads/stats133data"
-  # }else if(userName == "A") {
-  #   path <- "/Users/anishakumar/Documents/Stats133/RStudioFiles/Stats133Project/income.xls"
-  # }else if(userName == "KS"){
-  #   path <- "C:\\Users\\kagex\\Downloads\\income.xls"
-  # }else{
-  #   path <- "C:\\Users\\Katrlyn\\Downloads\\income.xls"
-  # }
-  
-  #
-  #
-  #income_unclean <- read_excel(tmp, sheet = 1, skip = 7)
   
   #remove any non-alphanumeric characters
   income <- income_unclean %>% 
     mutate(Area_name= gsub(", ..$", "", Area_name), Area_name)%>% #remove any non-alphanumeric characters
-    subset(select=c("FIPStxt","Median_Household_Income_2015","Unemployment_rate_2015"))%>% #select for desired variables
-    dplyr::rename(FIPSCode=FIPStxt) #Rename FIPStxt so that it is FIPSCode
-  
-  #Rename the column names 
+    subset(select=c("FIPStxt","Median_Household_Income_2015","Unemployment_rate_2015"))%>% 
+    dplyr::rename(FIPSCode=FIPStxt)
   colnames(income) <- c("FIPSCode", "Income", "Unemployment")
   
   #Make a column called IncomeQuartile that separates incomes into 4 quartiles
@@ -241,8 +194,7 @@ GetIncomeData <- function(){
   income$IncomeQuartile[income$IncomeQuartile == 3] <- "$47k - 54k"
   income$IncomeQuartile[income$IncomeQuartile == 4] <- "> $54k"
   income$IncomeQuartile <- base::as.factor(income$IncomeQuartile)
-  #income$IncomeQuartile = factor(income$IncomeQuartile, levels(income$IncomeQuartile) [c(3,1,2,4)]) #FOR PC
-  income$IncomeQuartile <- factor(income$IncomeQuartile, levels = c("< $40k","$40k - 47k","$47k - 54k","> $54k")) #FOR MAC 
+  income$IncomeQuartile <- factor(income$IncomeQuartile, levels = c("< $40k","$40k - 47k","$47k - 54k","> $54k")) 
   return(income)
 }
 
@@ -322,8 +274,7 @@ Support functions for Downloading and loading state Excel files
 #' @return A data frame containing variables: State, CountyName, and FIPS (FIPS code)
 
 FIPS_fun <- function(state = NA){
-  #Note: colClasses = "character" helps keep the leading 0s
-  #http://stackoverflow.com/questions/17414776/read-csv-warning-eof-within-quoted-string-prevents-complete-reading-of-file
+
   df <- read.table("https://www2.census.gov/geo/docs/reference/codes/files/national_county.txt", sep = ",", col.names = c("State", "StateFIPS", "CountyFIPS", "CountyName", "ClassFIPSCode" ), colClasses = "character", quote = "")
   #Shannon County (46-113) change to Oglala Lakota County (46-102) (Effective 2015)
   df2 <- data.frame(State = "SD", StateFIPS = "46", CountyFIPS = "102", CountyName = "Oglala Lakota County", ClassFIPSCode = "H1")
@@ -343,8 +294,6 @@ FIPS_fun <- function(state = NA){
 ```{r}
 #' Extracts data from an excel file relating to the forestry variables of interest.
 #' @Variables: Tree canopy (m2/person), Available green space (ha), and Tree canopy cover in developped regions (%) 
-#' for each county in the state. This data, along with the county name and the FIPS code is returned as a data frame.
-
 #' @param file Location of the state .xls file
 #' @param stateAbbrev the state postal code for the count of interest
 #' @return A data frame containing variables: State, CountyName, FIPS (FIPS code), TreeCanopy, AvailGreenSpace, and TreeCanopyCover
@@ -460,20 +409,16 @@ Download Tree Data  (Method 1: Download all the files locally)
 #' Scrapes the download link for each state's forestry data and then extracts forestry data for each county.
 #' Source: https://www.nrs.fs.fed.us/data/urban/
 #' @Variables: Tree canopy (m2/person), Available green space (ha), and Tree canopy cover in developped regions (%) 
-#' for each county in the state. This data, along with the county name and the FIPS code is returned as a data frame.
 #'
 #' @return A data frame containing county name, FIPS code, tree canopy per person, available green space, and 
 #' tree canopy cover in developped areas.
 
 GetTreeData <- function(userName){
-  #Webscrape the data links from the USDA Forest Service
-  #The original data source is: https://www.nrs.fs.fed.us/data/urban/ 
-  
   AllStates <- Webscrape()
   
   #Download all the xls files locally for data processing
   #AllStates <- DownloadLocally(AllStates)
-  AllStates <- LoadFilepaths(AllStates, userName) #You will need to load this every time if you're working from local files
+  AllStates <- LoadFilepaths(AllStates, userName) 
   
   #Extract urban forestry for each state in the United States
   for(i in 1:length(AllStates$downloadLinks)){
@@ -525,7 +470,6 @@ Download Tree Data (Method 2: Download via temporary files)
 #' Scrapes the download link for each state's forestry data and then extracts forestry data for each county.
 #' Source: https://www.nrs.fs.fed.us/data/urban/
 #' @Variables: Tree canopy (m2/person), Available green space (ha), and Tree canopy cover in developped regions (%) 
-#' for each county in the state. This data, along with the county name and the FIPS code is returned as a data frame.
 #'
 #' @return A data frame containing county name, FIPS code, tree canopy per person, available green space, and 
 #' tree canopy cover in developped areas.
@@ -537,7 +481,6 @@ GetTreeDataTEMP <- function(){
   #Download via temp files (no local storage on hard drive )
   
   for(i in 1:length(AllStates$downloadLinks)){
-    #Download xls file
     url <- AllStates$downloadLinks[i]
     tmp <- tempfile(fileext=".xls")
     download.file(url,destfile=tmp, mode="wb")
@@ -564,15 +507,11 @@ GetTreeDataTEMP <- function(){
     }
     unlink(tmp)
   }
-  #Things that need fixing still
-  df <- df_full %>% subset(is.na(FIPS) | is.na(TreeCanopy))
-  df
+
   
-  #-------------------------------------------------------------------------------------------
-  ###### MY CODE  SO THAT I CAN JOIN THE TREE DATA TO MY OTHER DATA FOR THE SCATTERPLOTS######
-  #-------------------------------------------------------------------------------------------
+  #Drop everything except for the variables of interest and FIPS code
   tree_data<-df_full[, -grep("State|Name", colnames(df_full))]
-  #Filter out outlier values?
+  #Filter out outlier values
   tree_data<-tree_data%>%rename(FIPSCode=FIPS)%>%filter(TreeCanopyCover<.55)
   return(tree_data)
 }
@@ -581,24 +520,23 @@ GetTreeDataTEMP <- function(){
 
 
 ```{r}
-#Pacific 53, 16, 32, 06, 41 
-#SouthWest  35, 04, 49, 40 
-#West 30, 38, 46, 49, 56, 08, 31, 20
-#SouthEast 05, 22, 01, 47, 28, 12, 37, 45, 21, 13
-#MidWest 19, 29, 26, 27, 17, 18, 55, 39
-#NorthEast 51, 54, 24, 44, 42, 36, 23, 33, 50, 25, 09, 34, 10, 11
+#' Categorizes the counties into four regions (West, Midwest, South, and Northeast) 
+#' by their geopgraphic region in the U.S., based on state FIPS.
+#'
+#' @param all_data Aggregate dataset
+#'
+#' @return revised aggregate data frame with county geographic region indicated
 
-#West 53, 16, 32, 06, 41 
 GetStateRegion4 <- function(all_data){
   all_data$Region <- ""
   for (i in 1:nrow(all_data)){
-    if (all_data$StateFips[i] %in% c("53", "16", "32", "06", "41", "30", "56", "49", "08", "04", "35")){ #11
+    if (all_data$StateFips[i] %in% c("53", "16", "32", "06", "41", "30", "56", "49", "08", "04", "35")){ 
       all_data$Region[i]<- "West"
-    } else if (all_data$StateFips[i] %in% c("38", "46", "31", "20", "29", "19", "27", "55", "17", "18", "39", "26")){ #12
+    } else if (all_data$StateFips[i] %in% c("38", "46", "31", "20", "29", "19", "27", "55", "17", "18", "39", "26")){ 
       all_data$Region[i]<- "MidWest"
-    } else if (all_data$StateFips[i] %in% c("40", "48", "22", "05", "28", "01", "12", "13", "47", "45", "37", "21", "51", "54", "24", "10", "11")){ #17
+    } else if (all_data$StateFips[i] %in% c("40", "48", "22", "05", "28", "01", "12", "13", "47", "45", "37", "21", "51", "54", "24", "10", "11")){ 
       all_data$Region[i] <- "South"
-    } else if (all_data$StateFips[i] %in% c("42", "34", "36", "09", "44", "25", "50", "33", "23")){ #9
+    } else if (all_data$StateFips[i] %in% c("42", "34", "36", "09", "44", "25", "50", "33", "23")){
       all_data$Region[i] <- "NorthEast"
     } else 
       all_data$Region[i] <- NA
@@ -607,26 +545,6 @@ GetStateRegion4 <- function(all_data){
   return(all_data)
 }
 
-GetStateRegion6 <- function(all_data){
-  all_data$Region <- ""
-  for (i in 1:nrow(all_data)){
-    if (all_data$StateFips[i] %in% c("53", "16", "32", "06", "41", "02")){
-      all_data$Region[i]<- "Pacific"
-    } else if (all_data$StateFips[i] %in% c("35", "04", "49", "40", "15")){
-      all_data$Region[i]<- "SouthWest"
-    } else if (all_data$StateFips[i] %in% c("30", "38", "46", "49", "56", "08", "31", "20")){
-      all_data$Region[i] <- "West"
-    } else if (all_data$StateFips[i] %in% c("05", "22", "01", "47", "28", "12", "37", "45", "21", "13")){
-      all_data$Region[i] <- "SouthEast"
-    } else if (all_data$StateFips[i] %in% c("19", "29", "26", "27", "17", "18", "55", "39")){
-      all_data$Region[i] <- "MidWest"
-    } else if (all_data$StateFips[i] %in% c("51", "54", "24", "44", "42", "36", "23", "33", "50", "25", "09", "34", "10", "11")){
-      all_data$Region[i] <- "NorthEast"
-    } else 
-      all_data$Region[i] <- NA
-  }
-  return(all_data)
-}
 ```
 
 
@@ -636,6 +554,8 @@ Main Code: Acquire and Join all data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ```{r}
+#' Main code to aquire and join all data into the aggregate dataset including data for education, income, pollution, and forestry
+
 
 #-------USER--------
 # READ BELOW BEFORE RUNNING
