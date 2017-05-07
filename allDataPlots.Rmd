@@ -58,7 +58,7 @@ library(stats)
 library(mosaicData)
 
 
-#Tree reg
+#Tree/eduaction regression
 et1<-lm(Bachelors~TreeCanopyCover, data=all_data)
 et2<-lm(Bachelors~TreeCanopyCover + UrbanCode, data=all_data)
 et3<-lm(Bachelors~TreeCanopyCover + UrbanCode + Income, data=all_data)
@@ -66,7 +66,7 @@ stargazer::stargazer(et1, et2, et3, type="text",
  dep.var.labels=c("Percent of Adults with Bachelor's Deegree"),
  covariate.labels=c("Tree Canopy Cover","Urban Rank", "Median Income"), out="tree_edu.txt")
 
-#pollution regressions
+#pollution/education regressions
 
 
 ep1<-lm(Bachelors~Pollution, data=all_data) 
@@ -77,7 +77,7 @@ stargazer::stargazer(ep1, ep2, type="text",
  dep.var.labels=c("Percent of Adults with Bachelor's Deegree"),
  covariate.labels=c("Particulate Matter","Urban Rank", "Median Income"), out="polution_edu.txt")
 
-#green space regression
+#green space/education regression
 
 gs1<-lm(Bachelors~AvailGreenSpace, data=filter(all_data, AvailGreenSpace < 10^6)%>%na.omit(all_data))
 gs2<-lm(Bachelors~AvailGreenSpace + UrbanCode, data=filter(all_data, AvailGreenSpace < 10^6)%>%na.omit(all_data))
@@ -85,25 +85,14 @@ gs3<-lm(Bachelors~AvailGreenSpace + UrbanCode + Income, data=filter(all_data, Av
 stargazer::stargazer(gs1, gs2, gs3, type="text",
  dep.var.labels=c("Percent of Adults with Bachelor's Degree"),
  covariate.labels=c("Available Green Space","Urban Rank", "Median Income"), out="green_edu.txt")
-```
 
-## Linear regression and scatter plot for arsenic
-```{r}
-library(statisticalModeling)
-library(rpart)
-library(rpart.plot)
-library(stats)
-library(mosaicData)
-library(stargazer)
-
-#Arsenic reg
+#Arsenic/education reg
 ea1<-lm(Bachelors~arsenic, data=all_data)
 ea2<-lm(Bachelors~arsenic +UrbanRank, data=all_data)
 ea3<-lm(Bachelors~arsenic +Income, data=all_data)
 stargazer::stargazer(ea1, ea2, ea3, type="text",
  dep.var.labels=c("Percentage of Adults with Bachelor's Degrees"),
  covariate.labels=c("Arsenic Level","Urban/Rural Classification","Median Income"), out="arsenic_edu.txt")
-
 
 
 ```
