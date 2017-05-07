@@ -708,7 +708,7 @@ Main Code: Acquire and Join all data
 # READ BELOW BEFORE RUNNING
 #--------------------
 #Put the first initial of your first name.
-userName = "A"
+userName = "KS"
 
 all_data=NULL
 
@@ -720,13 +720,15 @@ edu_data <- GetEduData()
 income_data <- GetIncomeData()
 poll_data <- GetPollutionData()
 tree_data <- GetTreeData(userName)
-arsenic_data <- GetArsenicData()
+#arsenic_data <- GetArsenicData()
 
 
 #Join all data to prepare for visualization
-all_data<-plyr::join_all(list(every_county, edu_data, income_data, poll_data, tree_data, arsenic_data), by='FIPSCode', type='full')
-View(all_data)
-all_data <- GetStateRegion4(all_data)
+#all_data<-plyr::join_all(list(every_county, edu_data, income_data, poll_data, tree_data, arsenic_data), by='FIPSCode', type='full')
+
+all_data<-plyr::join_all(list(every_county, edu_data, income_data, poll_data, tree_data), by='FIPSCode', type='full')
+#View(all_data)
+#all_data <- GetStateRegion4(all_data)
 
 #all_data<-na.omit(all_data)
 
