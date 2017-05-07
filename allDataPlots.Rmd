@@ -57,6 +57,7 @@ library(rpart.plot)
 library(stats)
 library(mosaicData)
 
+
 #Tree reg
 et1<-lm(Bachelors~TreeCanopyCover, data=all_data)
 et2<-lm(Bachelors~TreeCanopyCover + UrbanCode, data=all_data)
@@ -75,6 +76,15 @@ ep3<-lm(Bachelors~Pollution + UrbanCode + Income, data=all_data)
 stargazer::stargazer(ep1, ep2, type="text",
  dep.var.labels=c("Percent of Adults with Bachelor's Deegree"),
  covariate.labels=c("Particulate Matter","Urban Rank", "Median Income"), out="polution_edu.txt")
+
+#green space regression
+
+gs1<-lm(Bachelors~AvailGreenSpace, data=filter(all_data, AvailGreenSpace < 10^6)%>%na.omit(all_data))
+gs2<-lm(Bachelors~AvailGreenSpace + UrbanCode, data=filter(all_data, AvailGreenSpace < 10^6)%>%na.omit(all_data))
+gs3<-lm(Bachelors~AvailGreenSpace + UrbanCode + Income, data=filter(all_data, AvailGreenSpace < 10^6)%>%na.omit(all_data))
+stargazer::stargazer(gs1, gs2, gs3, type="text",
+ dep.var.labels=c("Percent of Adults with Bachelor's Degree"),
+ covariate.labels=c("Available Green Space","Urban Rank", "Median Income"), out="green_edu.txt")
 ```
 
 ## Boxplots for air pollution, arsenic, and tree cover (Kana)
