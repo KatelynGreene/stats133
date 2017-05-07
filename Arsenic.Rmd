@@ -143,18 +143,55 @@ idw_raster <- raster(idw)
 avgArsenic <- extract(idw_raster, us.map, fun = mean, sp=TRUE)
 ## convert results to data frame for data manipulation
 avgArsenic_df <- as.data.frame(avgArsenic)
-save(avgArsenic_df, file = "avgArsenic_df.RData")
 
+avgArsenic_df$arsenic_discrete <- NULL
+avgArsenic_df$arsenic_discrete[avgArsenic_df$var1.pred < 3] <- "0-3"
+avgArsenic_df$arsenic_discrete[avgArsenic_df$var1.pred >= 3 & avgArsenic_df$var1.pred < 5] <- "3-5"
+avgArsenic_df$arsenic_discrete[avgArsenic_df$var1.pred >= 5 & avgArsenic_df$var1.pred < 10] <- "5-10"
+avgArsenic_df$arsenic_discrete[avgArsenic_df$var1.pred >= 10 & avgArsenic_df$var1.pred < 20] <- "10-20"
+avgArsenic_df$arsenic_discrete[avgArsenic_df$var1.pred >= 20] <- "20+"
+avgArsenic_df$arsenic_discrete <- base::as.factor(avgArsenic_df$arsenic_discrete)
+avgArsenic_df$arsenic_discrete = factor(avgArsenic_df$arsenic_discrete, levels(avgArsenic_df$arsenic_discrete) [c(1,4,5,2,3)])
+
+save(avgArsenic_df, file = "avgArsenic_df.RData")
 load("avgArsenic_df.RData")
 
 ## join arsenic info to county_map using identital fips for easy plotting
 county_map_As <- left_join(county_map, avgArsenic_df, by = c("id" = "GEOID"))
 
-ggplot() +
+```
+
+```{r}
+county_map_As %>%
+  #filter(var1.pred < 30) %>%
+  ggplot() +
     #blank county map
-    geom_polygon(data= county_map_As, aes(x=long, y=lat, group=group), fill = "white", color="black", size=0.25) +
+    geom_polygon(aes(x=long, y=lat, group=group), fill = "white", color="black", size=0.25) +
     #Arsenic data
-    geom_polygon(data= county_map_As, aes(x=long, y=lat, group=group, fill = var1.pred), color="black", size=0.25) +
+    geom_polygon(aes(x=long, y=lat, group=group, fill = arsenic_discrete), color="black", size=0.25) +
+    ggplot2::coord_map() +
+    scale_fill_brewer(palette = "RdYlGn", direction = -1)  +
+    labs(title="Arsenic Levels") + 
+    theme_bw() +
+    theme(axis.line=element_blank(),
+          axis.text.x=element_blank(),
+          axis.text.y=element_blank(),
+          axis.ticks=element_blank(),
+          axis.title.x=element_blank(),
+          axis.title.y=element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_blank(),
+          panel.background = element_blank(),
+          legend.title=element_blank())
+
+county_map_As %>%
+  filter(var1.pred < 20) %>%
+  ggplot() +
+    #blank county map
+    geom_polygon(aes(x=long, y=lat, group=group), fill = "white", color="black", size=0.25) +
+    #Arsenic data
+    geom_polygon(aes(x=long, y=lat, group=group, fill = var1.pred), color="black", size=0.25) +
     ggplot2::coord_map() +
     scale_fill_gradientn(colors = c("green", "red"))  +
     labs(title="Arsenic Levels") + 
@@ -177,9 +214,10 @@ ggplot() +
 ## The only data we actuallly need is here:
 ```{r}
 arsenic_df <- avgArsenic_df %>%
-  dplyr::select(GEOID, var1.pred)
-names(arsenic_df) <- c("fips","arsenic")
+  dplyr::select(GEOID, var1.pred, arsenic_discrete)
+names(arsenic_df) <- c("fips","arsenic","arsenic_discrete")
 
+save(arsenic_df, file = "arsenic_df.RData")
 ```
 
 
