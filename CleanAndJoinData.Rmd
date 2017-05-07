@@ -545,6 +545,151 @@ GetStateRegion4 <- function(all_data){
 
 ```
 
+---------
+Arsenic 
+---------
+
+```{r}
+#' Downloads Arsenic water quality data from USGS 
+#' Source: https://water.usgs.gov/nawqa/trace/data/index.html#ARSENIC_NOV01
+#' @Year:  1973 - 2001
+#' @Variables: State name,FIPS code, arsenic conentraions, lat and long
+#'
+#' @return data frame containing variables of interest
+
+downloadArsenic <- function(){
+  url <- "https://water.usgs.gov/nawqa/trace/data/arsenic_nov2001.xls"
+  tmp <- tempfile(fileext=".xls")
+  download.file(url,destfile=tmp, mode="wb")
+  arsenic <- read_excel(tmp, skip=58)
+  
+  # ----DATA CLEANING----
+  # get rid of non-continental US data (Alaska, Puerto Rico, Virgin Islands)
+  arsenic <- arsenic[!arsenic$STATE %in% c("AK","PR","VI"),]
+  # only keep columns we need (especially becuase a few of the unnecessary columns loaded in really weird)
+  # columns needed: state, fips code, arsenic concentration, latitude & longitude
+  arsenic <- arsenic %>%
+    dplyr::select(STATE,FIPS,AS_CONC,LAT_DD,LON_DD)
+  # many numeric data is in character form--change from character to numeric
+  arsenic$LAT_DD <- as.numeric(arsenic$LAT_DD)
+  arsenic$LON_DD <- as.numeric(arsenic$LON_DD)
+  arsenic$AS_CONC <- as.numeric(arsenic$AS_CONC)
+  arsenic$FIPS <- as.numeric(arsenic$FIPS)
+  # take out any observations with incomplete data (eg. missing fips or arsenic)
+  arsenic <- arsenic[complete.cases(arsenic[,2]),]
+  return(arsenic)
+}
+
+```
+
+## Interpolation of arsenic data
+
+The reason we need to interpolate the arsenic data is because we only have point data from the field stations that take arsenic measurements. This doesn't cover every county in the US. In order to create a continuous data of arsesnic concentrations across the US, we do a spatial interpolation that essentially takes the point arsenic concentrations and estimates the arsenic concentration across the entire area using a geospatial statistical model. In this case, the units of interpolation are 0.1 degree longitude by 0.1 degree latitude (roughly 0.25 sq mi), which means we get an arsenic concentration for every 0.25 sq mi area of the US. Then we calculate the average arsenic concentration for each county. This way we get an estimated arsenic concentration for each county.
+```{r}
+#' Interpolates arsenic data using invered distance weighted model
+#' @param arsenic downloaded data frame including point data from field stations
+#'
+#' @return spatial data frame of interpolated data for  every ~0.25 sq mi of the US
+
+Interpolate <- function(arsenic){
+  us.map <- GetCountyShapefile()
+  ## PREPPIND DATA FOR INTERPOLATION
+  ## duplicate cleaned arsenic data to prevent overwriting
+  arsenic_test <- arsenic
+  ## assign coordinates--LON must be multiplied by negative to reflect that it is located in the W. Hemisphere
+  ## if not, this will plot on a mirrored image of the US
+  arsenic_test$x <- -1*arsenic_test$LON_DD
+  arsenic_test$y <- arsenic_test$LAT_DD
+  
+  ## this makes arsenic_test into a spatial data
+  coordinates(arsenic_test) = ~x + y
+  plot(arsenic_test)
+  ## define the projection for arsenic_test to match the projection for us.map
+  proj4string(arsenic_test) <- proj4string(us.map)
+  
+  ## setting the interpolation area
+  ## basically the 4 most outer points of us.map in terms of longitude and latitude
+  ## you can check this using:
+  summary(us.map)  ## see coordinates min & max
+  x.range <- as.numeric(c(-125, -66))  # min/max longitude of the interpolation area
+  y.range <- as.numeric(c(24, 50))  # min/max latitude of the interpolation area
+  
+  ## this creates the interpolation grid
+  ## it specifies the interpolatino area, and the resolution--in this case 0.1 deg. lon. x 0.1 deg. lat.
+  grd <- expand.grid(x = seq(from = x.range[1], to = x.range[2], by = 0.1), y = seq(from = y.range[1], to = y.range[2], by = 0.1))
+  coordinates(grd) <- ~x + y # define spatial coordinates of grd
+  proj4string(grd) <- proj4string(us.map) #with the same projections
+  gridded(grd) <- TRUE
+  
+  ## visualization of grid and arsenic data
+  plot(grd, cex = 1.5, col = "grey")
+  points(arsenic_test, pch = 1, col = "red", cex = 1)
+  
+  ## perform the interpolation! (this will take ~20min)
+  idw <- krige(AS_CONC ~ 1, arsenic_test, grd)
+  
+  return(idw)
+}
+
+
+```
+
+
+```{r}
+#' Summarizing the interpolated data to find average arsenic concentration per count
+#' @param idw spatial data frame of interpolated data
+#'
+#' @return data frame of FIPSCode, arsenic values, and discrete values of arsenic
+
+ArsenicbyCounty <- function(idw){
+  library(raster)
+  us.map <- GetCountyShapefile()
+  
+  ## convert results of interpolation from spatial pixel data to spatial raster data
+  idw_raster <- raster(idw)
+  ## take the mean raster value (= arsenic concentrations) within the bounds of each county defined by us.map
+  avgArsenic <- extract(idw_raster, us.map, fun = mean, sp=TRUE)
+  ## convert results to data frame for data manipulation
+  avgArsenic_df <- as.data.frame(avgArsenic)
+  
+  avgArsenic_df$arsenic_discrete <- NULL
+  avgArsenic_df$arsenic_discrete[avgArsenic_df$var1.pred < 3] <- "0-3"
+  avgArsenic_df$arsenic_discrete[avgArsenic_df$var1.pred >= 3 & avgArsenic_df$var1.pred < 5] <- "3-5"
+  avgArsenic_df$arsenic_discrete[avgArsenic_df$var1.pred >= 5 & avgArsenic_df$var1.pred < 10] <- "5-10"
+  avgArsenic_df$arsenic_discrete[avgArsenic_df$var1.pred >= 10 & avgArsenic_df$var1.pred < 20] <- "10-20"
+  avgArsenic_df$arsenic_discrete[avgArsenic_df$var1.pred >= 20] <- "20+"
+  avgArsenic_df$arsenic_discrete <- base::as.factor(avgArsenic_df$arsenic_discrete)
+  avgArsenic_df$arsenic_discrete = factor(avgArsenic_df$arsenic_discrete, levels(avgArsenic_df$arsenic_discrete) [c(1,4,5,2,3)])
+  
+  arsenic_df <- avgArsenic_df %>%
+    dplyr::select(GEOID, var1.pred, arsenic_discrete)
+  
+  names(arsenic_df) <- c("FIPSCode","arsenic","arsenic_discrete")
+  
+  save(arsenic_df, file = "arsenic_df.RData")
+  
+  return(arsenic_df)
+}
+
+
+
+```
+
+-----------------
+Main Arsenic code
+-----------------
+```{r}
+GetArsenicData <- function(){
+  
+  arsenic <- downloadArsenic()
+  idw <- Interpolate(arsenic)
+  arsenic_df <- ArsenicbyCounty(idw)
+  return(arsenic_df)
+}
+
+
+
+```
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -571,10 +716,11 @@ edu_data <- GetEduData()
 income_data <- GetIncomeData()
 poll_data <- GetPollutionData()
 tree_data <- GetTreeData(userName)
+arsenic_data <- GetArsenicData()
 
 
 #Join all data to prepare for visualization
-all_data<-plyr::join_all(list(every_county, edu_data, income_data, poll_data, tree_data), by='FIPSCode', type='full')
+all_data<-plyr::join_all(list(every_county, edu_data, income_data, poll_data, tree_data, arsenic_data), by='FIPSCode', type='full')
 View(all_data)
 all_data <- GetStateRegion4(all_data)
 
