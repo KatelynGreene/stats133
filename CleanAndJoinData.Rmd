@@ -48,35 +48,37 @@ Downloading the USACountyEduAttainment data
 #'
 #' @return The edu_data that contains the FIPSCode, UrbanCode (2013 Rural-Urban Continuum Code), LessThanHS (%), HSDiploma (%), Bachelors (%), UrbanRank. 
 
-GetEduData <- function(userName){
+GetEduData <- function(){
   
   # #Use downoload link to read the data
-  # url <- "https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Education.xls?v=42762"
-  # #tmp is a temporary file in which the data from the excel sheet is stored 
-  # tmp <- tempfile(fileext=".xls")
-  # download.file(url, destfile=tmp, mode="wb")
-  # #read data from sheet 1 beginning at row 5
-  # edu_data_unclean <- read_excel(tmp, sheet = 1, skip = 4)
-  # 
-  # #Get rid of the temporary file tmp
-  # unlink(tmp)
+  url <- "https://www.ers.usda.gov/webdocs/DataFiles/48747/Education.xls?v=42762"
+  #tmp is a temporary file in which the data from the excel sheet is stored
+  tmp <- tempfile(fileext=".xls")
+  download.file(url, destfile=tmp, mode="wb")
+  #read data from sheet 1 beginning at row 5
+  edu_data_unclean <- read_excel(tmp, sheet = 1, skip = 4)
+
+  #Get rid of the temporary file tmp
+  unlink(tmp)
   
   #------------------
   # Local Download (USDA down)
   # ----------------
   # ----------------
-  if(userName == "K"){
-    path <- "C:\\Users\\kanay\\Documents\\R\\stat133\\AllStates\\"
-  }else if(userName == "V"){
-    path <- "~/Downloads/stats133data"
-  }else if(userName == "A") {
-    path <- "/Users/anishakumar/Documents/Stats133/RStudioFiles/Stats133Project/edu.xls"
-  }else if(userName == "KS"){
-    path <- "C:\\Users\\kagex\\Downloads\\edu.xls"
-  }else{
-    path <- "C:\\Users\\Katrlyn\\Downloads\\edu.xls"
-  }
-  edu_data_unclean <- read_excel(path, sheet = 1, skip = 4)
+  # if(userName == "K"){
+  #   path <- "C:\\Users\\kanay\\Documents\\R\\stat133\\AllStates\\"
+  # }else if(userName == "V"){
+  #   path <- "~/Downloads/stats133data"
+  # }else if(userName == "A") {
+  #   path <- "/Users/anishakumar/Documents/Stats133/RStudioFiles/Stats133Project/edu.xls"
+  # }else if(userName == "KS"){
+  #   path <- "C:\\Users\\kagex\\Downloads\\edu.xls"
+  # }else{
+  #   path <- "C:\\Users\\Katrlyn\\Downloads\\edu.xls"
+  # }
+  
+  
+  #edu_data_unclean <- read_excel(tmp, sheet = 1, skip = 4)
   
   
   #Wrangle and select variables
@@ -189,37 +191,37 @@ Downloading the USACountyIncomeEmploy data
 #'
 #' @return The income dataframe that contains FIPSCode, Income, Unemployment and IncomeQuartile 
 
-GetIncomeData <- function(userName){
+GetIncomeData <- function(){
   # 
   # #download the data from the URL
-  # url <- "https://www.ers.usda.gov/webdocs/DataFiles/CountyLevel_Data_Sets_Download_Data__18026/Unemployment.xls?v=42762"
-  # #temporarily store the file
-  # tmp <- tempfile(fileext=".xls")
-  # download.file(url, destfile=tmp, mode="wb")
-  # 
-  # income_unclean <- read_excel(tmp, sheet = 1, skip = 7)
-  # 
-  # #remove the temporary file
-  # unlink(tmp)
+  url <- "https://www.ers.usda.gov/webdocs/DataFiles/48747/Unemployment.xls?v=42762"
+  #temporarily store the file
+  tmp <- tempfile(fileext=".xls")
+  download.file(url, destfile=tmp, mode="wb")
+
+  income_unclean <- read_excel(tmp, sheet = 1, skip = 7)
+
+  #remove the temporary file
+  unlink(tmp)
   
   #------------------
   # Local Download (USDA down)
   # ----------------
-  if(userName == "K"){
-    path <- "C:\\Users\\kanay\\Documents\\R\\stat133\\AllStates\\"
-  }else if(userName == "V"){
-    path <- "~/Downloads/stats133data"
-  }else if(userName == "A") {
-    path <- "/Users/anishakumar/Documents/Stats133/RStudioFiles/Stats133Project/income.xls"
-  }else if(userName == "KS"){
-    path <- "C:\\Users\\kagex\\Downloads\\income.xls"
-  }else{
-    path <- "C:\\Users\\Katrlyn\\Downloads\\income.xls"
-  }
+  # if(userName == "K"){
+  #   path <- "C:\\Users\\kanay\\Documents\\R\\stat133\\AllStates\\"
+  # }else if(userName == "V"){
+  #   path <- "~/Downloads/stats133data"
+  # }else if(userName == "A") {
+  #   path <- "/Users/anishakumar/Documents/Stats133/RStudioFiles/Stats133Project/income.xls"
+  # }else if(userName == "KS"){
+  #   path <- "C:\\Users\\kagex\\Downloads\\income.xls"
+  # }else{
+  #   path <- "C:\\Users\\Katrlyn\\Downloads\\income.xls"
+  # }
   
   #
   #
-  income_unclean <- read_excel(path, sheet = 1, skip = 7)
+  #income_unclean <- read_excel(tmp, sheet = 1, skip = 7)
   
   #remove any non-alphanumeric characters
   income <- income_unclean %>% 
@@ -647,8 +649,8 @@ all_data=NULL
 every_county <- GetCountyReference()
 
 #Acquire all data using support functions
-edu_data <- GetEduData(userName)
-income_data <- GetIncomeData(userName)
+edu_data <- GetEduData()
+income_data <- GetIncomeData()
 poll_data <- GetPollutionData()
 tree_data <- GetTreeData(userName)
 
