@@ -58,9 +58,9 @@ library(stats)
 library(mosaicData)
 
 #Tree reg
-et1<-lm(coll_HS~TreeCanopyCover, data=all_data)
-et2<-lm(coll_HS~TreeCanopyCover + UrbanRank, data=all_data)
-et3<-lm(coll_HS~TreeCanopyCover + UrbanRank +Income, data=all_data)
+et1<-lm(Bachelors~TreeCanopyCover, data=all_data)
+et2<-lm(Bachelors~TreeCanopyCover + UrbanRank, data=all_data)
+et3<-lm(Bachelors~TreeCanopyCover + UrbanRank +Income, data=all_data)
 stargazer::stargazer(et1, et2, et3, type="text",
  dep.var.labels=c("Percent of Adults with Bachelor's Deegree"),
  covariate.labels=c("Tree Canopy Cover","Urban Rank", "Median Income"), out="tree_edu.txt")
@@ -68,9 +68,9 @@ stargazer::stargazer(et1, et2, et3, type="text",
 #pollution regressions
 
 
-ep1<-lm(coll_HS~Pollution, data=all_data) 
-ep2<-lm(coll_HS~Pollution + UrbanRank, data=all_data)
-ep3<-lm(coll_HS~Pollution + UrbanRank + Income, data=all_data) 
+ep1<-lm(Bachelors~Pollution, data=all_data) 
+ep2<-lm(Bachelors~Pollution + UrbanRank, data=all_data)
+ep3<-lm(Bachelors~Pollution + UrbanRank + Income, data=all_data) 
 
 stargazer::stargazer(ep1, ep2, type="text",
  dep.var.labels=c("Percent of Adults with Bachelor's Deegree"),
