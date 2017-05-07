@@ -87,6 +87,27 @@ stargazer::stargazer(gs1, gs2, gs3, type="text",
  covariate.labels=c("Available Green Space","Urban Rank", "Median Income"), out="green_edu.txt")
 ```
 
+## Linear regression and scatter plot for arsenic
+```{r}
+library(statisticalModeling)
+library(rpart)
+library(rpart.plot)
+library(stats)
+library(mosaicData)
+library(stargazer)
+
+#Arsenic reg
+ea1<-lm(Bachelors~arsenic, data=all_data)
+ea2<-lm(Bachelors~arsenic +UrbanRank, data=all_data)
+ea3<-lm(Bachelors~arsenic +Income, data=all_data)
+stargazer::stargazer(ea1, ea2, ea3, type="text",
+ dep.var.labels=c("Percentage of Adults with Bachelor's Degrees"),
+ covariate.labels=c("Arsenic Level","Urban/Rural Classification","Median Income"), out="arsenic_edu.txt")
+
+
+
+```
+
 ## Boxplots for air pollution, arsenic, and tree cover (Kana)
 ```{r}
 load("all_data.RData")
@@ -192,3 +213,17 @@ bach_vs_green_lm_income
 ```
 
 
+```{r}
+#Arsenic plots
+bach_vs_arsenic_lm <- all_data %>%
+  na.omit() %>%
+  ggplot(aes(arsenic, Bachelors)) +
+  geom_point(aes(color = UrbanRank), alpha = 0.3, size = 2) +
+  scale_color_manual(values = c("#6baed6","#4292c6","#2171b5")) +
+  geom_smooth(method = "lm") +
+  facet_grid(IncomeQuartile ~ UrbanRank) +
+  labs(x="Arsenic in Drinking Water (ug/L)", y="% Adults with Bachelor's Degrees") +
+  theme_bw()
+
+bach_vs_arsenic_lm
+```

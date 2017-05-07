@@ -679,6 +679,13 @@ ArsenicbyCounty <- function(idw){
 Main Arsenic code
 -----------------
 ```{r}
+#' Downloads, interpolates, ans summarises Arsenic water quality data from USGS 
+#' Source: https://water.usgs.gov/nawqa/trace/data/index.html#ARSENIC_NOV01
+#' @Year:  1973 - 2001
+#' @Variables: FIPS code, arsenic conentraions, latitude, longitude
+#'
+#' @return data frame containing FIPS code, arsenic conentraions, and discrete arsenic range
+
 GetArsenicData <- function(){
   
   arsenic <- downloadArsenic()
@@ -686,9 +693,6 @@ GetArsenicData <- function(){
   arsenic_df <- ArsenicbyCounty(idw)
   return(arsenic_df)
 }
-
-
-
 ```
 
 
