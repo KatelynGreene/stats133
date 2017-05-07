@@ -295,10 +295,18 @@ library(stargazer)
 #Arsenic reg
 ea1<-lm(Bachelors~arsenic, data=all_data_arsenic)
 ea2<-lm(Bachelors~arsenic +UrbanRank, data=all_data_arsenic)
-ea3<-lm(Bachelors~arsenic +Income, data=all_data_arsenic)
+ea3<-lm(Bachelors~arsenic +UrbanRank +Income, data=all_data_arsenic)
 stargazer::stargazer(ea1, ea2, ea3, type="text",
  dep.var.labels=c("Percentage of Adults with Bachelor's Degrees"),
- covariate.labels=c("Arsenic Level","Urban/Rural Classification","Median Income"), out="arsenic_edu.txt")
+ covariate.labels=c("Arsenic Level","Urban Rank Classification","Median Income"), out="arsenic_edu.txt")
+
+et1<-lm(Bachelors~TreeCanopyCover, data=all_data)
+et2<-lm(Bachelors~TreeCanopyCover + UrbanRank, data=all_data)
+et3<-lm(Bachelors~TreeCanopyCover + UrbanRank +Income, data=all_data)
+stargazer::stargazer(et1, et2, et3, type="text",
+ dep.var.labels=c("Percent of Adults with Bachelor's Deegree"),
+ covariate.labels=c("Tree Canopy Cover","Urban Rank", "Median Income"), out="tree_edu.txt")
+
 
 #Arsenic plots
 bach_vs_arsenic_lm <- all_data_arsenic %>%
