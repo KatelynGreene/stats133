@@ -636,7 +636,7 @@ Interpolate <- function(arsenic){
 
 
 ```{r}
-#' Summarizing the interpolated data to find average arsenic concentration per count
+#' Summarizing the interpolated data to find average arsenic concentration per county
 #' @param idw spatial data frame of interpolated data
 #'
 #' @return data frame of FIPSCode, arsenic values, and discrete values of arsenic
