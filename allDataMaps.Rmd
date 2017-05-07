@@ -1,7 +1,7 @@
 ---
-title: "allDataMaps"
-author: ""
-date: ""
+title: "Leaflet Plots for Final Stats 133 Project"
+author: "(Team Senioritis)"
+date: "Spring 2017"
 output: 
   html_document:
     fig_height: 3
@@ -70,7 +70,7 @@ arsenic <- arsenic %>% dplyr::rename(FIPSCode=fips)
 ---------------------------------------
 Education (Bachelors map) Leaflet Plot
 ---------------------------------------
-```{r}
+```{r, echo=FALSE}
 
 countyShapefile <- GetCountyShapefile()
 
@@ -94,14 +94,14 @@ pal <- colorNumeric(
 )
 
 # Base map of county boundaries
-map <- leaflet(counties) %>% addTiles()
+map <- leaflet(counties, width="100%") %>% addTiles()
 
 education_map <- map %>% 
   addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
     fillColor = ~pal(Bachelors), fillOpacity = 1, popup = popup_dat, 
     highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE)) %>%
   addLegend("bottomright", pal = pal, values = ~Bachelors,
-    title = "Population with<br>Bachelor's degree<br>or higher",
+    title = "Population with<br>Bachelor's Degree<br>or Higher",
     labFormat = labelFormat(suffix = "%"), na.label = "county missing data",
     opacity = 1)
 
@@ -114,7 +114,7 @@ saveWidget(education_map, file="education_map.html", selfcontained = FALSE)
 ------------------------------------------------
 Air quality (Particulate matter) Leaflet Plot
 ------------------------------------------------
-```{r}
+```{r, echo=FALSE}
 countyShapefile <- GetCountyShapefile()
 
 small_data <- all_data %>% 
@@ -137,7 +137,7 @@ pal <- colorNumeric(
 )
 
 # Base map of county boundaries
-map <- leaflet(counties) %>% addTiles()
+map <- leaflet(counties, width="100%") %>% addTiles()
 
 pollution_map <- map %>% 
   addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
@@ -157,7 +157,7 @@ saveWidget(pollution_map, file="pollution_map.html", selfcontained = FALSE)
 -----------------------------
 AvailGreenSpace Leaflet Plot
 -----------------------------
-```{r}
+```{r, echo=FALSE}
 countyShapefile <- GetCountyShapefile()
 
 small_data <- all_data %>% 
@@ -180,7 +180,7 @@ pal <- colorNumeric(
 )
 
 # Base map of county boundaries
-map <- leaflet(counties) %>% addTiles()
+map <- leaflet(counties, width="100%") %>% addTiles()
 
 availGreenSpace_map <- map %>% 
 
@@ -201,7 +201,7 @@ saveWidget(availGreenSpace_map, file="availGreenSpace_map.html", selfcontained =
 ----------------------------------------------------
 Tree Canopy Cover in Developped regions Leaflet Plot
 ----------------------------------------------------
-```{r}
+```{r, echo=FALSE}
 countyShapefile <- GetCountyShapefile()
 
 small_data <- all_data %>% 
@@ -227,7 +227,7 @@ pal <- colorNumeric(
 )
 
 # Base map of county boundaries
-map <- leaflet(counties) %>% addTiles()
+map <- leaflet(counties, width="100%") %>% addTiles()
 
 treeCanopyDeveloped_map <- map %>% 
   addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
@@ -238,7 +238,7 @@ treeCanopyDeveloped_map <- map %>%
     labFormat = labelFormat(suffix = "%"), na.label = ">0.55%",
     opacity = 1)
 
-treeCanopyDevelopped_map
+treeCanopyDeveloped_map
 
 library(htmlwidgets)
 saveWidget(treeCanopyDeveloped_map, file="treeCanopyDeveloped_map.html", selfcontained = FALSE)
@@ -248,7 +248,7 @@ saveWidget(treeCanopyDeveloped_map, file="treeCanopyDeveloped_map.html", selfcon
 Arsenic (ggplot)
 -----------------
 
-```{r, eval=FALSE}
+```{r, eval = FALSE, include=FALSE}
 
 #Get county geographic boundaries
 us.map <- GetCountyShapefile()
@@ -297,7 +297,7 @@ counties %>%
 -------------------------------------
 TreeCanopy per person Leaflet Plot
 -------------------------------------
-```{r, eval=FALSE}
+```{r, eval=FALSE, include=FALSE}
 countyShapefile <- GetCountyShapefile()
 
 small_data <- all_data %>% 
@@ -341,7 +341,7 @@ saveWidget(treeCanopyPerson_map, file="treeCanopyPerson_map.html", selfcontained
 --------------------------------------------
 2013 Rural-Urban Continuum Code Leaflet Plot
 --------------------------------------------
-```{r, eval=FALSE}
+```{r, eval=FALSE, include=FALSE}
 countyShapefile <- GetCountyShapefile()
 
 small_data <- all_data %>% 
@@ -384,7 +384,7 @@ saveWidget(urbancode_map, file="urbancode_map.html", selfcontained = FALSE)
 -----------------------
 UrbanRank Leaflet Plot
 -----------------------
-```{r, eval=FALSE}
+```{r, eval=FALSE, include=FALSE}
 countyShapefile <- GetCountyShapefile()
 
 small_data <- all_data %>% 
@@ -429,7 +429,7 @@ saveWidget(urbanrank_map, file="urbanrank_map.html", selfcontained = FALSE)
 ------------------------------------
 Household Median Income Leaflet Plot
 ------------------------------------
-```{r, eval=FALSE}
+```{r, eval=FALSE, include=FALSE}
 countyShapefile <- GetCountyShapefile()
 
 small_data <- all_data %>% 
