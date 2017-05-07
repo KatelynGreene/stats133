@@ -29,10 +29,7 @@ library(ggplot2)
 includeSourceDocuments()
 ```
 
--------------------
-Arsenic and Visualization
--------------------
-```{r}
+```{r, echo=FALSE}
 #' Downloads and loads the county-level simplified geographic boundary shapefile from the US Census Shapefiles.
 #' Source: https://www.census.gov/geo/maps-data/data/cbf/cbf_counties.html
 #' @Year: 2015
@@ -56,10 +53,8 @@ GetCountyShapefile <- function(){
 
 ```
 
-------------------
-Visualization Prep
------------------
 ```{r, echo=FALSE}
+# Visualization Prep
 load("all_data.RData")
 load("arsenic_df.RData")
 
@@ -67,9 +62,8 @@ arsenic <- arsenic_df
 arsenic <- arsenic %>% dplyr::rename(FIPSCode=fips)
 ```
 
----------------------------------------
-Education (Bachelors map) Leaflet Plot
----------------------------------------
+# Education (Bachelors map) Leaflet Plot
+
 ```{r, echo=FALSE}
 
 countyShapefile <- GetCountyShapefile()
@@ -107,13 +101,13 @@ education_map <- map %>%
 
 education_map
 
-library(htmlwidgets)
-saveWidget(education_map, file="education_map.html", selfcontained = FALSE)
+# library(htmlwidgets)
+# saveWidget(education_map, file="education_map.html", selfcontained = FALSE)
 ```
 
-------------------------------------------------
-Air quality (Particulate matter) Leaflet Plot
-------------------------------------------------
+
+# Air quality (Particulate matter) Leaflet Plot
+
 ```{r, echo=FALSE}
 countyShapefile <- GetCountyShapefile()
 
@@ -150,13 +144,13 @@ pollution_map <- map %>%
 
 pollution_map
 
-library(htmlwidgets)
-saveWidget(pollution_map, file="pollution_map.html", selfcontained = FALSE)
+# library(htmlwidgets)
+# saveWidget(pollution_map, file="pollution_map.html", selfcontained = FALSE)
 ```
 
------------------------------
-AvailGreenSpace Leaflet Plot
------------------------------
+
+# AvailGreenSpace Leaflet Plot
+
 ```{r, echo=FALSE}
 countyShapefile <- GetCountyShapefile()
 
@@ -194,13 +188,13 @@ availGreenSpace_map <- map %>%
 
 availGreenSpace_map
 
-library(htmlwidgets)
-saveWidget(availGreenSpace_map, file="availGreenSpace_map.html", selfcontained = FALSE)
+# library(htmlwidgets)
+# saveWidget(availGreenSpace_map, file="availGreenSpace_map.html", selfcontained = FALSE)
 ```
 
-----------------------------------------------------
-Tree Canopy Cover in Developped regions Leaflet Plot
-----------------------------------------------------
+
+# Tree Canopy Cover in Developped regions Leaflet Plot
+
 ```{r, echo=FALSE}
 countyShapefile <- GetCountyShapefile()
 
@@ -234,239 +228,14 @@ treeCanopyDeveloped_map <- map %>%
     fillColor = ~pal(TreeCanopyCover), fillOpacity = 1, popup = popup_dat, 
     highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE)) %>%
   addLegend("bottomright", pal = pal, values = ~TreeCanopyCover,
-    title = "Tree canopy cover in developed regions",
+    title = "Tree canopy cover<br>in developed regions",
     labFormat = labelFormat(suffix = "%"), na.label = ">0.55%",
     opacity = 1)
 
 treeCanopyDeveloped_map
 
-library(htmlwidgets)
-saveWidget(treeCanopyDeveloped_map, file="treeCanopyDeveloped_map.html", selfcontained = FALSE)
-```
-
------------------
-Arsenic (ggplot)
------------------
-
-```{r, eval = FALSE, include=FALSE}
-
-#Get county geographic boundaries
-us.map <- GetCountyShapefile()
-
-#Converting shapefile to dataframe for visualization
-library(broom)
-county_map <- tidy(us.map, region="GEOID")
-
-# small_data <- all_data %>% 
-#   select(FIPSCode, arsenic)
-
-small_data <- arsenic
-
-#Merge spatial df with 
-counties <- left_join(county_map, arsenic, by = c("id" = "FIPSCode"))
-
-counties %>%
-  ggplot() +
-    #blank county map
-    geom_polygon(aes(x=long, y=lat, group=group), fill = "white", color="black", size=0.25) +
-    #Arsenic data
-    geom_polygon(aes(x=long, y=lat, group=group, fill = counties$arsenic_discrete), color="black", size=0.25) +
-    ggplot2::coord_map() +
-    scale_fill_brewer(palette = "RdYlGn", direction = -1)  +
-    labs(title="Arsenic Levels in drinking water (ug/L)") + 
-    theme_bw() +
-    theme(plot.title=element_text(hjust=0.5),
-          axis.line=element_blank(),
-          axis.text.x=element_blank(),
-          axis.text.y=element_blank(),
-          axis.ticks=element_blank(),
-          axis.title.x=element_blank(),
-          axis.title.y=element_blank(),
-          panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          panel.border = element_blank(),
-          panel.background = element_blank(),
-          legend.title=element_blank())
-
-
-
-```
-
-----------------------------------------
-
--------------------------------------
-TreeCanopy per person Leaflet Plot
--------------------------------------
-```{r, eval=FALSE, include=FALSE}
-countyShapefile <- GetCountyShapefile()
-
-small_data <- all_data %>% 
-  select(FIPSCode, TreeCanopy)
-
-#Merge spatial df with air quality data.
-counties <- geo_join(countyShapefile, small_data, "GEOID", "FIPSCode", how = "left")
-
-# Format popup data for leaflet map.
-popup_dat <- paste(sep = "<br/>",
-  "<b>County: </b>", 
-  counties$NAME, 
-  "<b>Value: </b>", 
-  counties$TreeCanopy)
-
-#Let leaflet calculate the colors and labels for you 
-pal <- colorNumeric(
-  palette =  "YlGnBu",
-  domain = counties$TreeCanopy, n= 9
-)
-
-# Base map of county boundaries
-map <- leaflet(counties) %>% addTiles()
-
-treeCanopyPerson_map <- map %>% 
-  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
-    fillColor = ~pal(TreeCanopy), fillOpacity = 1, popup = popup_dat, 
-    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE)) %>%
-  addLegend("bottomright", pal = pal, values = ~TreeCanopy,
-    title = "Tree canopy Covering",
-    labFormat = labelFormat(suffix = " m2/person"), na.label = "county data missing",
-    opacity = 1)
-
-treeCanopyPerson_map
-
-library(htmlwidgets)
-saveWidget(treeCanopyPerson_map, file="treeCanopyPerson_map.html", selfcontained = FALSE)
-```
-
-
---------------------------------------------
-2013 Rural-Urban Continuum Code Leaflet Plot
---------------------------------------------
-```{r, eval=FALSE, include=FALSE}
-countyShapefile <- GetCountyShapefile()
-
-small_data <- all_data %>% 
-  select(FIPSCode, UrbanCode)
-
-#Merge spatial df with air quality data.
-counties <- geo_join(countyShapefile, small_data, "GEOID", "FIPSCode", how = "left")
-
-# Format popup data for leaflet map.
-popup_dat <- paste(sep = "<br/>",
-  "<b>County: </b>", 
-  counties$NAME, 
-  "<b>Value: </b>", 
-  counties$InfluenceCode)
-
-#Let leaflet calculate the colors and labels for you 
-pal <- colorNumeric(
-  palette =  "YlGnBu",
-  domain = counties$UrbanCode, n= 12
-)
-
-# Base map of county boundaries
-map <- leaflet(counties) %>% addTiles()
-
-urbanCode_map <- map %>% 
-  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
-    fillColor = ~pal(UrbanCode), fillOpacity = 1, popup = popup_dat, 
-    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE)) %>%
-  addLegend("bottomright", pal = pal, values = ~UrbanCode,
-    title = "Urban Influence Code (2013)",
-    labFormat = labelFormat(suffix = "number"), na.label = "county data missing",
-    opacity = 1)
-
-urbanCode_map 
-
-library(htmlwidgets)
-saveWidget(urbancode_map, file="urbancode_map.html", selfcontained = FALSE)
-```
-
------------------------
-UrbanRank Leaflet Plot
------------------------
-```{r, eval=FALSE, include=FALSE}
-countyShapefile <- GetCountyShapefile()
-
-small_data <- all_data %>% 
-  select(FIPSCode, Bachelors, UrbanRank, UrbanCode)
-
-# Merge spatial df with air quality data.
-counties <- geo_join(countyShapefile, small_data, "GEOID", "FIPSCode", how = "left")
-
-# Format popup data for leaflet map.
-popup_dat <- paste(sep = "<br/>",
-  "<b>County: </b>", 
-  counties$NAME, 
-  "<b>Value: </b>", 
-  counties$UrbanCode)
-
-#Let leaflet calculate the colors and labels
-pal<- colorFactor(
-  palette = "YlGnBu", levels = factor(counties$UrbanRank, levels =c("Metropolitan", "Urban", "Rural", ordered = TRUE))
-)
-
-# Base map of county boundaries
-map <- leaflet(counties) %>% addTiles()
-
-urbanrank_map <- map %>% 
-  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
-    fillColor = ~pal(UrbanRank), fillOpacity = 1, popup = popup_dat, 
-    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE)) %>%
-  addLegend("bottomright", pal = pal, values = ~UrbanRank,
-    title = "Population with<br>Bachelor's degree<br>or higher",
-    labFormat = labelFormat(), na.label = "county missing data",
-    opacity = 1)
-
-urbanrank_map
-
-library(htmlwidgets)
-saveWidget(urbanrank_map, file="urbanrank_map.html", selfcontained = FALSE)
-```
-
-
-
-
-------------------------------------
-Household Median Income Leaflet Plot
-------------------------------------
-```{r, eval=FALSE, include=FALSE}
-countyShapefile <- GetCountyShapefile()
-
-small_data <- all_data %>% 
-  select(FIPSCode, Income)
-
-#Merge spatial df with air quality data.
-counties <- geo_join(countyShapefile, small_data, "GEOID", "FIPSCode", how = "left")
-
-# Format popup data for leaflet map.
-popup_dat <- paste(sep = "<br/>",
-  "<b>County: </b>", 
-  counties$NAME, 
-  "<b>Value: </b>", 
-  counties$Income)
-
-#Let leaflet calculate the colors and labels for you 
-pal <- colorNumeric(
-  palette =  "YlGnBu",
-  domain = counties$Income
-)
-
-# Base map of county boundaries
-map <- leaflet(counties) %>% addTiles()
-
-income_map <- map %>% 
-  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
-    fillColor = ~pal(Income), fillOpacity = 1, popup = popup_dat, 
-    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE)) %>%
-  addLegend("bottomright", pal = pal, values = ~Income,
-    title = "Median Household Income (2015)",
-    labFormat = labelFormat(prefix = "$"), na.label = "county data missing",
-    opacity = 1)
-
-income_map
-
-library(htmlwidgets)
-saveWidget(income_map, file="income_map.html", selfcontained = FALSE)
+# library(htmlwidgets)
+# saveWidget(treeCanopyDeveloped_map, file="treeCanopyDeveloped_map.html", selfcontained = FALSE)
 ```
 
 
