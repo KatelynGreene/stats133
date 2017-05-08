@@ -80,9 +80,8 @@ edu_treecanop_plot
 ```
 
 ```{r}
-load("all_data.RData")
-library(ggplot2)
 
+#Plots percent of adults with a Bachelor's degree vs. amount of PM 2.5 (pollution), facetted by rural-urban classification 
 bach_vs_pollution_lm <- all_data %>%
   na.omit() %>%
   ggplot(aes(Pollution, Bachelors)) +
@@ -95,10 +94,10 @@ bach_vs_pollution_lm <- all_data %>%
 
 bach_vs_pollution_lm
 
+#Plots percent of adults with a Bachelor's degree vs. percent of tree canopy cover, facetted by rural-urban classification 
 bach_vs_tree_lm <- all_data %>% 
   na.omit() %>%
-   #Filter out outlier values
-  filter(TreeCanopyCover<.55) %>%
+  filter(TreeCanopyCover<.55) %>%    #Filter out outlier values
   ggplot(aes(TreeCanopyCover, Bachelors)) +
   geom_point(aes(color = UrbanRank), alpha = 0.7, size = 2, show.legend = FALSE) +
   scale_color_manual(values = c("#8dd3c7","#80b1d3","#bc80bd")) +
@@ -109,9 +108,10 @@ bach_vs_tree_lm <- all_data %>%
 
 bach_vs_tree_lm 
 
+#Plots percent of adults with a Bachelor's degree vs. available green space, facetted by rural-urban classification 
 bach_vs_green_lm <- all_data %>% 
   na.omit() %>%
-  filter(AvailGreenSpace < 10^6) %>%
+  filter(AvailGreenSpace < 10^6) %>% #filter outlier values
   mutate(AvailGreenSpace = AvailGreenSpace/100000) %>%
   ggplot(aes(AvailGreenSpace, Bachelors)) +
   geom_point(aes(color = UrbanRank), alpha = 0.7, size = 2, show.legend = FALSE) +
@@ -123,6 +123,7 @@ bach_vs_green_lm <- all_data %>%
 
 bach_vs_green_lm 
 
+#Plots percent of adults with a Bachelor's degree vs. amount of PM 2.5 (pollution), facetted by income
 bach_vs_pollution_lm_income <- all_data %>%
   na.omit() %>%
   ggplot(aes(Pollution, Bachelors)) +
@@ -136,10 +137,10 @@ bach_vs_pollution_lm_income <- all_data %>%
 
 bach_vs_pollution_lm_income
 
+#Plots percent of adults with a Bachelor's degree vs. percent of tree canopy cover, facetted by income
 bach_vs_tree_lm_income <- all_data %>% 
   na.omit() %>%
-   #Filter out outlier values
-  filter(TreeCanopyCover<.55) %>%
+  filter(TreeCanopyCover<.55) %>%  #Filter out outlier values
   ggplot(aes(TreeCanopyCover, Bachelors)) +
   geom_point(aes(color = IncomeQuartile), alpha = 0.7, size = 2, show.legend = FALSE) +
   scale_color_manual(values = c("#a1d99b","#41ab5d","#238b45","#005a32")) +
@@ -149,20 +150,6 @@ bach_vs_tree_lm_income <- all_data %>%
   theme_bw() 
 
 bach_vs_tree_lm_income
-
-bach_vs_green_lm_income <- all_data %>% 
-  na.omit() %>%
-  filter(AvailGreenSpace < 10^6) %>%
-  mutate(AvailGreenSpace = AvailGreenSpace/100000) %>%
-  ggplot(aes(AvailGreenSpace, Bachelors)) +
-  geom_point(aes(color = IncomeQuartile), alpha = 0.7, size = 2, show.legend = FALSE) +
-  scale_color_manual(values = c("#a1d99b","#41ab5d","#238b45","#005a32")) +
-  geom_smooth(method = "lm",  fill = "black", col = "black") +
-  facet_grid(. ~ IncomeQuartile) +
-  labs(x="Available Green Space (100,000 ha)", y="% Adults with Bachelor's Degrees") +
-  theme_bw() 
-
-bach_vs_green_lm_income
 ```
 
 
