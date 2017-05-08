@@ -413,7 +413,7 @@ urbanrank_map <- map %>%
     fillColor = ~pal(UrbanRank), fillOpacity = 1, popup = popup_dat, 
     highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE)) %>%
   addLegend("bottomright", pal = pal, values = ~UrbanRank,
-    title = "Population with<br>Bachelor's degree<br>or higher",
+    title = "Rural-Urban Rank",
     labFormat = labelFormat(), na.label = "county missing data",
     opacity = 1)
 
