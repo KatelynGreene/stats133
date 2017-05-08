@@ -5,7 +5,6 @@ DATA GATHERING
 ------------------------------
 ------------------------------
 ```{r include=FALSE}
-# Don't delete this chunk if you are using the DataComputing package
 library(DataComputing)
 library(RCurl)
 library(readxl)
@@ -18,7 +17,6 @@ library(XML)
 library(rvest)
 library(rgdal)
 ```
-
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 County FIPS Reference Table Data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
