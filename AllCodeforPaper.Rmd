@@ -1,6 +1,6 @@
 ---
-title: "JoinAllTables"
-author: "Vanessa"
+title: "All Code for Paper"
+author: ""
 date: ""
 output: 
   html_document:
@@ -8,6 +8,20 @@ output:
     fig_width: 5
 ---
 <!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
+------------------------------
+------------------------------
+DATA GATHERING
+------------------------------
+------------------------------
 ```{r include=FALSE}
 # Don't delete this chunk if you are using the DataComputing package
 library(DataComputing)
@@ -22,14 +36,37 @@ library(XML)
 library(rvest)
 library(rgdal)
 ```
-*Source file* 
-```{r, results='asis', echo=FALSE}
-includeSourceDocuments()
-```
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Downloading the USACountyEduAttainment data
+County FIPS Reference Table Data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```{r}
+#' Webscrapes and wrangles a table of every US county and its corresponding FIPS code and state name. 
+#' Source: https://en.wikipedia.org/wiki/List_of_United_States_counties_and_county_equivalents
+#' @Variables: FIPS code, County, State
+#' @Year: 2014
+#'
+#' @return data frame containing every county name and its 
+#' corresponding county FIPS code, state FIPS code, and state name.
+
+GetCountyReference <- function(){
+  every_us_county <- 
+    "https://en.wikipedia.org/wiki/List_of_United_States_counties_and_county_equivalents" %>%
+    read_html() %>%
+    html_nodes(xpath = '//*[@id="mw-content-text"]/table') %>%
+    html_table(fill=TRUE)
+  every_us_county2<-every_us_county[[2]]
+  every_county<-every_us_county2%>%
+    dplyr::rename(FIPSCode=INCITS, County=`County or equivalent`, State=`State or district`)%>%
+    subset(select=c( `FIPSCode`, `County`, `State`))
+  every_county$FIPSCode<-stri_pad_left(every_county$FIPSCode, 5, "0")
+  every_county<-mutate(every_county,StateFips=substr(every_county$FIPSCode,1,2))
+  return(every_county)
+}
+```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Educational Attainment Data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```{r}
 #' Scrapes the excel download link for US County Education Attainment
 #' Source: "https://www.ers.usda.gov/data-products/county-level-data-sets/county-level-data-sets-download-data.aspx" #' (Click Educational attainment for the U.S., States, and counties, 1970-2015)
@@ -83,14 +120,12 @@ GetEduData <- function(){
   edu_data$UrbanRank <- factor(edu_data$UrbanRank, levels = c("Rural", "Urban", "Metropolitan"))
   return(edu_data)
 }
-
-
 ```
+---END Educational Attainment Data---
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Downloading the Pollution per County data
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+~~~~~~~~~~~~~~~~~~
+Air Quality Data
+~~~~~~~~~~~~~~~~~~
 ```{r}
 #' Downloads and wrangles pollution data in the form of air quality measurements from the EPA. 
 #' Source: https://data.cdc.gov/dataset/Air-Quality-Measures-on-the-National-Environmental/cjae-szjv
@@ -119,40 +154,11 @@ GetPollutionData <- function(){
   return(poll_county)
 }
 ```
+---END Air Quality Data---
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Downloading the County Reference Table data
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-```{r}
-#' Webscrapes and wrangles a table of every US county and its corresponding FIPS code and state name. 
-#' Source: https://en.wikipedia.org/wiki/List_of_United_States_counties_and_county_equivalents
-#' @Variables: FIPS code, County, State
-#' @Year: 2014
-#'
-#' @return data frame containing every county name and its 
-#' corresponding county FIPS code, state FIPS code, and state name.
-
-GetCountyReference <- function(){
-  every_us_county <- 
-    "https://en.wikipedia.org/wiki/List_of_United_States_counties_and_county_equivalents" %>%
-    read_html() %>%
-    html_nodes(xpath = '//*[@id="mw-content-text"]/table') %>%
-    html_table(fill=TRUE)
-  every_us_county2<-every_us_county[[2]]
-  every_county<-every_us_county2%>%
-    dplyr::rename(FIPSCode=INCITS, County=`County or equivalent`, State=`State or district`)%>%
-    subset(select=c( `FIPSCode`, `County`, `State`))
-  every_county$FIPSCode<-stri_pad_left(every_county$FIPSCode, 5, "0")
-  every_county<-mutate(every_county,StateFips=substr(every_county$FIPSCode,1,2))
-  return(every_county)
-}
-```
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Downloading the USACountyIncomeEmploy data
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+~~~~~~~~~~~~~
+Income Data
+~~~~~~~~~~~~~
 ```{r}
 #' Scrapes the excel download link for US Income
 #' Source: https://www.ers.usda.gov/data-products/county-level-data-sets/county-level-data-sets-download-data.aspx #' (Unemployment and median household income for the U.S., States, and counties, 2007-15)
@@ -188,19 +194,12 @@ GetIncomeData <- function(){
   income$IncomeQuartile <- factor(income$IncomeQuartile, levels = c("< $40k","$40k - 47k","$47k - 54k","> $54k")) 
   return(income)
 }
-
-
 ```
+----END Income Data-----
 
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Downloading the USCountyUrbanForest data 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-
-The purpose of this document is to extract urban forest from all the counties in the U.S.
-
+~~~~~~~~~~~~~~~~~~~
+Forestry Data 
+~~~~~~~~~~~~~~~~~~~
 ```{r}
 #' Scrapes the excel download link for each state in the U.S.
 #'
@@ -253,10 +252,6 @@ Webscrape <- function(){
 
 ```
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Support functions for Downloading and loading state Excel files 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 ```{r}
 #' Creates a reference dataframe that maps county name to FIPS code based on the 2010 census, 
 #' with naming updates up to 2015.
@@ -284,7 +279,7 @@ FIPS_fun <- function(state = NA){
 
 ```{r}
 #' Extracts data from an excel file relating to the forestry variables of interest.
-#' @Variables: Tree canopy (m2/person), Available green space (ha), and Tree canopy cover in developped regions (%) 
+#' @Variables: Tree canopy (m2/person), Available green space (ha), and Tree canopy cover in developed regions (%) 
 #' @param file Location of the state .xls file
 #' @param stateAbbrev the state postal code for the count of interest
 #' @return A data frame containing variables: State, CountyName, FIPS (FIPS code), TreeCanopy, AvailGreenSpace, and TreeCanopyCover
@@ -307,7 +302,7 @@ ExtractStateData <- function(file, stateAbbrev){
   #Units: Tree canopy Covering (m2/person), Available green space (ha)
   colnames(xl_7) <- c("CountyName","TreeCanopy", "AvailGreenSpace")
   xl_10 <- xl_10 %>% select(c(`X__1`, `Tree % h`))
-  #Tree canopy cover in developped regions (%)
+  #Tree canopy cover in developed regions (%)
   colnames(xl_10) <- c("CountyName", "TreeCanopyCover")
   #Exclude the variable descriptions at the end of the sheet
   xl_10 <- na.omit(xl_10)
@@ -341,134 +336,19 @@ ExtractStateData <- function(file, stateAbbrev){
   final_df <- full_join(joined_clean, FIPS_base, by = "CountyName")
   return(final_df)
 }
-
 ```
 
-To keep from wasting time redownloading files, use this code to download once and use your local files. 
-```{r, eval=FALSE}
-#' Downloads excel files to a local directory for later extraction and cleaning. Note that the user will need to 
-#' manually designate the desired download directory.
-#' 
-#' @param AllStates data frame that contains stateNames and downloadLinks
-#' @return Data frame with stateNames, downloadLinks, and fileLocations 
-
-DownloadLocally <- function(AllStates){
-  library(readxl)
-  #Stores locations for future file reading
-  fileLocations <- vector(mode="character", length=length(AllStates$stateNames))
-  #Download file for each state
-  for(i in 1:length(AllStates$stateNames)){
-    destination <- paste("~/Downloads/stats133data/AllStates/", AllStates$stateNames[i], ".xls", sep = "")
-    download.file(AllStates$downloadLinks[i], destfile = destination, mode = "wb" )
-    fileLocations[i] <- destination
-  }
-  AllStates$fileLocations <- fileLocations
-  return(AllStates)
-}
-
-```
-
-Load the filepaths if you're using the downloaded files
-```{r}
-#' Loads the locations of all the excel files stored in a local directory for later extraction and cleaning. 
-#' Note that the user will need to designate the directory of their downloaded file.
-#' 
-#' @param AllStates data frame that contains stateNames and downloadLinks
-#' @return Data frame with stateNames, downloadLinks, and fileLocations 
-
-LoadFilepaths <- function(AllStates, userName){
-  if(userName == "K"){
-    AllStates$fileLocations <- paste("C:\\Users\\kanay\\Documents\\R\\stat133\\AllStates\\", AllStates$stateNames, ".xls", sep = "")
-  }else if(userName == "V"){
-    AllStates$fileLocations <- paste("~/Downloads/stats133data/AllStates/", AllStates$stateNames, ".xls", sep = "")
-  }else if(userName == "A") {
-    AllStates$fileLocations <- paste("/Users/anishakumar/Documents/Stats133/RStudioFiles/Stats133Project/AllStates/", AllStates$stateNames, ".xls", sep = "")
-  }else if(userName == "KS"){
-    AllStates$fileLocations <- paste("C:\\Users\\kagex\\stats133Project\\AllStates\\", AllStates$stateNames, ".xls", sep = "")
-  }else{
-    AllStates$fileLocations <- paste("C:\\Users\\Katrlyn\\stats133Project\\AllStates\\", AllStates$stateNames, ".xls", sep = "")
-  }
-  return(AllStates)
-}
-
-```
-
-------------------------------------------------------
-Download Tree Data  (Method 1: Download all the files locally)
-------------------------------------------------------
 ```{r}
 #' Scrapes the download link for each state's forestry data and then extracts forestry data for each county.
 #' Source: https://www.nrs.fs.fed.us/data/urban/
-#' @Variables: Tree canopy (m2/person), Available green space (ha), and Tree canopy cover in developped regions (%) 
+#' @Variables: Tree canopy (m2/person), Available green space (ha), and Tree canopy cover in developed regions (%) 
 #'
 #' @return A data frame containing county name, FIPS code, tree canopy per person, available green space, and 
-#' tree canopy cover in developped areas.
+#' tree canopy cover in developed areas.
 
-GetTreeData <- function(userName){
+GetTreeData <- function(){
   AllStates <- Webscrape()
-  
-  #Download all the xls files locally for data processing
-  #AllStates <- DownloadLocally(AllStates)
-  AllStates <- LoadFilepaths(AllStates, userName) 
-  
-  #Extract urban forestry for each state in the United States
-  for(i in 1:length(AllStates$downloadLinks)){
-    print(AllStates$stateNames[i])
-    #Get the current state postal abbreviation 
-    if(AllStates$stateNames[i] == "District of Columbia"){
-      stateAbbrev <- "DC"
-    }else{
-      stateAbbrev <- state.abb[match(AllStates$stateNames[i],state.name)]
-    }
-    
-    #Extract the variables Tree canopy Covering (m2/person), 
-    #Available green space (ha), and Tree canopy cover in developped regions (%) for the current state
-    state_df <- ExtractStateData(AllStates$fileLocations[i], stateAbbrev)
-    
-    #Build a data frame of all the states
-    if(i == 1){
-      df_base <- state_df
-    }else if( i == 2){
-      df_full <- rbind(df_base, state_df)
-    }else{
-      df_full <- rbind(df_full, state_df)
-    }
-  }
-  
-  #Things that need fixing still
-  df <- df_full %>% subset(is.na(FIPS) | is.na(TreeCanopy))
-  df
-  
-  #Drop everything except for the variables of interest and FIPS code
-  tree_data<-df_full[, -grep("State|Name", colnames(df_full))]
-  #name to faciliate later join
-  tree_data<-tree_data%>%rename(FIPSCode=FIPS)
-  return(tree_data)
-}
-
-
-```
-
-
-------------------------------------------------------
-Download Tree Data (Method 2: Download via temporary files)
-------------------------------------------------------
-
-
-```{r, eval=FALSE}
-#' Scrapes the download link for each state's forestry data and then extracts forestry data for each county.
-#' Source: https://www.nrs.fs.fed.us/data/urban/
-#' @Variables: Tree canopy (m2/person), Available green space (ha), and Tree canopy cover in developped regions (%) 
-#'
-#' @return A data frame containing county name, FIPS code, tree canopy per person, available green space, and 
-#' tree canopy cover in developped areas.
-
-GetTreeDataTEMP <- function(){
-
-  AllStates <- Webscrape()
-  
   #Download via temp files (no local storage on hard drive )
-  
   for(i in 1:length(AllStates$downloadLinks)){
     url <- AllStates$downloadLinks[i]
     tmp <- tempfile(fileext=".xls")
@@ -483,7 +363,7 @@ GetTreeDataTEMP <- function(){
       stateAbbrev <- state.abb[match(AllStates$stateNames[i],state.name)]
     }
     
-    #Extract the variables Tree canopy Covering (m2/person), Available green space (ha), and Tree canopy cover in developped regions (%) for the current state
+    #Extract the variables Tree canopy Covering (m2/person), Available green space (ha), and Tree canopy cover in developed regions (%) for the current state
     state_df <- ExtractStateData(tmp, stateAbbrev)
     
     #Build a data frame of all the states
@@ -496,50 +376,18 @@ GetTreeDataTEMP <- function(){
     }
     unlink(tmp)
   }
-
-  
   #Drop everything except for the variables of interest and FIPS code
   tree_data<-df_full[, -grep("State|Name", colnames(df_full))]
   #name to faciliate later join
   tree_data<-tree_data%>%rename(FIPSCode=FIPS)
   return(tree_data)
 }
-
 ```
+----END Forestry Data------
 
-
-```{r}
-#' Categorizes the counties into four regions (West, Midwest, South, and Northeast) 
-#' by their geopgraphic region in the U.S., based on state FIPS.
-#'
-#' @param all_data Aggregate dataset
-#'
-#' @return revised aggregate data frame with county geographic region indicated
-
-GetStateRegion4 <- function(all_data){
-  all_data$Region <- ""
-  for (i in 1:nrow(all_data)){
-    if (all_data$StateFips[i] %in% c("53", "16", "32", "06", "41", "30", "56", "49", "08", "04", "35")){ 
-      all_data$Region[i]<- "West"
-    } else if (all_data$StateFips[i] %in% c("38", "46", "31", "20", "29", "19", "27", "55", "17", "18", "39", "26")){ 
-      all_data$Region[i]<- "MidWest"
-    } else if (all_data$StateFips[i] %in% c("40", "48", "22", "05", "28", "01", "12", "13", "47", "45", "37", "21", "51", "54", "24", "10", "11")){ 
-      all_data$Region[i] <- "South"
-    } else if (all_data$StateFips[i] %in% c("42", "34", "36", "09", "44", "25", "50", "33", "23")){
-      all_data$Region[i] <- "NorthEast"
-    } else 
-      all_data$Region[i] <- NA
-  }
-  all_data$Region <- factor(all_data$Region, levels = c("West", "MidWest", "South", "NorthEast"))
-  return(all_data)
-}
-
-```
-
----------
-Arsenic 
----------
-
+-------------
+Arsenic Data
+-------------
 ```{r}
 #' Downloads Arsenic water quality data from USGS 
 #' Source: https://water.usgs.gov/nawqa/trace/data/index.html#ARSENIC_NOV01
@@ -553,7 +401,6 @@ downloadArsenic <- function(){
   tmp <- tempfile(fileext=".xls")
   download.file(url,destfile=tmp, mode="wb")
   arsenic <- read_excel(tmp, skip=58)
-  
   # ----DATA CLEANING----
   # get rid of non-continental US data (Alaska, Puerto Rico, Virgin Islands)
   arsenic <- arsenic[!arsenic$STATE %in% c("AK","PR","VI"),]
@@ -573,9 +420,6 @@ downloadArsenic <- function(){
 
 ```
 
-## Interpolation of arsenic data
-
-The reason we need to interpolate the arsenic data is because we only have point data from the field stations that take arsenic measurements. This doesn't cover every county in the US. In order to create a continuous data of arsesnic concentrations across the US, we do a spatial interpolation that essentially takes the point arsenic concentrations and estimates the arsenic concentration across the entire area using a geospatial statistical model. In this case, the units of interpolation are 0.1 degree longitude by 0.1 degree latitude (roughly 0.25 sq mi), which means we get an arsenic concentration for every 0.25 sq mi area of the US. Then we calculate the average arsenic concentration for each county. This way we get an estimated arsenic concentration for each county.
 ```{r}
 #' Interpolates arsenic data using invered distance weighted model
 #' @param arsenic downloaded data frame including point data from field stations
@@ -591,38 +435,28 @@ Interpolate <- function(arsenic){
   ## if not, this will plot on a mirrored image of the US
   arsenic_test$x <- -1*arsenic_test$LON_DD
   arsenic_test$y <- arsenic_test$LAT_DD
-  
   ## this makes arsenic_test into a spatial data
   coordinates(arsenic_test) = ~x + y
   plot(arsenic_test)
   ## define the projection for arsenic_test to match the projection for us.map
   proj4string(arsenic_test) <- proj4string(us.map)
-  
   ## setting the interpolation area
   ## basically the 4 most outer points of us.map in terms of longitude and latitude
-  ## you can check this using:
-  summary(us.map)  ## see coordinates min & max
   x.range <- as.numeric(c(-125, -66))  # min/max longitude of the interpolation area
   y.range <- as.numeric(c(24, 50))  # min/max latitude of the interpolation area
-  
   ## this creates the interpolation grid
   ## it specifies the interpolatino area, and the resolution--in this case 0.1 deg. lon. x 0.1 deg. lat.
   grd <- expand.grid(x = seq(from = x.range[1], to = x.range[2], by = 0.1), y = seq(from = y.range[1], to = y.range[2], by = 0.1))
   coordinates(grd) <- ~x + y # define spatial coordinates of grd
   proj4string(grd) <- proj4string(us.map) #with the same projections
   gridded(grd) <- TRUE
-  
   ## visualization of grid and arsenic data
   plot(grd, cex = 1.5, col = "grey")
   points(arsenic_test, pch = 1, col = "red", cex = 1)
-  
   ## perform the interpolation! (this will take ~20min)
   idw <- krige(AS_CONC ~ 1, arsenic_test, grd)
-  
   return(idw)
 }
-
-
 ```
 
 
@@ -635,14 +469,12 @@ Interpolate <- function(arsenic){
 ArsenicbyCounty <- function(idw){
   library(raster)
   us.map <- GetCountyShapefile()
-  
   ## convert results of interpolation from spatial pixel data to spatial raster data
   idw_raster <- raster(idw)
   ## take the mean raster value (= arsenic concentrations) within the bounds of each county defined by us.map
   avgArsenic <- extract(idw_raster, us.map, fun = mean, sp=TRUE)
   ## convert results to data frame for data manipulation
   avgArsenic_df <- as.data.frame(avgArsenic)
-  
   avgArsenic_df$arsenic_discrete <- NULL
   avgArsenic_df$arsenic_discrete[avgArsenic_df$var1.pred < 3] <- "0-3"
   avgArsenic_df$arsenic_discrete[avgArsenic_df$var1.pred >= 3 & avgArsenic_df$var1.pred < 5] <- "3-5"
@@ -651,19 +483,12 @@ ArsenicbyCounty <- function(idw){
   avgArsenic_df$arsenic_discrete[avgArsenic_df$var1.pred >= 20] <- "20+"
   avgArsenic_df$arsenic_discrete <- base::as.factor(avgArsenic_df$arsenic_discrete)
   avgArsenic_df$arsenic_discrete = factor(avgArsenic_df$arsenic_discrete, levels(avgArsenic_df$arsenic_discrete) [c(1,4,5,2,3)])
-  
   arsenic_df <- avgArsenic_df %>%
     dplyr::select(GEOID, var1.pred, arsenic_discrete)
-  
   names(arsenic_df) <- c("FIPSCode","arsenic","arsenic_discrete")
-  
   save(arsenic_df, file = "arsenic_df.RData")
-  
   return(arsenic_df)
 }
-
-
-
 ```
 
 -----------------
@@ -678,7 +503,6 @@ Main Arsenic code
 #' @return data frame containing FIPS code, arsenic conentraions, and discrete arsenic range
 
 GetArsenicData <- function(){
-  
   arsenic <- downloadArsenic()
   idw <- Interpolate(arsenic)
   arsenic_df <- ArsenicbyCounty(idw)
@@ -686,49 +510,255 @@ GetArsenicData <- function(){
 }
 ```
 
+------END Arsenic Data---------
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Main Code: Acquire and Join all data
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+****Acquire and Join all data****
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ```{r}
 #' Main code to aquire and join all data into the aggregate dataset including data for education, income, pollution, and forestry
 
-
-#-------USER--------
-# READ BELOW BEFORE RUNNING
-#--------------------
-#Put the first initial of your first name.
-userName = "KK"
-
 all_data=NULL
-
 #Get reference table of counties to FIPS codes
 every_county <- GetCountyReference()
-
 #Acquire all data using support functions
 edu_data <- GetEduData()
 income_data <- GetIncomeData()
 poll_data <- GetPollutionData()
-tree_data <- GetTreeData(userName)
-#arsenic_data <- GetArsenicData()
-
-
+tree_data <- GetTreeData()
+arsenic_data <- GetArsenicData()
 #Join all data to prepare for visualization
-#all_data<-plyr::join_all(list(every_county, edu_data, income_data, poll_data, tree_data, arsenic_data), by='FIPSCode', type='full')
-
-all_data<-plyr::join_all(list(every_county, edu_data, income_data, poll_data, tree_data), by='FIPSCode', type='full')
-#View(all_data)
-#all_data <- GetStateRegion4(all_data)
-
-#all_data<-na.omit(all_data)
-
-
-head(all_data)
-
-save(all_data, file="all_data.RData")
-
+all_data<-plyr::join_all(list(every_county, edu_data, income_data, poll_data, tree_data, arsenic_data), by='FIPSCode', type='full')
 ```
 
+------------------------------
+------------------------------
+DATA VISUALIZATION
+------------------------------
+------------------------------
+```{r include=FALSE}
+library(DataComputing)
+library(readr)
+library(rgdal)
+library(sp)
+library(rgeos)
+library(rgdal)
+library(maptools)
+library(dplyr)
+library(leaflet)
+library(scales)
+library(tigris)
+library(mapproj)
+library(ggplot2)
+```
+---------------------------
+Shapefile for Visualization
+---------------------------
+```{r}
+#' Downloads and loads the county-level simplified geographic boundary shapefile from the US Census Shapefiles.
+#' Source: https://www.census.gov/geo/maps-data/data/cbf/cbf_counties.html
+#' @Year: 2015
+#'
+#' @return spatial data frame of county-level geographic boundaries
+GetCountyShapefile <- function(){
+  library(tigris)
+  # Download county shape file from US Census using streamlined TIGRIS package. 
+  us.map <- tigris::counties(cb = TRUE, year = 2015)
+  # ----Clean county shapefile----
+  # Remove Alaska(2), Hawaii(15), Puerto Rico (72), Guam (66), Virgin Islands (78), American Samoa (60)
+  # Mariana Islands (69), Micronesia (64), Marshall Islands (68), Palau (70), Minor Islands (74)
+  us.map <- us.map[!us.map$STATEFP %in% c("02", "15", "72", "66", "78", "60", "69",
+                                          "64", "68", "70", "74"),]
+  # Make sure other outling islands are removed.
+  us.map <- us.map[!us.map$STATEFP %in% c("81", "84", "86", "87", "89", "71", "76",
+                                          "95", "79"),]
+  return(us.map)  
+}
 
+```
+---------------------------------------
+Education (Bachelors map) Leaflet Plot
+---------------------------------------
+```{r, echo=FALSE}
+countyShapefile <- GetCountyShapefile()
+small_data <- all_data %>% 
+  select(FIPSCode, Bachelors)
+# Merge spatial df with air quality data.
+counties <- geo_join(countyShapefile, small_data, "GEOID", "FIPSCode", how = "left")
+# Format popup data for leaflet map.
+popup_dat <- paste(sep = "<br/>",
+  "<b>County: </b>", 
+  counties$NAME, 
+  "<b>Value: </b>", 
+  counties$Bachelors)
+#Let leaflet calculate the colors and labels for you 
+pal <- colorNumeric(
+  palette =  "YlGnBu",
+  domain = counties$Bachelors
+)
+# Render Map
+map <- leaflet(counties, width="100%") %>% addTiles()
+education_map <- map %>% 
+  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
+    fillColor = ~pal(Bachelors), fillOpacity = 1, popup = popup_dat, 
+    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE)) %>%
+  addLegend("bottomright", pal = pal, values = ~Bachelors,
+    title = "Population with<br>Bachelor's Degree<br>or Higher",
+    labFormat = labelFormat(suffix = "%"), na.label = "county missing data",
+    opacity = 1)
+
+education_map
+
+library(htmlwidgets)
+saveWidget(education_map, file="education_map.html", selfcontained = FALSE)
+```
+
+------------------------------------------------
+Air quality (Particulate matter) Leaflet Plot
+------------------------------------------------
+```{r, echo=FALSE}
+countyShapefile <- GetCountyShapefile()
+small_data <- all_data %>% 
+  select(FIPSCode, Pollution)
+#Merge spatial df with air quality data.
+counties <- geo_join(countyShapefile, small_data, "GEOID", "FIPSCode", how = "left")
+# Format popup data for leaflet map.
+popup_dat <- paste(sep = "<br/>",
+  "<b>County: </b>", 
+  counties$NAME, 
+  "<b>Value: </b>", 
+  counties$Pollution)
+#Let leaflet calculate the colors and labels for you 
+pal <- colorNumeric(
+  palette =  "YlGnBu",
+  domain = counties$Pollution
+)
+# Render Map
+map <- leaflet(counties, width="100%") %>% addTiles()
+pollution_map <- map %>% 
+  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
+    fillColor = ~pal(Pollution), fillOpacity = 1, popup = popup_dat, 
+    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE), group = "Pollution") %>%
+  addLegend("bottomright", pal = pal, values = ~Pollution,
+    title = "Pollution Data",
+    labFormat = labelFormat(suffix = "µg/m³"), na.label = "county data missing",
+    opacity = 1) 
+
+pollution_map
+
+library(htmlwidgets)
+saveWidget(pollution_map, file="pollution_map.html", selfcontained = FALSE)
+```
+
+-----------------------------
+AvailGreenSpace Leaflet Plot
+-----------------------------
+```{r, echo=FALSE}
+countyShapefile <- GetCountyShapefile()
+small_data <- all_data %>% 
+  select(FIPSCode, AvailGreenSpace)
+#Merge spatial df with air quality data.
+counties <- geo_join(countyShapefile, small_data, "GEOID", "FIPSCode", how = "left")
+# Format popup data for leaflet map.
+popup_dat <- paste(sep = "<br/>",
+  "<b>County: </b>", 
+  counties$NAME, 
+  "<b>Value: </b>", 
+  counties$AvailGreenSpace)
+#Let leaflet calculate the colors and labels for you 
+pal <- colorNumeric(
+  palette =  "YlGnBu",
+  domain = counties$AvailGreenSpace
+)
+# Render Map
+map <- leaflet(counties, width="100%") %>% addTiles()
+availGreenSpace_map <- map %>% 
+  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
+    fillColor = ~pal(AvailGreenSpace), fillOpacity = 1, popup = popup_dat, 
+    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE)) %>%
+  addLegend("bottomright", pal = pal, values = ~AvailGreenSpace,
+    title = "Available Green Space",
+    labFormat = labelFormat(suffix = "hectare"), na.label = "county data missing",
+    opacity = 1)
+
+availGreenSpace_map
+
+library(htmlwidgets)
+saveWidget(availGreenSpace_map, file="availGreenSpace_map.html", selfcontained = FALSE)
+```
+
+----------------------------------------------------
+Tree Canopy Cover in developed regions Leaflet Plot
+----------------------------------------------------
+```{r, echo=FALSE}
+countyShapefile <- GetCountyShapefile()
+small_data <- all_data %>% 
+  select(FIPSCode, TreeCanopyCover)
+#Filter out outlier values
+small_data<-small_data%>%filter(TreeCanopyCover<.55)
+#Merge spatial df with air quality data.
+counties <- geo_join(countyShapefile, small_data, "GEOID", "FIPSCode", how = "left")
+# Format popup data for leaflet map.
+popup_dat <- paste(sep = "<br/>",
+  "<b>County: </b>", 
+  counties$NAME, 
+  "<b>Value: </b>", 
+  counties$TreeCanopyCover)
+#Let leaflet calculate the colors and labels for you 
+pal <- colorNumeric(
+  palette =  "YlGnBu",
+  domain = counties$TreeCanopyCover
+)
+# Render Map
+map <- leaflet(counties, width="100%") %>% addTiles()
+treeCanopyDeveloped_map <- map %>% 
+  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
+    fillColor = ~pal(TreeCanopyCover), fillOpacity = 1, popup = popup_dat, 
+    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE)) %>%
+  addLegend("bottomright", pal = pal, values = ~TreeCanopyCover,
+    title = "Tree canopy cover in developed regions",
+    labFormat = labelFormat(suffix = "%"), na.label = ">0.55%",
+    opacity = 1)
+treeCanopyDeveloped_map
+library(htmlwidgets)
+saveWidget(treeCanopyDeveloped_map, file="treeCanopyDeveloped_map.html", selfcontained = FALSE)
+```
+
+-----------------
+Arsenic (ggplot)
+-----------------
+
+```{r, eval = FALSE}
+#Get county geographic boundaries
+us.map <- GetCountyShapefile()
+#Converting shapefile to dataframe for visualization
+library(broom)
+county_map <- tidy(us.map, region="GEOID")
+small_data <- arsenic
+#Merge spatial df with 
+counties <- left_join(county_map, arsenic, by = c("id" = "FIPSCode"))
+counties %>%
+  ggplot() +
+    #blank county map
+    geom_polygon(aes(x=long, y=lat, group=group), fill = "white", color="black", size=0.25) +
+    #Arsenic data
+    geom_polygon(aes(x=long, y=lat, group=group, fill = counties$arsenic_discrete), color="black", size=0.25) +
+    ggplot2::coord_map() +
+    scale_fill_brewer(palette = "RdYlGn", direction = -1)  +
+    labs(title="Arsenic Levels in drinking water (ug/L)") + 
+    theme_bw() +
+    theme(plot.title=element_text(hjust=0.5),
+          axis.line=element_blank(),
+          axis.text.x=element_blank(),
+          axis.text.y=element_blank(),
+          axis.ticks=element_blank(),
+          axis.title.x=element_blank(),
+          axis.title.y=element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_blank(),
+          panel.background = element_blank(),
+          legend.title=element_blank())
+```
 
