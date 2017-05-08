@@ -1,22 +1,4 @@
----
-title: "All Code for Paper"
-author: ""
-date: ""
-output: 
-  html_document:
-    fig_height: 3
-    fig_width: 5
----
-<!-- Don't edit in between this line and the one below -->
-```{r include=FALSE}
-# Don't delete this chunk if you are using the DataComputing package
-library(DataComputing)
-```
-*Source file* 
-```{r, results='asis', echo=FALSE}
-includeSourceDocuments()
-```
-<!-- Don't edit the material above this line -->
+
 ------------------------------
 ------------------------------
 DATA GATHERING
@@ -728,7 +710,6 @@ saveWidget(treeCanopyDeveloped_map, file="treeCanopyDeveloped_map.html", selfcon
 -----------------
 Arsenic (ggplot)
 -----------------
-
 ```{r, eval = FALSE}
 #Get county geographic boundaries
 us.map <- GetCountyShapefile()
@@ -762,3 +743,135 @@ counties %>%
           legend.title=element_blank())
 ```
 
+~~~~~~~~~~~~~~
+Scatter Plots
+~~~~~~~~~~~~~~
+```{r}
+library(ggplot2)
+#Plots percent of adults with a Bachelor's degree vs. amount of PM 2.5 (pollution), facetted by income
+bach_vs_pollution_lm_income <- all_data %>%
+  na.omit() %>%
+  ggplot(aes(Pollution, Bachelors)) +
+  geom_point(aes(color = IncomeQuartile), alpha = 0.7, size = 2, show.legend = FALSE) +
+  scale_color_manual(values = c("#a1d99b","#41ab5d","#238b45","#005a32")) +
+  geom_smooth(method = "lm",  fill = "black", col = "black") +
+  facet_grid(~ IncomeQuartile) +
+  labs(x="Concentration of PM 2.5 (ug/m^3)", y="% Adults with Bachelor's Degrees") +
+  xlim(5, 15) +
+  theme_bw()
+
+bach_vs_pollution_lm_income
+
+#Plots percent of adults with a Bachelor's degree vs. percent of tree canopy cover, facetted by income
+bach_vs_tree_lm_income <- all_data %>% 
+  na.omit() %>%
+  filter(TreeCanopyCover<.55) %>%  #Filter out outlier values
+  ggplot(aes(TreeCanopyCover, Bachelors)) +
+  geom_point(aes(color = IncomeQuartile), alpha = 0.7, size = 2, show.legend = FALSE) +
+  scale_color_manual(values = c("#a1d99b","#41ab5d","#238b45","#005a32")) +
+  geom_smooth(method = "lm",  fill = "black", col = "black") +
+  facet_grid(. ~ IncomeQuartile) +
+  labs(x="% Tree Canopy Cover", y="% Adults with Bachelor's Degrees") +
+  theme_bw() 
+
+bach_vs_tree_lm_income
+#Plots percent of adults with a Bachelor's degree vs. amount of PM 2.5 (pollution), facetted by rural-urban classification 
+bach_vs_pollution_lm <- all_data %>%
+  na.omit() %>%
+  ggplot(aes(Pollution, Bachelors)) +
+  geom_point(aes(color = UrbanRank), alpha = 0.7, size = 2, show.legend = FALSE) +
+   scale_color_manual(values = c("#8dd3c7","#80b1d3","#bc80bd")) +
+  geom_smooth(method = "lm", fill = "black", col = "black") +
+  facet_grid(~ UrbanRank) +
+  labs(x="Concentration of PM 2.5 (ug/m^3)", y="% Adults with Bachelor's Degrees") +
+  theme_bw()
+
+bach_vs_pollution_lm
+
+#Plots percent of adults with a Bachelor's degree vs. percent of tree canopy cover, facetted by rural-urban classification 
+bach_vs_tree_lm <- all_data %>% 
+  na.omit() %>%
+  filter(TreeCanopyCover<.55) %>%    #Filter out outlier values
+  ggplot(aes(TreeCanopyCover, Bachelors)) +
+  geom_point(aes(color = UrbanRank), alpha = 0.7, size = 2, show.legend = FALSE) +
+  scale_color_manual(values = c("#8dd3c7","#80b1d3","#bc80bd")) +
+  geom_smooth(method = "lm",  fill = "black", col = "black") +
+  facet_grid(. ~ UrbanRank) +
+  labs(x="% Tree Canopy Cover", y="% Adults with Bachelor's Degrees") +
+  theme_bw() 
+
+bach_vs_tree_lm 
+
+#Plots Arsenic concentration vs. Bachelor's degree attainment, facetted by urban rank.
+bach_vs_arsenic_lm <- all_data %>%
+  na.omit() %>%
+  ggplot(aes(arsenic, Bachelors)) +
+  geom_point(aes(color = UrbanRank), alpha = 0.3, size = 2) +
+  scale_color_manual(values = c("#6baed6","#4292c6","#2171b5")) +
+  geom_smooth(method = "lm") +
+  facet_grid(~ UrbanRank) +
+  labs(x="Arsenic in Drinking Water (ug/L)", y="% Adults with Bachelor's Degrees") +
+  theme_bw()
+
+bach_vs_arsenic_lm
+
+#Plots percent of adults with a Bachelor's degree vs. available green space, facetted by rural-urban classification 
+bach_vs_green_lm <- all_data %>% 
+  na.omit() %>%
+  filter(AvailGreenSpace < 10^6) %>% #filter outlier values
+  mutate(AvailGreenSpace = AvailGreenSpace/100000) %>%
+  ggplot(aes(AvailGreenSpace, Bachelors)) +
+  geom_point(aes(color = UrbanRank), alpha = 0.7, size = 2, show.legend = FALSE) +
+  scale_color_manual(values = c("#8dd3c7","#80b1d3","#bc80bd")) +
+  geom_smooth(method = "lm",  fill = "black", col = "black") +
+  facet_grid(. ~ UrbanRank) +
+  labs(x="Available Green Space (100,000 ha)", y="% Adults with Bachelor's Degrees") +
+  theme_bw() 
+
+bach_vs_green_lm 
+```
+
+------------------
+------------------
+Linear Regressions
+------------------
+------------------
+```{r eval = FALSE}
+library(statisticalModeling)
+library(rpart)
+library(rpart.plot)
+library(stats)
+library(mosaicData)
+
+#Tree/education regression
+et1<-lm(Bachelors~TreeCanopyCover, data=all_data)
+et2<-lm(Bachelors~TreeCanopyCover + UrbanCode, data=all_data)
+et3<-lm(Bachelors~TreeCanopyCover + UrbanCode + Income, data=all_data)
+stargazer::stargazer(et1, et2, et3, type="text",
+ dep.var.labels=c("Percent of Adults with Bachelor's Deegree"),
+ covariate.labels=c("Tree Canopy Cover","Urban Rank", "Median Income"), out="tree_edu.txt")
+
+#pollution/education regressions
+ep1<-lm(Bachelors~Pollution, data=all_data) 
+ep2<-lm(Bachelors~Pollution + UrbanCode, data=all_data)
+ep3<-lm(Bachelors~Pollution + UrbanCode + Income, data=all_data) 
+stargazer::stargazer(ep1, ep2, type="text",
+ dep.var.labels=c("Percent of Adults with Bachelor's Deegree"),
+ covariate.labels=c("Particulate Matter","Urban Rank", "Median Income"), out="polution_edu.txt")
+
+#green space/education regression
+gs1<-lm(Bachelors~AvailGreenSpace, data=filter(all_data, AvailGreenSpace < 10^6)%>%na.omit(all_data))
+gs2<-lm(Bachelors~AvailGreenSpace + UrbanCode, data=filter(all_data, AvailGreenSpace < 10^6)%>%na.omit(all_data))
+gs3<-lm(Bachelors~AvailGreenSpace + UrbanCode + Income, data=filter(all_data, AvailGreenSpace < 10^6)%>%na.omit(all_data))
+stargazer::stargazer(gs1, gs2, gs3, type="text",
+ dep.var.labels=c("Percent of Adults with Bachelor's Degree"),
+ covariate.labels=c("Available Green Space","Urban Rank", "Median Income"), out="green_edu.txt")
+
+#Arsenic/education reg
+ea1<-lm(Bachelors~arsenic, data=all_data)
+ea2<-lm(Bachelors~arsenic +UrbanRank, data=all_data)
+ea3<-lm(Bachelors~arsenic +Income, data=all_data)
+stargazer::stargazer(ea1, ea2, ea3, type="text",
+ dep.var.labels=c("Percentage of Adults with Bachelor's Degrees"),
+ covariate.labels=c("Arsenic Level","Urban/Rural Classification","Median Income"), out="arsenic_edu.txt")
+```

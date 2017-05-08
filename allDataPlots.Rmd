@@ -64,23 +64,12 @@ stargazer::stargazer(ea1, ea2, ea3, type="text",
  covariate.labels=c("Arsenic Level","Urban/Rural Classification","Median Income"), out="arsenic_edu.txt")
 ```
 
-## Boxplots for air pollution, arsenic, and tree cover (Kana)
 ~~~~~~~~~~~~~~
 Scatter Plots
 ~~~~~~~~~~~~~~
-```{r eval = FALSE}
-#Plots the percentage of people with a Bachelors vs. TreeCanopyCover. Facet by IncomeQuartile.
-edu_treecanop_plot<-all_data%>%
-  ggplot(aes(x=TreeCanopyCover, y=Bachelors))+
-  geom_point(aes(color=IncomeQuartile))+
-  facet_grid(.~IncomeQuartile)
-
-edu_treecanop_plot
-
-```
 
 ```{r}
-
+library(ggplot2)
 #Plots percent of adults with a Bachelor's degree vs. amount of PM 2.5 (pollution), facetted by rural-urban classification 
 bach_vs_pollution_lm <- all_data %>%
   na.omit() %>%
@@ -123,6 +112,19 @@ bach_vs_green_lm <- all_data %>%
 
 bach_vs_green_lm 
 
+#Plots Arsenic concentration vs. Bachelor's degree attainment, facetted by urban rank.
+bach_vs_arsenic_lm <- all_data %>%
+  na.omit() %>%
+  ggplot(aes(arsenic, Bachelors)) +
+  geom_point(aes(color = UrbanRank), alpha = 0.3, size = 2) +
+  scale_color_manual(values = c("#6baed6","#4292c6","#2171b5")) +
+  geom_smooth(method = "lm") +
+  facet_grid(~ UrbanRank) +
+  labs(x="Arsenic in Drinking Water (ug/L)", y="% Adults with Bachelor's Degrees") +
+  theme_bw()
+
+bach_vs_arsenic_lm
+
 #Plots percent of adults with a Bachelor's degree vs. amount of PM 2.5 (pollution), facetted by income
 bach_vs_pollution_lm_income <- all_data %>%
   na.omit() %>%
@@ -150,20 +152,4 @@ bach_vs_tree_lm_income <- all_data %>%
   theme_bw() 
 
 bach_vs_tree_lm_income
-```
-
-
-```{r}
-#Plots Arsenic concentration vs. Bachelor's degree attainment. Faceted by income quartile and urban rank.
-bach_vs_arsenic_lm <- all_data %>%
-  na.omit() %>%
-  ggplot(aes(arsenic, Bachelors)) +
-  geom_point(aes(color = UrbanRank), alpha = 0.3, size = 2) +
-  scale_color_manual(values = c("#6baed6","#4292c6","#2171b5")) +
-  geom_smooth(method = "lm") +
-  facet_grid(IncomeQuartile ~ UrbanRank) +
-  labs(x="Arsenic in Drinking Water (ug/L)", y="% Adults with Bachelor's Degrees") +
-  theme_bw()
-
-bach_vs_arsenic_lm
 ```
