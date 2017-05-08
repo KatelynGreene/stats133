@@ -31,7 +31,7 @@ library(rpart.plot)
 library(stats)
 library(mosaicData)
 
-#Tree/eduaction regression
+#Tree/education regression
 et1<-lm(Bachelors~TreeCanopyCover, data=all_data)
 et2<-lm(Bachelors~TreeCanopyCover + UrbanCode, data=all_data)
 et3<-lm(Bachelors~TreeCanopyCover + UrbanCode + Income, data=all_data)
@@ -69,7 +69,7 @@ stargazer::stargazer(ea1, ea2, ea3, type="text",
 Scatter Plots
 ~~~~~~~~~~~~~~
 ```{r eval = FALSE}
-#Plots the percentage of people with a Bachelors vs. TreeCanopyCover and faceted by IncomeQuartile
+#Plots the percentage of people with a Bachelors vs. TreeCanopyCover. Facet by IncomeQuartile.
 edu_treecanop_plot<-all_data%>%
   ggplot(aes(x=TreeCanopyCover, y=Bachelors))+
   geom_point(aes(color=IncomeQuartile))+
