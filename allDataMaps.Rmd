@@ -292,4 +292,47 @@ counties %>%
 
 ```
 
+-----------------------
+UrbanRank Leaflet Plot
+-----------------------
+```{r, eval=FALSE, include=FALSE}
+countyShapefile <- GetCountyShapefile()
+
+small_data <- all_data %>% 
+  select(FIPSCode, Bachelors, UrbanRank, UrbanCode)
+
+# Merge spatial df with air quality data.
+counties <- geo_join(countyShapefile, small_data, "GEOID", "FIPSCode", how = "left")
+
+# Format popup data for leaflet map.
+popup_dat <- paste(sep = "<br/>",
+  "<b>County: </b>", 
+  counties$NAME, 
+  "<b>Value: </b>", 
+  counties$UrbanCode)
+
+#Let leaflet calculate the colors and labels
+pal<- colorFactor(
+  palette = "YlGnBu", levels = factor(counties$UrbanRank, levels =c("Metropolitan", "Urban", "Rural", ordered = TRUE))
+)
+
+# Base map of county boundaries
+map <- leaflet(counties) %>% addTiles()
+
+urbanrank_map <- map %>% 
+  addPolygons(stroke = TRUE, color = "white", weight = .1, smoothFactor = 0.5, opacity = 1, 
+    fillColor = ~pal(UrbanRank), fillOpacity = 1, popup = popup_dat, 
+    highlight = highlightOptions(color = "#666", weight = 2, bringToFront = TRUE)) %>%
+  addLegend("bottomright", pal = pal, values = ~UrbanRank,
+    title = "Rural-Urban Rank",
+    labFormat = labelFormat(), na.label = "county missing data",
+    opacity = 1)
+
+urbanrank_map
+
+library(htmlwidgets)
+saveWidget(urbanrank_map, file="urbanrank_map.html", selfcontained = FALSE)
+```
+
+
 
