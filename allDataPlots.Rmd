@@ -69,8 +69,7 @@ stargazer::stargazer(ea1, ea2, ea3, type="text",
 Scatter Plots
 ~~~~~~~~~~~~~~
 ```{r eval = FALSE}
-#Graphs the percentage of people with a bachelors vs. TreeCanopy and faceted by IncomeQuartile
-
+#Plots the percentage of people with a Bachelors vs. TreeCanopyCover and faceted by IncomeQuartile
 edu_treecanop_plot<-all_data%>%
   ggplot(aes(x=TreeCanopyCover, y=Bachelors))+
   geom_point(aes(color=IncomeQuartile))+
@@ -83,7 +82,6 @@ edu_treecanop_plot
 ```{r}
 load("all_data.RData")
 library(ggplot2)
-#head(all_data)
 
 bach_vs_pollution_lm <- all_data %>%
   na.omit() %>%
@@ -138,7 +136,6 @@ bach_vs_pollution_lm_income <- all_data %>%
 
 bach_vs_pollution_lm_income
 
- 
 bach_vs_tree_lm_income <- all_data %>% 
   na.omit() %>%
    #Filter out outlier values
@@ -166,26 +163,11 @@ bach_vs_green_lm_income <- all_data %>%
   theme_bw() 
 
 bach_vs_green_lm_income
-#ggsave("bach_vs_green_lm_income.png", plot = bach_vs_green_lm_income, width = 8, height = 4)
-
-
-
-#Used in the blox plot 
-#all_data_UrbanRank <- all_data %>% 
-#  select(UrbanRank, LessThanHS, HSDiploma, SomeCollege, Bachelors) %>%
-#  gather(key= Education, value = Percent, `LessThanHS`, `HSDiploma`, `SomeCollege`, `Bachelors`) %>%
-#  group_by(UrbanRank, Education) %>%
-#  summarise(average = mean(Percent))
-
-#Makes useless stacked bar plot
-#all_data_UrbanRank %>% ggplot( aes(x = UrbanRank, y = average, fill = Education)) + 
-#    geom_bar(stat = "identity")
-
 ```
 
 
 ```{r}
-#Arsenic plots
+#Plots Arsenic concentration vs. Bachelor's degree attainment. Faceted by income quartile and urban rank.
 bach_vs_arsenic_lm <- all_data %>%
   na.omit() %>%
   ggplot(aes(arsenic, Bachelors)) +
