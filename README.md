@@ -26,9 +26,6 @@
 **USCountyUrbanForestData.Rmd** --Data scraping tables describing the tree canopy cover and available green space for each county in each state. 
   * *Source: https://www.nrs.fs.fed.us/data/urban/*
 
-  
-**Find a water quality Data-set** 
-
 ## Economic related files 
 
 **county_income_ca.R** -- Data scraping of wikipedia page with income for every county in california
@@ -37,40 +34,7 @@
 **USACountyIncomeEmploy.RMD** -- Data Scraping of county-level income and employment data
  * *Source: https://www.ers.usda.gov/data-products/county-level-data-sets/county-level-data-sets-download-data.aspx*
  
-
 ## Reference & Support Files
 
 **CountyReferenceTable.RMD** -- All USA county names, states, and FIPS codes.
  * *Source: https://www.census.gov/geo/reference/codes/cou.html*
- s
-# To-do
-* Leaflet layer control (Katelyn)
-* Various scatterplots 
- * Edu vs income (Vanessa)s
- * edu vs airquality (Vanessa)
- * edu vs arsenic (Kana)
- * edu vs foresty (Katelyn/Vanessa)
-
-* Regression on one plot (Vanessa)
-
-
-
-
-* Change variable types in all_data that needs to be factors rather than character or number: State, UrbanCode
-* GRouping into rural, urban, metro --> anisha
-* Move plots to clean and join --> Kana
-* Leaflets & urban codes ---> Katelyn /Anisha
-* Commenting --> Everyone 
-* Geographic sorting --> Anisha
-* DCounty reference and Pollution 
-
-
-*Note that the source of the County reference table does not refer to a live table anymore (404 error at US Census site)
-
-
-Katelyn:
-
-Kana: C:\\Users\\kanay\\Documents\\R\\stat133\\AllStates\\
-
-Anisha: /Users/anishakumar/Documents/Stats133/RStudioFiles/Stats133Project/AllStates/
-
