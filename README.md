@@ -6,6 +6,8 @@
 
 ![](Stats133_Project_3.png)
 
+## For more information, checkout our [Full Report](/Senioritis_Final_Paper.pdf)
+
 ## Repo Files Summary:
 ## Education related files
 
