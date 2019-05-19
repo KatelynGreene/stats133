@@ -1,5 +1,12 @@
 # Team Senioritis Final Project Repo (Stats 133)
 
+![](Stats133_Project_1.png)
+
+![](Stats133_Project_2.png)
+
+![](Stats133_Project_3.png)
+
+## Repo Files Summary:
 ## Education related files
 
 **USACountyEduAttainment.Rmd** -- Data preprocessing excel file into R containing educational attainment statistics for all US Counties.
